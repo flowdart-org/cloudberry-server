@@ -1,26 +1,23 @@
 import { Injectable } from '@nestjs/common';
-import { CreateAuthDto } from './dto/create-auth.dto';
-import { UpdateAuthDto } from './dto/update-auth.dto';
+import { JWTPayload } from '@/common/types';
+import { UserRegisterDto } from '@/auth/dto/user-register.dto';
+import { SmsService } from '@/sms/sms.service';
 
 @Injectable()
 export class AuthService {
-  create(createAuthDto: CreateAuthDto) {
-    return 'This action adds a new auth';
+  constructor(private readonly _smsService: SmsService) {}
+
+  async register(dto: UserRegisterDto) {
+    await this._smsService.sendSMS(
+      dto.phoneNumber,
+      'Welcome to our ZenFashionStudio. ' +
+        'Your OTP to verify your account is 000000. ' +
+        "Don't share it with anyone!",
+    );
   }
 
-  findAll() {
-    return `This action returns all auth`;
-  }
-
-  findOne(id: number) {
-    return `This action returns a #${id} auth`;
-  }
-
-  update(id: number, updateAuthDto: UpdateAuthDto) {
-    return `This action updates a #${id} auth`;
-  }
-
-  remove(id: number) {
-    return `This action removes a #${id} auth`;
+  verifyToken(token: string) {
+    console.log(token);
+    return { sub: '123', role: 'user' } as JWTPayload;
   }
 }
