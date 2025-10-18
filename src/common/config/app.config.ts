@@ -19,9 +19,10 @@ export function setupApp(app: INestApplication) {
   );
 
   const config = new DocumentBuilder()
-    .setTitle('ArticleFeed API')
-    .setDescription('API documentation for the ArticleFeed project')
+    .setTitle('ZenFashionStudio API')
+    .setDescription('API documentation for the ZenFashionStudio E-commerce Api')
     .setVersion('1.0')
+    .setContact('Ajmal', 'http://localhost:4000', 'ajmal@gmail.com')
     .addBearerAuth()
     .build();
 
@@ -30,6 +31,10 @@ export function setupApp(app: INestApplication) {
   const document = SwaggerModule.createDocument(app, config);
   SwaggerModule.setup('api/docs', app, document, {
     ui: true,
+  });
+
+  SwaggerModule.setup('api/docs-json', app, document, {
+    ui: false,
   });
 
   const configService = app.get(ConfigService);
