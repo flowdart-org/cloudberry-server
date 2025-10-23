@@ -1,13 +1,13 @@
 import { IsPhoneNumber } from 'class-validator';
 import { ApiProperty } from '@nestjs/swagger';
 
-export class UserRegisterDto {
+export class LoginRequestOTPDto {
   @IsPhoneNumber('IN', {
     message: 'Phone number must be a valid Indian phone number',
   })
   @ApiProperty({
-    example: '0000000000',
+    example: '+91 9605119661',
     description: 'Phone number of the user',
   })
-  public phoneNumber: string;
+  public phone: string;
 }

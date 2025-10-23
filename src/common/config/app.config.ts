@@ -22,13 +22,18 @@ export function setupApp(app: INestApplication) {
     .setTitle('ZenFashionStudio API')
     .setDescription('API documentation for the ZenFashionStudio E-commerce Api')
     .setVersion('1.0')
-    .setContact('Ajmal', 'http://localhost:4000', 'ajmal@gmail.com')
+    .setContact(
+      'Contact The Developer',
+      'http://localhost:4000',
+      'https://github.com/rahil234',
+    )
     .addBearerAuth()
     .build();
 
   app.setGlobalPrefix('api');
 
   const document = SwaggerModule.createDocument(app, config);
+
   SwaggerModule.setup('api/docs', app, document, {
     ui: true,
   });

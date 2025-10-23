@@ -13,6 +13,19 @@ services:
     volumes:
       - db-data:/var/lib/postgresql/data
 
+  redis:
+    container_name: zen-fashion-studio_redis
+    image: redis:7.4
+    restart: always
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis-data:/data
+    command: [ "redis-server", "--appendonly", "yes" ]
+    logging:
+      driver: "none"
+
+
   server:
     container_name: server
     build:
@@ -24,6 +37,8 @@ services:
     environment:
       NODE_ENV: development
       PORT: 4000
+    env_file:
+      - ./.env
     ports:
       - "4000:4000"
     depends_on:
@@ -32,3 +47,5 @@ services:
 volumes:
   db-data:
     name: zen-fashion-studio_db-data
+  redis-data:
+    name: zen-fashion-studio_redis-data
