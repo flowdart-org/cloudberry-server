@@ -1,19 +1,23 @@
-import { Controller, Post, Body, Res } from '@nestjs/common';
+import { Controller, Post, Body, Res, Headers } from '@nestjs/common';
 import { ApiOperation, ApiResponse } from '@nestjs/swagger';
 import type { Response } from 'express';
 
-import { AuthService } from '@/auth/auth.service';
-import { HTTP_RESPONSE } from '@/common/types';
+import type { HTTP_RESPONSE } from '@/common/types';
+import { AuthService } from '@/auth/services/auth.service';
 import { LoginVerifyOTPDto } from '@/auth/dto/request/verify-OTP.dto';
 import { LoginRequestOTPDto } from '@/auth/dto/request/request-OTP.dto';
 import { LoginResendOTPDto } from '@/auth/dto/request/resend-OTP.dto';
+import {
+  clearAuthCookies,
+  setAuthCookies,
+} from '@/auth/utils/token-cookie.util';
 
 @Controller('auth')
 export class AuthController {
   constructor(private readonly _authService: AuthService) {}
 
   @Post('login/request-otp')
-  @ApiOperation({ summary: 'Register a new user' })
+  @ApiOperation({ summary: 'Request OTP for user.' })
   @ApiResponse({ status: 201, description: 'OTP has successfully sent.' })
   @ApiResponse({ status: 400, description: 'Validation failed' })
   async register(@Body() dto: LoginRequestOTPDto): Promise<HTTP_RESPONSE> {
@@ -30,6 +34,7 @@ export class AuthController {
   @ApiResponse({ status: 200, description: 'OTP has been resent.' })
   async resendOtp(@Body() dto: LoginResendOTPDto): Promise<HTTP_RESPONSE> {
     await this._authService.resendOtp(dto.phone);
+
     return {
       message: 'OTP has been resent.',
       success: true,
@@ -37,6 +42,7 @@ export class AuthController {
   }
 
   @Post('login/verify-otp')
+  @ApiOperation({ summary: 'Verify the OTP of the user.' })
   @ApiResponse({ status: 200, description: 'OTP verified' })
   async verifyOtp(
     @Res({ passthrough: true }) res: Response,
@@ -47,20 +53,34 @@ export class AuthController {
       dto,
     );
 
-    res.cookie('access_token', accessToken, {
-      httpOnly: true,
-      secure: false,
-      sameSite: 'lax',
-      maxAge: 1000 * 60 * 15,
-    });
-
-    res.cookie('refresh_token', refreshToken, {
-      httpOnly: true,
-      secure: false,
-      sameSite: 'lax',
-      maxAge: 1000 * 60 * 60 * 24 * 7,
-    });
+    setAuthCookies(res, { accessToken, refreshToken });
 
     return { success: true, message: 'OTP verified' };
+  }
+
+  @Post('refresh-token')
+  @ApiOperation({ summary: 'Refresh access and refresh tokens.' })
+  @ApiResponse({ status: 200, description: 'Tokens refreshed successfully' })
+  async refreshToken(
+    @Headers('refresh_token') refreshToken: string,
+    @Res({ passthrough: true }) res: Response,
+  ): Promise<HTTP_RESPONSE> {
+    const { accessToken, refreshToken: newRefreshToken } =
+      await this._authService.refreshTokens(refreshToken);
+
+    setAuthCookies(res, {
+      accessToken,
+      refreshToken: newRefreshToken,
+    });
+
+    return { success: true, message: 'Tokens refreshed successfully' };
+  }
+
+  @Post('logout')
+  @ApiResponse({ status: 200, description: 'User logged out successfully' })
+  logout(@Res({ passthrough: true }) res: Response): HTTP_RESPONSE {
+    clearAuthCookies(res);
+
+    return { success: true, message: 'User logged out successfully' };
   }
 }

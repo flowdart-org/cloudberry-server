@@ -4,11 +4,11 @@ import {
   UnauthorizedException,
 } from '@nestjs/common';
 import { Request, Response, NextFunction } from 'express';
-import { AuthService } from '@/auth/auth.service';
+import { JwtService } from '@/auth/services/jwt.service';
 
 @Injectable()
 export class JwtAuthMiddleware implements NestMiddleware {
-  constructor(private readonly _authService: AuthService) {}
+  constructor(private readonly _authService: JwtService) {}
 
   use(req: Request, _res: Response, next: NextFunction) {
     const authHeader = req.headers.authorization;
@@ -16,7 +16,7 @@ export class JwtAuthMiddleware implements NestMiddleware {
       throw new UnauthorizedException('Missing authorization header');
 
     const token = authHeader.split(' ')[1];
-    req['user'] = this._authService.verifyToken(token);
+    req['user'] = this._authService.verifyAccessToken(token);
     next();
   }
 }

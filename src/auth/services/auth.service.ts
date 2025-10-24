@@ -1,16 +1,18 @@
 import { BadRequestException, Injectable } from '@nestjs/common';
-import { JWTPayload } from '@/common/types';
+
+import { LoginVerifyOTPDto } from '@/auth/dto/request/verify-OTP.dto';
+import { LoginRequestOTPDto } from '@/auth/dto/request/request-OTP.dto';
+import { JwtService } from '@/auth/services/jwt.service';
 import { SmsService } from '@/sms/sms.service';
 import { OtpService } from '@/otp/otp.service';
-import { LoginVerifyOTPDto } from '@/auth/dto/request/verify-OTP.dto';
 import { OTPPurpose } from '@/otp/otp.interface';
-import { LoginRequestOTPDto } from '@/auth/dto/request/request-OTP.dto';
 
 @Injectable()
 export class AuthService {
   constructor(
     private readonly _smsService: SmsService,
     private readonly _otpService: OtpService,
+    private readonly _jwtService: JwtService,
   ) {}
 
   async requestOtp(dto: LoginRequestOTPDto) {
@@ -46,14 +48,36 @@ export class AuthService {
       throw new BadRequestException('Invalid OTP');
     }
 
+    const accessToken = this._jwtService.generateAccessToken({
+      sub: 'user_id_example',
+      role: 'user',
+    });
+
+    const refreshToken = this._jwtService.generateRefreshToken({
+      sub: 'user_id_example',
+      role: 'user',
+    });
+
     return {
-      accessToken: 'access_token_example2',
-      refreshToken: 'refresh_token_example2',
+      accessToken,
+      refreshToken,
     };
   }
 
-  verifyToken(token: string) {
-    console.log(token);
-    return { sub: '123', role: 'user' } as JWTPayload;
+  async refreshTokens(refreshToken: string) {
+    await new Promise((resolve) => setTimeout(resolve, 100));
+    const payload = this._jwtService.verifyRefreshToken(refreshToken);
+
+    const newAccessToken = this._jwtService.generateAccessToken(payload);
+
+    const newRefreshToken = this._jwtService.generateRefreshToken({
+      sub: 'user_id_example',
+      role: 'user',
+    });
+
+    return {
+      accessToken: newAccessToken,
+      refreshToken: newRefreshToken,
+    };
   }
 }

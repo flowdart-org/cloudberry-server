@@ -7,7 +7,8 @@ export interface HTTP_RESPONSE<T = any> {
 
 export interface User {
   id: string;
-  email: string;
+  email?: string;
+  phone: string;
   createdAt: Date;
   updatedAt: Date;
 }

@@ -4,16 +4,8 @@ import { ConfigModule } from './common/config/config.module';
 import { SmsModule } from './sms/sms.module';
 import { OtpModule } from './otp/otp.module';
 import { RedisModule } from './redis/redis.module';
-import { UserModule } from './user/user.module';
 
 @Module({
-  imports: [
-    ConfigModule,
-    AuthModule,
-    SmsModule,
-    OtpModule,
-    RedisModule,
-    UserModule,
-  ],
+  imports: [ConfigModule, AuthModule, SmsModule, OtpModule, RedisModule],
 })
 export class AppModule {}
