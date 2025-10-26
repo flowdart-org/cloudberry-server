@@ -15,5 +15,5 @@ export interface User {
 
 export interface JWTPayload {
   sub: string;
-  role: 'user';
+  role: 'user' | 'admin';
 }

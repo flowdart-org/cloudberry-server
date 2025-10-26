@@ -1,7 +1,8 @@
-import morgan from 'morgan';
-import { SwaggerModule, DocumentBuilder } from '@nestjs/swagger';
 import { INestApplication, ValidationPipe } from '@nestjs/common';
+import { SwaggerModule, DocumentBuilder } from '@nestjs/swagger';
 import { ConfigService } from '@nestjs/config';
+import morgan from 'morgan';
+import cookieParser from 'cookie-parser';
 
 export function setupApp(app: INestApplication) {
   app.use(
@@ -44,6 +45,8 @@ export function setupApp(app: INestApplication) {
 
   const configService = app.get(ConfigService);
   const origins = configService.getOrThrow<string>('CORS_ORIGIN').split(',');
+
+  app.use(cookieParser());
 
   app.enableCors({
     origin: origins,

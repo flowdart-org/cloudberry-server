@@ -6,6 +6,7 @@ import { JwtService } from '@/auth/services/jwt.service';
 import { SmsService } from '@/sms/sms.service';
 import { OtpService } from '@/otp/otp.service';
 import { OTPPurpose } from '@/otp/otp.interface';
+import { AdminLoginDto } from '@/auth/dto/request/admin-login.dto';
 
 @Injectable()
 export class AuthService {
@@ -64,15 +65,39 @@ export class AuthService {
     };
   }
 
+  async adminLogin(dto: AdminLoginDto) {
+    await new Promise((resolve) => setTimeout(resolve, 100));
+    console.log(`Admin login attempt: ${dto.email}`);
+    console.log(`Password provided: ${dto.password}`);
+
+    const accessToken = this._jwtService.generateAccessToken({
+      sub: 'admin_id_example',
+      role: 'admin',
+    });
+
+    const refreshToken = this._jwtService.generateRefreshToken({
+      sub: 'admin_id_example',
+      role: 'admin',
+    });
+
+    return {
+      accessToken,
+      refreshToken,
+    };
+  }
+
   async refreshTokens(refreshToken: string) {
     await new Promise((resolve) => setTimeout(resolve, 100));
     const payload = this._jwtService.verifyRefreshToken(refreshToken);
 
-    const newAccessToken = this._jwtService.generateAccessToken(payload);
+    const newAccessToken = this._jwtService.generateAccessToken({
+      sub: payload.sub,
+      role: payload.role,
+    });
 
     const newRefreshToken = this._jwtService.generateRefreshToken({
-      sub: 'user_id_example',
-      role: 'user',
+      sub: payload.sub,
+      role: payload.role,
     });
 
     return {

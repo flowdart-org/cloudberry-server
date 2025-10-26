@@ -10,5 +10,6 @@ import { JwtService } from '@/auth/services/jwt.service';
   imports: [SmsModule, OtpModule],
   controllers: [AuthController],
   providers: [AuthService, JwtService],
+  exports: [JwtService],
 })
 export class AuthModule {}
