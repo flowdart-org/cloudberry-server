@@ -87,9 +87,10 @@ export class OtpService {
   async verifyOTP(
     purpose: OTPPurpose,
     identifier: string,
-    providedOtp: number,
+    providedOtp: string,
   ): Promise<boolean> {
     const key = this.getRedisKey(purpose, identifier);
+    console.log(key);
     const data = await this.redisClient.get(key);
     if (!data) throw new BadRequestException('OTP expired or not found');
 

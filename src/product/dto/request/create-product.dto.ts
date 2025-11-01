@@ -1,0 +1,105 @@
+import {
+  IsNumber,
+  IsString,
+  IsArray,
+  IsBoolean,
+  IsEnum,
+  ValidateNested,
+  IsOptional,
+} from 'class-validator';
+import { ApiProperty } from '@nestjs/swagger';
+import { Type } from 'class-transformer';
+
+class VariantDto {
+  @IsString({ message: 'Size must be a string' })
+  @ApiProperty({
+    example: 'M',
+    description: 'Size of the variant',
+  })
+  size: string;
+
+  @IsNumber({}, { message: 'Stock must be a number' })
+  @ApiProperty({
+    example: 15,
+    description: 'Available stock for the variant',
+  })
+  stock: number;
+}
+
+export class CreateProductDto {
+  @IsString({ message: 'Name must be a string' })
+  @ApiProperty({
+    example: 'Shirt',
+    description: 'Name of the product',
+  })
+  name: string;
+
+  @IsString({ message: 'Description must be a string' })
+  @ApiProperty({
+    example: 'A comfortable cotton shirt',
+    description: 'Description of the product',
+  })
+  description: string;
+
+  @IsNumber({}, { message: 'Actual price must be a number' })
+  @ApiProperty({
+    example: 29.99,
+    description: 'Actual price of the product',
+  })
+  price: number;
+
+  @ValidateNested({ each: true })
+  @Type(() => VariantDto)
+  @IsArray({ message: 'Variants must be an array' })
+  @ApiProperty({
+    type: [VariantDto],
+    example: [
+      { size: 'S', stock: 10 },
+      { size: 'M', stock: 15 },
+      { size: 'L', stock: 5 },
+    ],
+    description: 'Array of product variants with size and stock',
+    required: false,
+  })
+  variants: VariantDto[];
+
+  @IsNumber({}, { message: 'Discount percent must be a number' })
+  @ApiProperty({
+    example: 20,
+    description: 'Discount percentage of the product',
+  })
+  discountPercent: number;
+
+  @IsString({ message: 'Category ID must be a number' })
+  @ApiProperty({
+    example: 'cat134',
+    description: 'ID of the category the product belongs to',
+  })
+  categoryId: string;
+
+  @IsEnum(['active', 'inactive'], {
+    message: 'Status must be either active or inactive',
+  })
+  @ApiProperty({
+    example: 'active',
+    enum: ['active', 'inactive'],
+    description: 'Status of the product',
+  })
+  status: 'active' | 'inactive';
+
+  @IsBoolean({ message: 'TryOn must be a boolean' })
+  @ApiProperty({
+    example: true,
+    description: 'Whether the product supports virtual try-on',
+  })
+  tryOn: boolean;
+
+  @IsOptional()
+  @IsArray({ message: 'Tags must be an array' })
+  @ApiProperty({
+    example: ['shirt', 'cotton', 'men'],
+    description: 'Array of tags for the product',
+    required: false,
+  })
+  tags?: string[];
+}

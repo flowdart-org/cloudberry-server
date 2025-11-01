@@ -1,13 +1,25 @@
-import { Module } from '@nestjs/common';
+import { forwardRef, Global, Module } from '@nestjs/common';
 
 import { AuthController } from '@/auth/auth.controller';
-import { AuthService } from '@/auth/auth.service';
 import { SmsModule } from '@/sms/sms.module';
 import { OtpModule } from '@/otp/otp.module';
+import { AuthService } from '@/auth/services/auth.service';
+import { JwtService } from '@/auth/services/jwt.service';
+import { AdminModule } from '@/admin/admin.module';
+import { UserModule } from '@/user/user.module';
+import { EmailModule } from '@/email/email.module';
 
+@Global()
 @Module({
-  imports: [SmsModule, OtpModule],
+  imports: [
+    forwardRef(() => UserModule),
+    forwardRef(() => AdminModule),
+    SmsModule,
+    EmailModule,
+    OtpModule,
+  ],
   controllers: [AuthController],
-  providers: [AuthService],
+  providers: [AuthService, JwtService],
+  exports: [JwtService],
 })
 export class AuthModule {}

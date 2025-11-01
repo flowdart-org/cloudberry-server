@@ -1,7 +1,7 @@
 import { ApiProperty } from '@nestjs/swagger';
 import { HTTP_RESPONSE } from '@/common/types';
 
-export class HttpResponse<T = any> implements HTTP_RESPONSE {
+export class HttpResponse<T> implements HTTP_RESPONSE {
   @ApiProperty({ example: true })
   success: boolean;
 

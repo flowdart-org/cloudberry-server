@@ -1,14 +1,30 @@
-import morgan from 'morgan';
-import { SwaggerModule, DocumentBuilder } from '@nestjs/swagger';
 import { INestApplication, ValidationPipe } from '@nestjs/common';
+import { SwaggerModule, DocumentBuilder } from '@nestjs/swagger';
 import { ConfigService } from '@nestjs/config';
+import morgan from 'morgan';
+import cookieParser from 'cookie-parser';
+import bodyParser from 'body-parser';
+import { GlobalExceptionFilter } from '@/common/filters/http-exception.filter';
 
 export function setupApp(app: INestApplication) {
-  app.use(
-    morgan('dev', {
-      skip: (req) => req.method === 'OPTIONS',
-    }),
-  );
+  const configService = app.get(ConfigService);
+
+  app.use(cookieParser());
+
+  app.use(bodyParser.json({ limit: '50mb' }));
+  app.use(bodyParser.urlencoded({ limit: '50mb', extended: true }));
+
+  const origins = configService.getOrThrow<string>('CORS_ORIGIN').split(',');
+
+  app.enableCors({
+    origin: origins,
+    methods: 'GET,HEAD,PUT,PATCH,POST,DELETE',
+    credentials: true,
+  });
+
+  app.use(morgan('dev'));
+
+  app.setGlobalPrefix('api');
 
   app.useGlobalPipes(
     new ValidationPipe({
@@ -18,19 +34,19 @@ export function setupApp(app: INestApplication) {
     }),
   );
 
+  app.useGlobalFilters(new GlobalExceptionFilter());
+
   const config = new DocumentBuilder()
-    .setTitle('ZenFashionStudio API')
-    .setDescription('API documentation for the ZenFashionStudio E-commerce Api')
+    .setTitle('CloudBerry API')
+    .setDescription('API documentation for the CLoudBerry E-commerce Api')
     .setVersion('1.0')
     .setContact(
-      'Contact The Developer',
-      'http://localhost:4000',
-      'https://github.com/rahil234',
+      'Rahil K',
+      'https://www.linkedin.com/in/rahil234/',
+      'rahilsardar234@gmail.com',
     )
     .addBearerAuth()
     .build();
-
-  app.setGlobalPrefix('api');
 
   const document = SwaggerModule.createDocument(app, config);
 
@@ -40,14 +56,5 @@ export function setupApp(app: INestApplication) {
 
   SwaggerModule.setup('api/docs-json', app, document, {
     ui: false,
-  });
-
-  const configService = app.get(ConfigService);
-  const origins = configService.getOrThrow<string>('CORS_ORIGIN').split(',');
-
-  app.enableCors({
-    origin: origins,
-    methods: 'GET,HEAD,PUT,PATCH,POST,DELETE',
-    credentials: true,
   });
 }

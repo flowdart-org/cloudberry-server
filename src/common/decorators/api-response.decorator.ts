@@ -1,28 +1,41 @@
 import { applyDecorators, Type } from '@nestjs/common';
-import { ApiExtraModels, ApiOkResponse, getSchemaPath } from '@nestjs/swagger';
-import type { ApiResponseOptions } from '@nestjs/swagger';
+import {
+  ApiExtraModels,
+  ApiOkResponse,
+  ApiResponseOptions,
+  getSchemaPath,
+} from '@nestjs/swagger';
+
 import { HttpResponse } from '@/common/dto/http-response.dto';
 
 export const ApiResponseWithType = <TModel extends Type>(
-  model: TModel,
-  description = 'Success',
-  options: ApiResponseOptions,
+  options: ApiResponseOptions & { isArray?: boolean } = {},
+  model?: TModel,
 ) => {
-  return applyDecorators(
-    ApiExtraModels(HttpResponse, model),
+  const { isArray = false, ...rest } = options;
+
+  const decorators: Array<
+    ClassDecorator | MethodDecorator | PropertyDecorator
+  > = [
+    model ? ApiExtraModels(HttpResponse, model) : ApiExtraModels(HttpResponse),
     ApiOkResponse({
-      description,
-      ...options,
+      ...rest,
       schema: {
         allOf: [
           { $ref: getSchemaPath(HttpResponse) },
           {
             properties: {
-              data: { $ref: getSchemaPath(model) },
+              data: model
+                ? isArray
+                  ? { type: 'array', items: { $ref: getSchemaPath(model) } }
+                  : { $ref: getSchemaPath(model) }
+                : { type: undefined },
             },
           },
         ],
       },
     }),
-  );
+  ];
+
+  return applyDecorators(...decorators);
 };
