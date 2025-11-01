@@ -1,25 +1,35 @@
 import { Module } from '@nestjs/common';
-import { AuthModule } from './auth/auth.module';
-import { ConfigModule } from './common/config/config.module';
-import { SmsModule } from './sms/sms.module';
-import { OtpModule } from './otp/otp.module';
-import { RedisModule } from './redis/redis.module';
+import { APP_GUARD } from '@nestjs/core';
+
 import { UserModule } from '@/user/user.module';
-import { AdminModule } from './admin/admin.module';
-import { ProductModule } from './product/product.module';
-import { PrismaClient } from '@/common/prisma/prisma-client';
+import { AdminModule } from '@/admin/admin.module';
+import { AuthModule } from '@/auth/auth.module';
+import { TryOnModule } from '@/ai/try-on/try-on.module';
+import { ProductModule } from '@/product/product.module';
+import { RolesGuard } from '@/common/guards/roles.guard';
+import { MediaModule } from './media/media.module';
+import { JwtAuthGuard } from '@/common/guards/jwt-auth.guard';
+import { PrismaModule } from '@/common/prisma/prisma.module';
 
 @Module({
   imports: [
-    ConfigModule,
+    PrismaModule,
     AuthModule,
     UserModule,
-    SmsModule,
-    OtpModule,
-    RedisModule,
     AdminModule,
     ProductModule,
+    TryOnModule,
+    MediaModule,
   ],
-  providers: [PrismaClient],
+  providers: [
+    {
+      provide: APP_GUARD,
+      useClass: JwtAuthGuard,
+    },
+    {
+      provide: APP_GUARD,
+      useClass: RolesGuard,
+    },
+  ],
 })
 export class AppModule {}

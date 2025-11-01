@@ -1,17 +1,10 @@
-import {
-  forwardRef,
-  MiddlewareConsumer,
-  Module,
-  NestModule,
-} from '@nestjs/common';
+import { Module } from '@nestjs/common';
 import { UserService } from './user.service';
 import { UserController } from './user.controller';
-import { JwtAuthMiddleware } from '@/common/middlewares/jwt-auth.middleware';
-import { AuthModule } from '@/auth/auth.module';
 import { PrismaUserRepository } from '@/user/repositories/prisma-user.repository';
+import { PrismaClient } from '@/common/prisma/prisma-client';
 
 @Module({
-  imports: [forwardRef(() => AuthModule)],
   controllers: [UserController],
   providers: [
     UserService,
@@ -19,10 +12,8 @@ import { PrismaUserRepository } from '@/user/repositories/prisma-user.repository
       provide: 'UserRepository',
       useClass: PrismaUserRepository,
     },
+    { provide: 'PrismaClient', useClass: PrismaClient },
   ],
+  exports: [UserService],
 })
-export class UserModule implements NestModule {
-  configure(consumer: MiddlewareConsumer) {
-    consumer.apply(JwtAuthMiddleware).forRoutes(UserController);
-  }
-}
+export class UserModule {}

@@ -2,40 +2,44 @@ import { Inject, Injectable } from '@nestjs/common';
 import { CreateUserDto } from './dto/create-user.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
 import type { IUserRepository } from '@/user/repositories/interfaces/user.repository';
+import { User } from '@/user/entities/user.entity';
 
 @Injectable()
 export class UserService {
   constructor(
-    @Inject('UserRepository') private readonly userRepository: IUserRepository,
+    @Inject('UserRepository') private readonly _userRepository: IUserRepository,
   ) {}
 
-  create(createUserDto: CreateUserDto) {
-    return 'This action adds a new user';
+  async create(createUserDto: CreateUserDto) {
+    const { email, phone } = createUserDto;
+
+    if (!email && !phone) {
+      throw new Error('Either email or phone is required');
+    }
+
+    return this._userRepository.create({
+      email,
+      phone,
+    });
   }
 
-  async findMe(id: string) {
-    await new Promise((resolve) => setTimeout(resolve, 100));
-    return {
-      id,
-      name: 'John Doe',
-      email: 'rahil@gmail.com',
-      phone: '+91 9605119661',
-    };
+  findAll(): Promise<User[]> {
+    return this._userRepository.findAll();
   }
 
-  findAll() {
-    return `This action returns all user`;
+  findById(id: string): Promise<User | null> {
+    return this._userRepository.findById(id);
   }
 
-  findOne(id: number) {
-    return `This action returns a #${id} user`;
+  findByEmail(email: string): Promise<User | null> {
+    return this._userRepository.findByEmail(email);
   }
 
-  update(id: number, updateUserDto: UpdateUserDto) {
-    return `This action updates a #${id} user`;
+  findByPhone(phone: string): Promise<User | null> {
+    return this._userRepository.findByPhone(phone);
   }
 
-  remove(id: number) {
-    return `This action removes a #${id} user`;
+  update(id: string, updateUserDto: UpdateUserDto) {
+    return this._userRepository.update(id, updateUserDto);
   }
 }

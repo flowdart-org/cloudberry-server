@@ -1,13 +1,11 @@
-import { IsPhoneNumber } from 'class-validator';
 import { ApiProperty } from '@nestjs/swagger';
+import { IsNotEmpty } from 'class-validator';
 
 export class LoginRequestOTPDto {
-  @IsPhoneNumber('IN', {
-    message: 'Phone number must be a valid Indian phone number',
-  })
   @ApiProperty({
-    example: '+91 9605119661',
-    description: 'Phone number of the user',
+    example: '+919605119661 or rahilsardar234@gmail.com',
+    description: 'Email or phone number of the user',
   })
-  public phone: string;
+  @IsNotEmpty({ message: 'Email or phone number is required' })
+  public identifier: string;
 }

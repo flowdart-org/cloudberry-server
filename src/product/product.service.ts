@@ -1,27 +1,50 @@
-import { Injectable } from '@nestjs/common';
+import { BadRequestException, Inject, Injectable } from '@nestjs/common';
+
+import { CategoryService } from '@/product/category/category.service';
 import { CreateProductDto } from '@/product/dto/request/create-product.dto';
 import { UpdateProductDto } from '@/product/dto/request/update-product.dto';
+import { ProductResponseDto } from '@/product/dto/response/product-response.dto';
+import type { ProductRepository } from '@/product/repositories/interfaces/product.repository';
 
 @Injectable()
 export class ProductService {
-  create(createProductDto: CreateProductDto) {
-    console.log(createProductDto);
-    return 'This action adds a new product';
+  constructor(
+    @Inject('ProductRepository')
+    private readonly _productRepository: ProductRepository,
+    private readonly _categoryService: CategoryService,
+  ) {}
+
+  async create(dto: CreateProductDto) {
+    const category = await this._categoryService.findOne(dto.categoryId);
+    if (!category) throw new BadRequestException('Category not found');
+
+    return this._productRepository.create({
+      ...dto,
+      category,
+      discountPercentage: dto.discountPercent || 0,
+    });
   }
 
-  findAll() {
-    return `This action returns all product`;
+  async findAll() {
+    const docs = await this._productRepository.findAll();
+    return docs.length
+      ? Promise.all(
+          docs.map(async (p) => {
+            const category = await this._categoryService.findOne(p.category.id);
+            return new ProductResponseDto(p, category, []);
+          }),
+        )
+      : [];
   }
 
-  findOne(id: number) {
+  findOne(id: string) {
     return `This action returns a #${id} product`;
   }
 
-  update(id: number, updateProductDto: UpdateProductDto) {
-    return `This action updates a #${id} product`;
-  }
-
-  remove(id: number) {
-    return `This action removes a #${id} product`;
+  update(id: string, dto: UpdateProductDto) {
+    // return this._productRepository.update(id, {
+    //   ...dto,
+    //   variants: dto.variants ? dto.variants : [],
+    // });
   }
 }

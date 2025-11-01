@@ -1,35 +1,20 @@
-import {
-  Controller,
-  Get,
-  Post,
-  Body,
-  Patch,
-  Param,
-  Delete,
-  Req,
-  UnauthorizedException,
-} from '@nestjs/common';
 import type { Request } from 'express';
-import { AdminService } from './admin.service';
-import { CreateAdminDto } from './dto/create-admin.dto';
-import { UpdateAdminDto } from './dto/update-admin.dto';
+import { Controller, Get, Req, UnauthorizedException } from '@nestjs/common';
+
 import { HTTP_RESPONSE } from '@/common/types';
+import { AdminService } from '@/admin/admin.service';
+import { Roles } from '@/common/decorators/roles.decorator';
+import { Role } from '@/common/enums/role.enum';
+import { AdminResponseDto } from '@/admin/dto/response/admin-response.dto';
+import { ApiResponseWithType } from '@/common/decorators/api-response.decorator';
 
 @Controller('admin')
 export class AdminController {
-  constructor(private readonly adminService: AdminService) {}
-
-  @Post()
-  create(@Body() createAdminDto: CreateAdminDto) {
-    return this.adminService.create(createAdminDto);
-  }
-
-  @Get()
-  findAll() {
-    return this.adminService.findAll();
-  }
+  constructor(private readonly _adminService: AdminService) {}
 
   @Get('/me')
+  @Roles(Role.ADMIN)
+  @ApiResponseWithType({}, AdminResponseDto)
   async getAdmin(@Req() req: Request): Promise<HTTP_RESPONSE> {
     const userId = req.user && req.user['sub'];
 
@@ -37,27 +22,12 @@ export class AdminController {
       throw new UnauthorizedException('User not authenticated');
     }
 
-    const admin = await this.adminService.findAdmin(userId);
+    const admin = await this._adminService.findById(userId);
 
     return {
       message: 'Admin fetched successfully',
-      success: true,
       data: admin,
+      success: true,
     };
-  }
-
-  @Get(':id')
-  findOne(@Param('id') id: string) {
-    return this.adminService.findOne(+id);
-  }
-
-  @Patch(':id')
-  update(@Param('id') id: string, @Body() updateAdminDto: UpdateAdminDto) {
-    return this.adminService.update(+id, updateAdminDto);
-  }
-
-  @Delete(':id')
-  remove(@Param('id') id: string) {
-    return this.adminService.remove(+id);
   }
 }

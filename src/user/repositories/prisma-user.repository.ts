@@ -1,14 +1,22 @@
+import { Inject } from '@nestjs/common';
+
+import { PrismaClient, User as PrismaUser } from '@prisma/client';
+import { User as UserEntity } from '@/user/entities/user.entity';
 import { IUserRepository } from '@/user/repositories/interfaces/user.repository';
-import { PrismaClient } from '@/common/prisma/prisma-client';
-import type { User as PrismaUser } from '@prisma/client';
 import { User } from '@/user/entities/user.entity';
 
 export class PrismaUserRepository implements IUserRepository {
-  constructor(private readonly _prisma: PrismaClient) {}
+  constructor(@Inject('PrismaClient') private readonly _prisma: PrismaClient) {}
 
-  create(data: PrismaUser): Promise<User> {
+  create(data: Partial<PrismaUser>): Promise<User> {
     return this._prisma.user.create({
-      data: data,
+      data: {
+        name: data.name,
+        email: data.email,
+        phone: data.phone,
+        dob: data.dob,
+        password: data.password,
+      },
     });
   }
 
@@ -22,7 +30,22 @@ export class PrismaUserRepository implements IUserRepository {
     });
   }
 
-  update(id: string, data: PrismaUser): Promise<User> {
+  findByEmail(email: string): Promise<User | null> {
+    return this._prisma.user.findUnique({
+      where: { email },
+    });
+  }
+
+  findByPhone(phone: string): Promise<User | null> {
+    return this._prisma.user.findUnique({
+      where: { phone },
+    });
+  }
+
+  update(
+    id: string,
+    data: Partial<Omit<UserEntity, 'id' | 'updatedAt' | 'createdAt'>>,
+  ): Promise<User> {
     return this._prisma.user.update({
       where: { id },
       data: data,

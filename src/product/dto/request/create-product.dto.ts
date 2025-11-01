@@ -46,7 +46,7 @@ export class CreateProductDto {
     example: 29.99,
     description: 'Actual price of the product',
   })
-  actualPrice: number;
+  price: number;
 
   @ValidateNested({ each: true })
   @Type(() => VariantDto)
@@ -63,13 +63,6 @@ export class CreateProductDto {
   })
   variants: VariantDto[];
 
-  @IsNumber({}, { message: 'Discount price must be a number' })
-  @ApiProperty({
-    example: 24.99,
-    description: 'Discounted price of the product',
-  })
-  discountPrice: number;
-
   @IsNumber({}, { message: 'Discount percent must be a number' })
   @ApiProperty({
     example: 20,
@@ -77,12 +70,12 @@ export class CreateProductDto {
   })
   discountPercent: number;
 
-  @IsNumber({}, { message: 'Category ID must be a number' })
+  @IsString({ message: 'Category ID must be a number' })
   @ApiProperty({
-    example: 1,
+    example: 'cat134',
     description: 'ID of the category the product belongs to',
   })
-  categoryId: number;
+  categoryId: string;
 
   @IsEnum(['active', 'inactive'], {
     message: 'Status must be either active or inactive',

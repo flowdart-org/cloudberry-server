@@ -1,5 +1,5 @@
-import { Injectable } from '@nestjs/common';
 import jwt from 'jsonwebtoken';
+import { Injectable } from '@nestjs/common';
 import { JWTPayload } from '@/common/types';
 import { ConfigService } from '@nestjs/config';
 

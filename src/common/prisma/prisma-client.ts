@@ -12,10 +12,4 @@ export class PrismaClient
   async onModuleDestroy() {
     await this.$disconnect();
   }
-
-  // async runTransaction<T>(
-  //     fn: (prisma: Omit<PrismaClient, ITXClientDenyList>) => Promise<T>,
-  // ): Promise<T> {
-  //     return this.$transaction(async (tx) => fn(tx));
-  // }
 }

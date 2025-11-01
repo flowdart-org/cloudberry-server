@@ -1,26 +1,66 @@
-import { Injectable } from '@nestjs/common';
-import { CreateCategoryDto } from './dto/create-category.dto';
-import { UpdateCategoryDto } from './dto/update-category.dto';
+import { Inject, Injectable, NotFoundException } from '@nestjs/common';
+
+import { MediaService } from '@/media/media.service';
+import { Category } from '@/product/category/entities/category.entity';
+import { CreateCategoryDto } from '@/product/category/dto/create-category.dto';
+import { UpdateCategoryDto } from '@/product/category/dto/update-category.dto';
+import { CategoryResponseDto } from '@/product/category/dto/response/category-response.dto';
+import type { ICategoryRepository } from '@/product/category/repositories/interfaces/category.repository';
 
 @Injectable()
 export class CategoryService {
-  create(createCatagoryDto: CreateCategoryDto) {
-    return 'This action adds a new category';
+  constructor(
+    @Inject('CategoryRepository')
+    private readonly _categoryRepository: ICategoryRepository,
+    private readonly _mediaService: MediaService,
+  ) {}
+  create(dto: CreateCategoryDto): Promise<Category> {
+    return this._categoryRepository.create(dto);
   }
 
-  findAll() {
-    return `This action returns all category`;
+  async findAll(): Promise<CategoryResponseDto[]> {
+    const data = await this._categoryRepository.findAll();
+    return data.length
+      ? data.map(
+          (d) =>
+            new CategoryResponseDto(
+              d,
+              0,
+              this._mediaService.getCategoryReadUrl(d.id),
+            ),
+        )
+      : [];
   }
 
-  findOne(id: number) {
-    return `This action returns a #${id} category`;
+  async findOne(id: string): Promise<CategoryResponseDto> {
+    const doc = await this._categoryRepository.findById(id);
+
+    if (!doc) throw new NotFoundException('Category not found');
+
+    return new CategoryResponseDto(
+      doc,
+      0,
+      this._mediaService.getCategoryReadUrl(doc.id),
+    );
   }
 
-  update(id: number, updateCatagoryDto: UpdateCategoryDto) {
-    return `This action updates a #${id} category`;
-  }
+  async update(
+    id: string,
+    updateCategoryDto: UpdateCategoryDto,
+  ): Promise<CategoryResponseDto> {
+    const existingCategory = await this._categoryRepository.findById(id);
 
-  remove(id: number) {
-    return `This action removes a #${id} category`;
+    if (!existingCategory) throw new NotFoundException('Category not found');
+
+    const updatedCategory = await this._categoryRepository.update(id, {
+      ...existingCategory,
+      ...updateCategoryDto,
+    });
+
+    return new CategoryResponseDto(
+      updatedCategory,
+      0,
+      this._mediaService.getCategoryReadUrl(updatedCategory.id),
+    );
   }
 }
