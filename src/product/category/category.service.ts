@@ -1,7 +1,6 @@
 import { Inject, Injectable, NotFoundException } from '@nestjs/common';
 
 import { MediaService } from '@/media/media.service';
-import { Category } from '@/product/category/entities/category.entity';
 import { CreateCategoryDto } from '@/product/category/dto/create-category.dto';
 import { UpdateCategoryDto } from '@/product/category/dto/update-category.dto';
 import { CategoryResponseDto } from '@/product/category/dto/response/category-response.dto';
@@ -14,11 +13,31 @@ export class CategoryService {
     private readonly _categoryRepository: ICategoryRepository,
     private readonly _mediaService: MediaService,
   ) {}
-  create(dto: CreateCategoryDto): Promise<Category> {
-    return this._categoryRepository.create(dto);
+  async create(dto: CreateCategoryDto): Promise<CategoryResponseDto> {
+    const doc = await this._categoryRepository.create(dto);
+
+    return new CategoryResponseDto(
+      doc,
+      0,
+      this._mediaService.getCategoryReadUrl(doc.id),
+    );
   }
 
   async findAll(): Promise<CategoryResponseDto[]> {
+    const data = await this._categoryRepository.findAll();
+    return data.length
+      ? data.map(
+          (d) =>
+            new CategoryResponseDto(
+              d,
+              0,
+              this._mediaService.getCategoryReadUrl(d.id),
+            ),
+        )
+      : [];
+  }
+
+  async findAllActive(): Promise<CategoryResponseDto[]> {
     const data = await this._categoryRepository.findAll();
     return data.length
       ? data.map(

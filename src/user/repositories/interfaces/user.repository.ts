@@ -1,10 +1,6 @@
 import { User as UserEntity } from '@/user/entities/user.entity';
 import { User as PrismaUser } from '@/user/entities/user.entity';
 
-export type CreateUserInput =
-  | { email: string; phone?: undefined }
-  | { phone: string; email?: undefined };
-
 export interface IUserRepository {
   create(data: {
     email: string | undefined;
@@ -18,5 +14,4 @@ export interface IUserRepository {
     id: string,
     data: Partial<Omit<PrismaUser, 'id' | 'updatedAt' | 'createdAt'>>,
   ): Promise<UserEntity | null>;
-  delete(id: string): Promise<void>;
 }

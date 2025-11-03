@@ -37,6 +37,19 @@ export class UserResponseDto {
   public dob?: Date;
 
   @ApiProperty({
+    example: 'male',
+    description: 'Gender of the user',
+  })
+  @ApiPropertyOptional()
+  public gender?: 'male' | 'female' | 'other';
+
+  @ApiProperty({
+    example: 'active',
+    description: 'Current status of the user account',
+  })
+  public status: string;
+
+  @ApiProperty({
     example: '2024-01-01T00:00:00.000Z',
     description: 'Account creation timestamp',
   })
@@ -54,6 +67,8 @@ export class UserResponseDto {
     this.email = entity.email || undefined;
     this.phone = entity.phone || undefined;
     this.dob = entity.dob || undefined;
+    this.gender = entity.gender || undefined;
+    this.status = entity.status;
     this.createdAt = entity.createdAt;
     this.updatedAt = entity.updatedAt;
   }

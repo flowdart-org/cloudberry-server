@@ -12,7 +12,11 @@ import { ProductRepository } from '@/product/repositories/interfaces/product.rep
 
 @Injectable()
 export class PrismaProductRepository implements ProductRepository {
-  constructor(@Inject('PrismaClient') private readonly _prisma: PrismaClient) {}
+  constructor(@Inject('PrismaClient') private readonly _prisma: PrismaClient) {
+    (async () => {
+      console.log('product', await this._prisma.product.findMany());
+    })();
+  }
 
   private readonly _include = {
     category: true,
@@ -26,6 +30,7 @@ export class PrismaProductRepository implements ProductRepository {
     if (typeof data.variants !== 'object' || !Array.isArray(data.variants)) {
       throw new Error('Variants must be an array or a single object');
     }
+
     const doc = (await this._prisma.product.create({
       data: {
         ...ProductMapper.toPersistence({ ...data, variants: data.variants }),
@@ -33,6 +38,7 @@ export class PrismaProductRepository implements ProductRepository {
       },
       include: this._include,
     })) as PrismaProduct & { category: PrismaCategory };
+
     return ProductMapper.toEntity(doc);
   }
 

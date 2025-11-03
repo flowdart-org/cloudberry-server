@@ -1,15 +1,16 @@
 import { Inject } from '@nestjs/common';
 
-import { PrismaClient, User as PrismaUser } from '@prisma/client';
-import { User as UserEntity } from '@/user/entities/user.entity';
-import { IUserRepository } from '@/user/repositories/interfaces/user.repository';
 import { User } from '@/user/entities/user.entity';
+import { User as UserEntity } from '@/user/entities/user.entity';
+import { PrismaClient, User as PrismaUser } from '@prisma/client';
+import { IUserRepository } from '@/user/repositories/interfaces/user.repository';
+import { UserMapper } from '@/user/mappers/user.mapper';
 
 export class PrismaUserRepository implements IUserRepository {
   constructor(@Inject('PrismaClient') private readonly _prisma: PrismaClient) {}
 
-  create(data: Partial<PrismaUser>): Promise<User> {
-    return this._prisma.user.create({
+  async create(data: Partial<PrismaUser>): Promise<User> {
+    const doc = await this._prisma.user.create({
       data: {
         name: data.name,
         email: data.email,
@@ -18,43 +19,43 @@ export class PrismaUserRepository implements IUserRepository {
         password: data.password,
       },
     });
+    return UserMapper.toEntity(doc);
   }
 
-  findAll(): Promise<User[]> {
-    return this._prisma.user.findMany();
+  async findAll(): Promise<User[]> {
+    const docs = await this._prisma.user.findMany();
+    return docs.length ? docs.map(UserMapper.toEntity) : [];
   }
 
-  findById(id: string): Promise<User | null> {
-    return this._prisma.user.findUnique({
+  async findById(id: string): Promise<User | null> {
+    const doc = await this._prisma.user.findUnique({
       where: { id },
     });
+    return doc ? UserMapper.toEntity(doc) : null;
   }
 
-  findByEmail(email: string): Promise<User | null> {
-    return this._prisma.user.findUnique({
+  async findByEmail(email: string): Promise<User | null> {
+    const doc = await this._prisma.user.findUnique({
       where: { email },
     });
+    return doc ? UserMapper.toEntity(doc) : null;
   }
 
-  findByPhone(phone: string): Promise<User | null> {
-    return this._prisma.user.findUnique({
+  async findByPhone(phone: string): Promise<User | null> {
+    const doc = await this._prisma.user.findUnique({
       where: { phone },
     });
+    return doc ? UserMapper.toEntity(doc) : null;
   }
 
-  update(
+  async update(
     id: string,
     data: Partial<Omit<UserEntity, 'id' | 'updatedAt' | 'createdAt'>>,
-  ): Promise<User> {
-    return this._prisma.user.update({
+  ): Promise<User | null> {
+    const doc = await this._prisma.user.update({
       where: { id },
       data: data,
     });
-  }
-
-  async delete(id: string): Promise<void> {
-    await this._prisma.user.delete({
-      where: { id },
-    });
+    return doc ? UserMapper.toEntity(doc) : null;
   }
 }

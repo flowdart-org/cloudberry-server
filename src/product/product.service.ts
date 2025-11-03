@@ -14,19 +14,22 @@ export class ProductService {
     private readonly _categoryService: CategoryService,
   ) {}
 
-  async create(dto: CreateProductDto) {
+  async create(dto: CreateProductDto): Promise<ProductResponseDto> {
     const category = await this._categoryService.findOne(dto.categoryId);
     if (!category) throw new BadRequestException('Category not found');
 
-    return this._productRepository.create({
+    const doc = await this._productRepository.create({
       ...dto,
       category,
       discountPercentage: dto.discountPercent || 0,
     });
+
+    return new ProductResponseDto(doc, category, []);
   }
 
-  async findAll() {
+  async findAll(): Promise<ProductResponseDto[]> {
     const docs = await this._productRepository.findAll();
+
     return docs.length
       ? Promise.all(
           docs.map(async (p) => {
@@ -37,14 +40,20 @@ export class ProductService {
       : [];
   }
 
-  findOne(id: string) {
-    return `This action returns a #${id} product`;
+  async findOne(id: string): Promise<ProductResponseDto> {
+    const doc = await this._productRepository.findById(id);
+
+    if (!doc) throw new BadRequestException('Product not found');
+
+    return new ProductResponseDto(doc, doc.category, []);
   }
 
-  update(id: string, dto: UpdateProductDto) {
-    // return this._productRepository.update(id, {
-    //   ...dto,
-    //   variants: dto.variants ? dto.variants : [],
-    // });
-  }
+  // async update(id: string, dto: UpdateProductDto): Promise<ProductResponseDto> {
+  //   const doc = await this._productRepository.update(id, {
+  //     ...dto,
+  //     variants: dto.variants ? dto.variants : [],
+  //   });
+  //
+  //   return new ProductResponseDto(doc, doc.category, doc.variants);
+  // }
 }

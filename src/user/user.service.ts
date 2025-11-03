@@ -1,8 +1,11 @@
-import { Inject, Injectable } from '@nestjs/common';
-import { CreateUserDto } from './dto/create-user.dto';
-import { UpdateUserDto } from './dto/update-user.dto';
-import type { IUserRepository } from '@/user/repositories/interfaces/user.repository';
+import { BadRequestException, Inject, Injectable } from '@nestjs/common';
+
 import { User } from '@/user/entities/user.entity';
+import { CreateUserDto } from '@/user/dto/create-user.dto';
+import { UpdateUserDto } from '@/user/dto/update-user.dto';
+import { UserResponseDto } from '@/user/dto/response/user-response.dto';
+import { UpdateStatusUserDto } from '@/user/dto/update-status-user.dto';
+import type { IUserRepository } from '@/user/repositories/interfaces/user.repository';
 
 @Injectable()
 export class UserService {
@@ -10,7 +13,7 @@ export class UserService {
     @Inject('UserRepository') private readonly _userRepository: IUserRepository,
   ) {}
 
-  async create(createUserDto: CreateUserDto) {
+  async create(createUserDto: CreateUserDto): Promise<User> {
     const { email, phone } = createUserDto;
 
     if (!email && !phone) {
@@ -23,7 +26,7 @@ export class UserService {
     });
   }
 
-  findAll(): Promise<User[]> {
+  async findAll(): Promise<User[]> {
     return this._userRepository.findAll();
   }
 
@@ -39,7 +42,28 @@ export class UserService {
     return this._userRepository.findByPhone(phone);
   }
 
-  update(id: string, updateUserDto: UpdateUserDto) {
-    return this._userRepository.update(id, updateUserDto);
+  async update(id: string, dto: UpdateUserDto): Promise<UserResponseDto> {
+    const doc = await this._userRepository.update(id, dto);
+
+    if (!doc)
+      throw new BadRequestException('User update failed. User not found');
+
+    return new UserResponseDto(doc);
+  }
+
+  async updateStatus(
+    id: string,
+    dto: UpdateStatusUserDto,
+  ): Promise<UserResponseDto> {
+    const doc = await this._userRepository.update(id, {
+      status: dto.status,
+    });
+
+    if (!doc)
+      throw new BadRequestException(
+        'User status update failed. User not found',
+      );
+
+    return new UserResponseDto(doc);
   }
 }

@@ -16,7 +16,7 @@ export class AdminController {
   @Roles(Role.ADMIN)
   @ApiResponseWithType({}, AdminResponseDto)
   async getAdmin(@Req() req: Request): Promise<HTTP_RESPONSE> {
-    const userId = req.user && req.user['sub'];
+    const userId = req.user['id'];
 
     if (!userId) {
       throw new UnauthorizedException('User not authenticated');

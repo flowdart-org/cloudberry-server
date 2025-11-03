@@ -17,3 +17,8 @@ export interface JWTPayload {
   sub: string;
   role: 'user' | 'admin';
 }
+
+export interface RequestUser {
+  id: string;
+  role: 'user' | 'admin';
+}

@@ -2,13 +2,15 @@ import { User as PrismaUser } from '@prisma/client';
 import { User as UserEntity } from '@/user/entities/user.entity';
 
 export const UserMapper = {
-  toEntity(prismaUser: PrismaUser): UserEntity {
+  toEntity(this: void, prismaUser: PrismaUser): UserEntity {
     return new UserEntity(
       prismaUser.id,
       prismaUser.name,
       prismaUser.email,
       prismaUser.phone,
       prismaUser.dob,
+      prismaUser.gender,
+      prismaUser.status,
       prismaUser.password,
       prismaUser.createdAt,
       prismaUser.updatedAt,
@@ -22,7 +24,9 @@ export const UserMapper = {
       name: user.name,
       email: user.email,
       phone: user.phone,
+      gender: user.gender,
       dob: user.dob,
+      status: user.status,
       password: user.password,
     };
   },

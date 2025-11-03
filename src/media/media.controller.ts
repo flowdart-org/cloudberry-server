@@ -23,9 +23,9 @@ export class MediaController {
     };
   }
 
-  @Get('/media/upload/product/:productId')
+  @Get('/upload/product/:productId')
   @Roles(Role.ADMIN)
-  getPublicUploadUrl(
+  getProductUploadUrl(
     @Param('productId') productId: string,
     @Query('fileName') fileName: string,
     @Query('mimeType') mimeType: string,

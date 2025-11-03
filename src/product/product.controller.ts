@@ -47,10 +47,19 @@ export class ProductController {
     return this.productService.findOne(id);
   }
 
-  @Patch(':id')
-  @Roles(Role.ADMIN)
-  @ApiResponseWithType({}, ProductResponseDto)
-  update(@Param('id') id: string, @Body() updateProductDto: UpdateProductDto) {
-    return this.productService.update(id, updateProductDto);
-  }
+  // @Patch(':id')
+  // @Roles(Role.ADMIN)
+  // @ApiResponseWithType({}, ProductResponseDto)
+  // async update(
+  //   @Param('id') id: string,
+  //   @Body() updateProductDto: UpdateProductDto,
+  // ): Promise<HTTP_RESPONSE<ProductResponseDto>> {
+  //   const data = await this.productService.update(id, updateProductDto);
+  //
+  //   return {
+  //     success: true,
+  //     message: 'Product updated successfully',
+  //     data,
+  //   };
+  // }
 }

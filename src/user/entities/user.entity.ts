@@ -5,6 +5,8 @@ export class User {
     public email: string | null,
     public phone: string | null,
     public dob: Date | null,
+    public gender: 'male' | 'female' | 'other' | null,
+    public status: 'active' | 'suspended',
     public password: string | null,
     public createdAt: Date,
     public updatedAt: Date,

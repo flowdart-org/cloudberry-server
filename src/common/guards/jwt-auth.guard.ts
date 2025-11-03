@@ -17,10 +17,11 @@ export class JwtAuthGuard implements CanActivate {
   ) {}
 
   canActivate(context: ExecutionContext): boolean {
-    const isPublic = this.reflector.getAllAndOverride<boolean>(IS_PUBLIC_KEY, [
-      context.getHandler(),
-      context.getClass(),
-    ]);
+    const isPublic =
+      this.reflector.getAllAndOverride<boolean>(IS_PUBLIC_KEY, [
+        context.getHandler(),
+        context.getClass(),
+      ]) || false;
 
     if (isPublic) return true;
 
@@ -32,7 +33,12 @@ export class JwtAuthGuard implements CanActivate {
     }
 
     try {
-      request.user = this._jwtService.verifyAccessToken(accessToken);
+      const payload = this._jwtService.verifyAccessToken(accessToken);
+      request.user = {
+        id: payload.sub,
+        role: payload.role,
+      };
+
       return true;
     } catch {
       throw new UnauthorizedException('Invalid or expired token');

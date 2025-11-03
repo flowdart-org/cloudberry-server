@@ -10,8 +10,8 @@ import Joi from 'joi';
       envFilePath: '.env',
       cache: true,
       validationSchema: Joi.object({
-        PORT: Joi.number().default(4000),
         NODE_ENV: Joi.string().default('development'),
+        PORT: Joi.number().default(4000),
         DATABASE_URL: Joi.string().required(),
         REDIS_URL: Joi.string().required(),
         CORS_ORIGIN: Joi.string().default('http://localhost:3000'),

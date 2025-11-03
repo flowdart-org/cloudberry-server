@@ -7,7 +7,18 @@ import { Inject } from '@nestjs/common';
 import { PrismaClient } from '@/common/prisma/prisma-client';
 
 export class PrismaAdminRepository implements IAdminRepository {
-  constructor(@Inject('PrismaClient') private readonly prisma: PrismaClient) {}
+  constructor(@Inject('PrismaClient') private readonly prisma: PrismaClient) {
+    // (async () => {
+    //   await this.prisma.admin.create({
+    //     data: {
+    //       name: 'Admin',
+    //       email: 'admin@gmail.com',
+    //       password: 'password',
+    //     },
+    //   });
+    //   console.log(await this.prisma.admin.findMany());
+    // })();
+  }
 
   create(
     data: Omit<PrismaAdmin, 'id' | 'createdAt' | 'updatedAt'>,

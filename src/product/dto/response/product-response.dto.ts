@@ -89,7 +89,7 @@ export class ProductResponseDto {
   })
   public readonly updatedAt: Date;
 
-  constructor(entity: Product, category: Category, images: string[]) {
+  constructor(entity: Product, category: Category, images: string[] = []) {
     this.id = entity.id;
     this.name = entity.name;
     this.description = entity.description;
