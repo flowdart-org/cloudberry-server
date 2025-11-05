@@ -21,7 +21,8 @@ export class ProductService {
     const doc = await this._productRepository.create({
       ...dto,
       category,
-      discountPercentage: dto.discountPercent || 0,
+      discountPercent: dto.discountPercent || 0,
+      variants: [],
     });
 
     return new ProductResponseDto(doc, category, []);
@@ -29,6 +30,7 @@ export class ProductService {
 
   async findAll(): Promise<ProductResponseDto[]> {
     const docs = await this._productRepository.findAll();
+    console.log(docs);
 
     return docs.length
       ? Promise.all(
@@ -48,12 +50,12 @@ export class ProductService {
     return new ProductResponseDto(doc, doc.category, []);
   }
 
-  // async update(id: string, dto: UpdateProductDto): Promise<ProductResponseDto> {
-  //   const doc = await this._productRepository.update(id, {
-  //     ...dto,
-  //     variants: dto.variants ? dto.variants : [],
-  //   });
-  //
-  //   return new ProductResponseDto(doc, doc.category, doc.variants);
-  // }
+  async update(id: string, dto: UpdateProductDto): Promise<ProductResponseDto> {
+    const doc = await this._productRepository.update(id, {
+      ...dto,
+      variants: [],
+    });
+
+    return new ProductResponseDto(doc, doc.category, []);
+  }
 }

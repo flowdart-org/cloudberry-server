@@ -57,7 +57,7 @@ export class ProductResponseDto {
     ],
     description: 'Array of product variants with size and stock information',
   })
-  public readonly variants: { size: string; stock: number }[];
+  public readonly variants: { id: string; size: string; stock: number }[];
 
   @ApiProperty({
     example: '123e4567-e89b-12d3-a456-426614174000',
@@ -78,6 +78,12 @@ export class ProductResponseDto {
   public readonly category: Category;
 
   @ApiProperty({
+    example: '123e4567-e89b-12d3-a456-426614174000',
+    description: 'Identifier for the category the product belongs to',
+  })
+  public readonly status: 'active' | 'inactive';
+
+  @ApiProperty({
     example: new Date().toISOString(),
     description: 'Timestamp when the product was created',
   })
@@ -95,11 +101,12 @@ export class ProductResponseDto {
     this.description = entity.description;
     this.price = entity.price;
     this.discountPrice = 0;
-    this.discountPercentage = entity.discountPercentage || undefined;
+    this.discountPercentage = entity.discountPercent || undefined;
     this.images = images;
     this.variants = entity.variants;
     this.createdAt = entity.createdAt;
     this.updatedAt = entity.updatedAt;
+    this.status = entity.status;
     if (category) {
       this.category = {
         ...entity.category,

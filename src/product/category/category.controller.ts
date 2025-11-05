@@ -23,9 +23,9 @@ export class CategoryController {
     const data = await this._categoryService.create(createCategoryDto);
 
     return {
-      data,
       success: true,
       message: 'Category created successfully',
+      data,
     };
   }
 
@@ -36,9 +36,9 @@ export class CategoryController {
     const data = await this._categoryService.findAllActive();
 
     return {
-      data,
       success: true,
       message: 'Categories retrieved successfully',
+      data,
     };
   }
 
@@ -49,9 +49,9 @@ export class CategoryController {
     const data = await this._categoryService.findAllActive();
 
     return {
-      data,
       success: true,
       message: 'Categories retrieved successfully',
+      data,
     };
   }
 
@@ -64,9 +64,9 @@ export class CategoryController {
     const data = await this._categoryService.findOne(id);
 
     return {
-      data,
       success: true,
       message: 'Category retrieved successfully',
+      data,
     };
   }
 
@@ -80,9 +80,9 @@ export class CategoryController {
     const data = await this._categoryService.update(id, updateCategoryDto);
 
     return {
-      data,
       success: true,
       message: 'Category updated successfully',
+      data,
     };
   }
 }

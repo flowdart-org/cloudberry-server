@@ -4,10 +4,11 @@ import { Role } from '@/common/enums/role.enum';
 import type { HTTP_RESPONSE } from '@/common/types';
 import { ProductService } from '@/product/product.service';
 import { Roles } from '@/common/decorators/roles.decorator';
+import { Public } from '@/common/decorators/public.decorator';
 import { CreateProductDto } from '@/product/dto/request/create-product.dto';
 import { UpdateProductDto } from '@/product/dto/request/update-product.dto';
-import { ProductResponseDto } from '@/product/dto/response/product-response.dto';
 import { ApiResponseWithType } from '@/common/decorators/api-response.decorator';
+import { ProductResponseDto } from '@/product/dto/response/product-response.dto';
 
 @Controller('product')
 export class ProductController {
@@ -21,6 +22,7 @@ export class ProductController {
   }
 
   @Get('feed')
+  @Public()
   @Roles(Role.USER)
   @ApiResponseWithType({ isArray: true }, ProductResponseDto)
   findFeed() {
@@ -47,19 +49,19 @@ export class ProductController {
     return this.productService.findOne(id);
   }
 
-  // @Patch(':id')
-  // @Roles(Role.ADMIN)
-  // @ApiResponseWithType({}, ProductResponseDto)
-  // async update(
-  //   @Param('id') id: string,
-  //   @Body() updateProductDto: UpdateProductDto,
-  // ): Promise<HTTP_RESPONSE<ProductResponseDto>> {
-  //   const data = await this.productService.update(id, updateProductDto);
-  //
-  //   return {
-  //     success: true,
-  //     message: 'Product updated successfully',
-  //     data,
-  //   };
-  // }
+  @Patch(':id')
+  @Roles(Role.ADMIN)
+  @ApiResponseWithType({}, ProductResponseDto)
+  async update(
+    @Param('id') id: string,
+    @Body() updateProductDto: UpdateProductDto,
+  ): Promise<HTTP_RESPONSE<ProductResponseDto>> {
+    const data = await this.productService.update(id, updateProductDto);
+
+    return {
+      success: true,
+      message: 'Product updated successfully',
+      data,
+    };
+  }
 }

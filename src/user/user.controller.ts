@@ -11,13 +11,13 @@ import type { Request } from 'express';
 
 import { Role } from '@/common/enums/role.enum';
 import { UserService } from '@/user/user.service';
-import type { HTTP_RESPONSE, RequestUser } from '@/common/types';
-import { UpdateUserDto } from '@/user/dto/update-user.dto';
 import { Roles } from '@/common/decorators/roles.decorator';
+import { ReqUser } from '@/common/decorators/user.decorator';
+import type { HTTP_RESPONSE, RequestUser } from '@/common/types';
 import { UserResponseDto } from '@/user/dto/response/user-response.dto';
 import { ApiResponseWithType } from '@/common/decorators/api-response.decorator';
-import { UpdateStatusUserDto } from '@/user/dto/update-status-user.dto';
-import { ReqUser } from '@/common/decorators/user.decorator';
+import { UpdateUserDto } from '@/user/dto/request/update-user.dto';
+import { UpdateStatusUserDto } from '@/user/dto/request/update-status-user.dto';
 
 @Controller('user')
 export class UserController {

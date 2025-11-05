@@ -1,14 +1,29 @@
 import {
   Product as PrismaProduct,
   Category as PrismaCategory,
+  ProductVariant as PrismaProductVariant,
   Prisma,
 } from '@prisma/client';
 import { Product } from '@/product/entities/product.entity';
 
+// interface Variant {
+//   id: string;
+//   createdAt: Date;
+//   updatedAt: Date;
+//   size: string;
+//   stock: number;
+//   productId: string;
+//   sku: string | null;
+//   isDeleted: boolean;
+// }
+
 export const ProductMapper = {
   toEntity(
     this: void,
-    doc: PrismaProduct & { category: PrismaCategory },
+    doc: PrismaProduct & {
+      category: PrismaCategory;
+      variants: PrismaProductVariant[];
+    },
   ): Product {
     return new Product(
       doc.id,
@@ -17,34 +32,56 @@ export const ProductMapper = {
       doc.price,
       doc.discountPercent,
       doc.category,
-      (doc.variants ?? []) as { size: string; stock: number }[],
+      doc.variants,
       doc.status,
       doc.createdAt,
       doc.updatedAt,
     );
   },
 
-  toPersistence(
+  toPersistenceCreate(
     entity: Omit<
       Product,
       | 'id'
       | 'createdAt'
       | 'discountPrice'
       | 'discountPercentage'
-      | 'variants'
       | 'status'
       | 'updatedAt'
-    > & {
-      variants: Prisma.JsonArray;
-    } & Partial<Pick<Product, 'discountPercentage' | 'status'>>,
-  ): Omit<PrismaProduct, 'id' | 'createdAt' | 'updatedAt'> {
+    > &
+      Pick<Product, 'discountPercent' | 'status'>,
+  ): Prisma.ProductUncheckedCreateInput {
     return {
       name: entity.name,
       description: entity.description,
       price: entity.price,
-      discountPercent: entity.discountPercentage || 0,
+      discountPercent: entity.discountPercent || 0,
       categoryId: entity.category.id,
-      variants: entity.variants,
+      status: entity.status ?? 'inactive',
+    };
+  },
+
+  toPersistenceUpdate(
+    entity: Partial<
+      Omit<
+        Product,
+        | 'id'
+        | 'createdAt'
+        | 'discountPrice'
+        | 'discountPercentage'
+        | 'variants'
+        | 'status'
+        | 'updatedAt'
+      > &
+        Pick<Product, 'discountPercent' | 'status'>
+    >,
+  ): Prisma.ProductUncheckedUpdateInput {
+    return {
+      name: entity.name,
+      description: entity.description,
+      price: entity.price,
+      discountPercent: entity.discountPercent || 0,
+      categoryId: entity.category?.id || undefined,
       status: entity.status ?? 'inactive',
     };
   },

@@ -1,6 +1,6 @@
 import { Product as ProductEntity } from '@/product/entities/product.entity';
 
-export interface ProductRepository {
+export interface VariantRepository {
   create(
     data: Omit<ProductEntity, 'id' | 'status' | 'createdAt' | 'updatedAt'>,
   ): Promise<ProductEntity>;

@@ -10,6 +10,7 @@ import { RolesGuard } from '@/common/guards/roles.guard';
 import { MediaModule } from './media/media.module';
 import { JwtAuthGuard } from '@/common/guards/jwt-auth.guard';
 import { PrismaModule } from '@/common/prisma/prisma.module';
+import { CartModule } from './cart/cart.module';
 
 @Module({
   imports: [
@@ -20,6 +21,7 @@ import { PrismaModule } from '@/common/prisma/prisma.module';
     ProductModule,
     TryOnModule,
     MediaModule,
+    CartModule,
   ],
   providers: [
     {

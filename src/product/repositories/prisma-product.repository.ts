@@ -3,6 +3,7 @@ import {
   Prisma,
   Product as PrismaProduct,
   Category as PrismaCategory,
+  ProductVariant as PrismaProductVariant,
 } from '@prisma/client';
 
 import { PrismaClient } from '@/common/prisma/prisma-client';
@@ -12,32 +13,29 @@ import { ProductRepository } from '@/product/repositories/interfaces/product.rep
 
 @Injectable()
 export class PrismaProductRepository implements ProductRepository {
-  constructor(@Inject('PrismaClient') private readonly _prisma: PrismaClient) {
-    (async () => {
-      console.log('product', await this._prisma.product.findMany());
-    })();
-  }
+  constructor(@Inject('PrismaClient') private readonly _prisma: PrismaClient) {}
 
   private readonly _include = {
     category: true,
+    variants: true,
   } satisfies Prisma.ProductInclude;
 
   async create(
-    data: Omit<ProductEntity, 'id' | 'status' | 'createdAt' | 'updatedAt'> & {
+    data: Omit<ProductEntity, 'id' | 'createdAt' | 'updatedAt'> & {
       category: PrismaCategory;
     } & Partial<Pick<PrismaProduct, 'status'>>,
   ): Promise<ProductEntity> {
-    if (typeof data.variants !== 'object' || !Array.isArray(data.variants)) {
-      throw new Error('Variants must be an array or a single object');
-    }
+    const persistenceData = ProductMapper.toPersistenceCreate(data);
+
+    if (!persistenceData.categoryId) throw new Error('Category ID is required');
 
     const doc = (await this._prisma.product.create({
-      data: {
-        ...ProductMapper.toPersistence({ ...data, variants: data.variants }),
-        variants: data.variants,
-      },
+      data: { ...persistenceData },
       include: this._include,
-    })) as PrismaProduct & { category: PrismaCategory };
+    })) as PrismaProduct & {
+      category: PrismaCategory;
+      variants: PrismaProductVariant[];
+    };
 
     return ProductMapper.toEntity(doc);
   }
@@ -46,6 +44,7 @@ export class PrismaProductRepository implements ProductRepository {
     const docs = await this._prisma.product.findMany({
       include: this._include,
     });
+    console.log('docs with variants', docs);
     return docs.map(ProductMapper.toEntity);
   }
 
@@ -59,14 +58,11 @@ export class PrismaProductRepository implements ProductRepository {
 
   async update(
     id: string,
-    data: Omit<ProductEntity, 'id' | 'createdAt' | 'updatedAt'>,
+    data: Partial<Omit<ProductEntity, 'id' | 'createdAt' | 'updatedAt'>>,
   ): Promise<ProductEntity> {
     const doc = await this._prisma.product.update({
       where: { id },
-      data: {
-        ...ProductMapper.toPersistence(data),
-        variants: data.variants,
-      },
+      data: ProductMapper.toPersistenceUpdate(data),
       include: this._include,
     });
     return ProductMapper.toEntity(doc);

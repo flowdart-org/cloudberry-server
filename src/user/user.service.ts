@@ -1,10 +1,10 @@
 import { BadRequestException, Inject, Injectable } from '@nestjs/common';
 
 import { User } from '@/user/entities/user.entity';
-import { CreateUserDto } from '@/user/dto/create-user.dto';
-import { UpdateUserDto } from '@/user/dto/update-user.dto';
+import { UpdateUserDto } from '@/user/dto/request/update-user.dto';
+import { CreateUserDto } from '@/user/dto/request/create-user.dto';
 import { UserResponseDto } from '@/user/dto/response/user-response.dto';
-import { UpdateStatusUserDto } from '@/user/dto/update-status-user.dto';
+import { UpdateStatusUserDto } from '@/user/dto/request/update-status-user.dto';
 import type { IUserRepository } from '@/user/repositories/interfaces/user.repository';
 
 @Injectable()

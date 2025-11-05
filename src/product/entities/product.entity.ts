@@ -1,4 +1,5 @@
 import { Category } from '@/product/category/entities/category.entity';
+import { ProductVariant } from '@/product/variant/entities/product-variant.entity';
 
 export class Product {
   constructor(
@@ -6,9 +7,9 @@ export class Product {
     public readonly name: string,
     public readonly description: string,
     public readonly price: number,
-    public readonly discountPercentage: number | null,
+    public readonly discountPercent: number | null,
     public readonly category: Category,
-    public readonly variants: { size: string; stock: number }[],
+    public readonly variants: ProductVariant[],
     public readonly status: 'active' | 'inactive',
     public readonly createdAt: Date,
     public readonly updatedAt: Date,

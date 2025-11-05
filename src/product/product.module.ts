@@ -4,6 +4,7 @@ import { ProductService } from '@/product/product.service';
 import { ProductController } from '@/product/product.controller';
 import { CategoryModule } from '@/product/category/category.module';
 import { PrismaProductRepository } from '@/product/repositories/prisma-product.repository';
+import { VariantService } from './variant/variant.service';
 
 @Module({
   imports: [CategoryModule],
@@ -14,6 +15,8 @@ import { PrismaProductRepository } from '@/product/repositories/prisma-product.r
       provide: 'ProductRepository',
       useClass: PrismaProductRepository,
     },
+    VariantService,
   ],
+  exports: [ProductService],
 })
 export class ProductModule {}

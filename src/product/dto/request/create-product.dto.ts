@@ -77,13 +77,14 @@ export class CreateProductDto {
   })
   categoryId: string;
 
-  @IsEnum(['active', 'inactive'], {
-    message: 'Status must be either active or inactive',
-  })
   @ApiProperty({
     example: 'active',
     enum: ['active', 'inactive'],
     description: 'Status of the product',
+  })
+  @IsOptional()
+  @IsEnum(['active', 'inactive'], {
+    message: 'Status must be either active or inactive',
   })
   status: 'active' | 'inactive';
 
