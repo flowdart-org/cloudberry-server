@@ -8,7 +8,6 @@ export const VariantMapper = {
       doc.productId,
       doc.size || '',
       doc.stock,
-      doc.sku,
       doc.isDeleted,
       doc.createdAt,
       doc.updatedAt,
@@ -16,12 +15,12 @@ export const VariantMapper = {
   },
 
   toPersistenceCreate(
+    this: void,
     entity: Omit<ProductVariant, 'id' | 'createdAt' | 'updatedAt'>,
   ): Prisma.ProductVariantCreateInput {
     return {
       size: entity.size,
       stock: entity.stock,
-      sku: entity.sku,
       isDeleted: entity.isDeleted ?? false,
       product: { connect: { id: entity.productId } },
     };
@@ -33,7 +32,6 @@ export const VariantMapper = {
     return {
       size: entity.size,
       stock: entity.stock,
-      sku: entity.sku,
       isDeleted: entity.isDeleted,
     };
   },

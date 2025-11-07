@@ -1,4 +1,5 @@
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
+
 import { Product } from '@/product/entities/product.entity';
 import { Category } from '@/product/category/entities/category.entity';
 
@@ -39,7 +40,14 @@ export class ProductResponseDto {
     description: 'Discount percentage of the product',
   })
   @ApiPropertyOptional()
-  public readonly discountPercentage?: number;
+  public readonly discountPercent?: number;
+
+  @ApiProperty({
+    example: 'https://example.com/thumbnail.jpg',
+    description: 'Discount percentage of the product',
+  })
+  @ApiPropertyOptional()
+  public readonly thumbnail?: string;
 
   @ApiProperty({
     example: [
@@ -78,6 +86,12 @@ export class ProductResponseDto {
   public readonly category: Category;
 
   @ApiProperty({
+    example: true,
+    description: 'Whether the product supports virtual try-on',
+  })
+  tryOn: boolean;
+
+  @ApiProperty({
     example: '123e4567-e89b-12d3-a456-426614174000',
     description: 'Identifier for the category the product belongs to',
   })
@@ -95,18 +109,25 @@ export class ProductResponseDto {
   })
   public readonly updatedAt: Date;
 
-  constructor(entity: Product, category: Category, images: string[] = []) {
+  constructor(
+    entity: Product,
+    category: Category,
+    images: string[] = [],
+    thumbnail?: string,
+  ) {
     this.id = entity.id;
     this.name = entity.name;
     this.description = entity.description;
     this.price = entity.price;
     this.discountPrice = 0;
-    this.discountPercentage = entity.discountPercent || undefined;
+    this.discountPercent = entity.discountPercent || undefined;
     this.images = images;
     this.variants = entity.variants;
     this.createdAt = entity.createdAt;
     this.updatedAt = entity.updatedAt;
     this.status = entity.status;
+    this.tryOn = entity.tryOn;
+    this.thumbnail = thumbnail || images[0];
     if (category) {
       this.category = {
         ...entity.category,

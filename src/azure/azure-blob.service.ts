@@ -72,4 +72,15 @@ export class AzureBlobService {
 
     return `https://${this.accountName}.blob.core.windows.net/${this.containerName}/${blobName}?${sasToken}`;
   }
+
+  async listBlobs(prefix: string) {
+    const containerClient = this.blobServiceClient.getContainerClient(
+      this.containerName,
+    );
+    const blobs: string[] = [];
+    for await (const blob of containerClient.listBlobsFlat({ prefix })) {
+      blobs.push(blob.name);
+    }
+    return blobs;
+  }
 }

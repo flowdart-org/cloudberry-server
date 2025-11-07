@@ -25,6 +25,7 @@ export class CategoryService {
 
   async findAll(): Promise<CategoryResponseDto[]> {
     const data = await this._categoryRepository.findAll();
+
     return data.length
       ? data.map(
           (d) =>
@@ -38,7 +39,8 @@ export class CategoryService {
   }
 
   async findAllActive(): Promise<CategoryResponseDto[]> {
-    const data = await this._categoryRepository.findAll();
+    const data = await this._categoryRepository.findAllActive();
+
     return data.length
       ? data.map(
           (d) =>

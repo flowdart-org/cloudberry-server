@@ -1,7 +1,8 @@
 import { Module } from '@nestjs/common';
-import { MediaService } from './media.service';
-import { MediaController } from './media.controller';
+
 import { AzureModule } from '@/azure/azure.module';
+import { MediaService } from '@/media/media.service';
+import { MediaController } from '@/media/media.controller';
 
 @Module({
   imports: [AzureModule],

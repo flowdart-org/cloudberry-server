@@ -11,6 +11,13 @@ export const redisProvider: Provider = {
     const REDIS_URL = configService.getOrThrow<string>('REDIS_URL');
     const client = createClient({
       url: REDIS_URL,
+      socket: {
+        reconnectStrategy: (retries) => {
+          if (retries > 10) return new Error('Too many reconnect attempts');
+          console.log(`Reconnecting to Redis... attempt #${retries}`);
+          return Math.min(retries * 50, 2000);
+        },
+      },
     });
     await client.connect();
     return client;

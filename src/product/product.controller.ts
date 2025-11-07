@@ -17,16 +17,30 @@ export class ProductController {
   @Post()
   @Roles(Role.ADMIN)
   @ApiResponseWithType({}, ProductResponseDto)
-  create(@Body() createProductDto: CreateProductDto) {
-    return this.productService.create(createProductDto);
+  async create(
+    @Body() createProductDto: CreateProductDto,
+  ): Promise<HTTP_RESPONSE<ProductResponseDto>> {
+    const data = await this.productService.create(createProductDto);
+
+    return {
+      success: true,
+      message: 'Product created successfully',
+      data,
+    };
   }
 
   @Get('feed')
   @Public()
   @Roles(Role.USER)
   @ApiResponseWithType({ isArray: true }, ProductResponseDto)
-  findFeed() {
-    return this.productService.findAll();
+  async findFeed(): Promise<HTTP_RESPONSE<ProductResponseDto[]>> {
+    const data = await this.productService.findFeed();
+
+    return {
+      success: true,
+      message: 'Products fetched successfully',
+      data,
+    };
   }
 
   @Get()
@@ -45,8 +59,16 @@ export class ProductController {
   @Get(':id')
   @Roles(Role.USER, Role.ADMIN)
   @ApiResponseWithType({}, ProductResponseDto)
-  findOne(@Param('id') id: string) {
-    return this.productService.findOne(id);
+  async findOne(
+    @Param('id') id: string,
+  ): Promise<HTTP_RESPONSE<ProductResponseDto>> {
+    const data = await this.productService.findOne(id);
+
+    return {
+      message: 'Product fetched successfully',
+      success: true,
+      data,
+    };
   }
 
   @Patch(':id')

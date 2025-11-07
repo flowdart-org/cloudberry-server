@@ -21,7 +21,7 @@ export class PrismaProductRepository implements ProductRepository {
   } satisfies Prisma.ProductInclude;
 
   async create(
-    data: Omit<ProductEntity, 'id' | 'createdAt' | 'updatedAt'> & {
+    data: Omit<ProductEntity, 'id' | 'variants' | 'createdAt' | 'updatedAt'> & {
       category: PrismaCategory;
     } & Partial<Pick<PrismaProduct, 'status'>>,
   ): Promise<ProductEntity> {
@@ -42,6 +42,15 @@ export class PrismaProductRepository implements ProductRepository {
 
   async findAll(): Promise<ProductEntity[]> {
     const docs = await this._prisma.product.findMany({
+      include: this._include,
+    });
+    console.log('docs with variants', docs);
+    return docs.map(ProductMapper.toEntity);
+  }
+
+  async findAllActive(): Promise<ProductEntity[]> {
+    const docs = await this._prisma.product.findMany({
+      where: { status: 'active' },
       include: this._include,
     });
     console.log('docs with variants', docs);

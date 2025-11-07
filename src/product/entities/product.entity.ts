@@ -10,6 +10,7 @@ export class Product {
     public readonly discountPercent: number | null,
     public readonly category: Category,
     public readonly variants: ProductVariant[],
+    public readonly tryOn: boolean,
     public readonly status: 'active' | 'inactive',
     public readonly createdAt: Date,
     public readonly updatedAt: Date,

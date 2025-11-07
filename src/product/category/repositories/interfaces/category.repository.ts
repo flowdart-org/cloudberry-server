@@ -10,6 +10,8 @@ export interface ICategoryRepository {
 
   findAll(): Promise<CategoryEntity[]>;
 
+  findAllActive(): Promise<CategoryEntity[]>;
+
   update(id: string, data: Partial<PrismaCategory>): Promise<CategoryEntity>;
 
   delete(id: string): Promise<void>;

@@ -13,7 +13,6 @@ export class MediaController {
   @Roles(Role.ADMIN)
   getCategoryUploadUrl(
     @Param('categoryId') categoryId: string,
-    @Query('fileName') fileName: string,
     @Query('mimeType') mimeType: string,
   ): HTTP_RESPONSE<string> {
     return {
@@ -23,15 +22,33 @@ export class MediaController {
     };
   }
 
-  @Get('/upload/product/:productId')
+  @Get('/upload/product/:productId/thumbnail')
+  @Roles(Role.ADMIN)
+  getProductThumbnailUploadUrl(
+    @Param('productId') productId: string,
+    @Query('mimeType') mimeType: string,
+  ): HTTP_RESPONSE<string> {
+    const data = this._mediaService.getProductThumbnailUploadUrl(
+      productId,
+      mimeType,
+    );
+
+    return {
+      data,
+      message: 'Upload URL generated successfully',
+      success: true,
+    };
+  }
+
+  @Get('/upload/product/:productId/:order')
   @Roles(Role.ADMIN)
   getProductUploadUrl(
     @Param('productId') productId: string,
-    @Query('fileName') fileName: string,
+    @Param('order') order: number,
     @Query('mimeType') mimeType: string,
   ): HTTP_RESPONSE<string> {
     return {
-      data: this._mediaService.getProductUploadUrl(productId, mimeType),
+      data: this._mediaService.getProductUploadUrl(productId, order, mimeType),
       message: 'Upload URL generated successfully',
       success: true,
     };

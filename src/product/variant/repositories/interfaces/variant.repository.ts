@@ -1,18 +1,28 @@
-import { Product as ProductEntity } from '@/product/entities/product.entity';
+import { ProductVariant } from '@/product/variant/entities/product-variant.entity';
 
 export interface VariantRepository {
+  createMany(
+    data: Array<
+      Omit<ProductVariant, 'id' | 'status' | 'createdAt' | 'updatedAt'>
+    >,
+  ): Promise<ProductVariant[]>;
+
   create(
-    data: Omit<ProductEntity, 'id' | 'status' | 'createdAt' | 'updatedAt'>,
-  ): Promise<ProductEntity>;
+    data: Omit<ProductVariant, 'id' | 'status' | 'createdAt' | 'updatedAt'>,
+  ): Promise<ProductVariant>;
 
-  findById(id: string): Promise<ProductEntity | null>;
+  findById(id: string): Promise<ProductVariant | null>;
 
-  findAll(): Promise<ProductEntity[]>;
+  findManyByProductId(productId: string): Promise<ProductVariant[] | []>;
+
+  findAll(): Promise<ProductVariant[]>;
 
   update(
     id: string,
-    data: Partial<Omit<ProductEntity, 'id' | 'createdAt' | 'updatedAt'>>,
-  ): Promise<ProductEntity>;
+    data: Partial<Omit<ProductVariant, 'id' | 'createdAt' | 'updatedAt'>>,
+  ): Promise<ProductVariant>;
 
   delete(id: string): Promise<void>;
+
+  deleteByProductId(productId: string): Promise<void>;
 }

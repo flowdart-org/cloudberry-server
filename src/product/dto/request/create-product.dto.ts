@@ -10,7 +10,16 @@ import {
 import { ApiProperty } from '@nestjs/swagger';
 import { Type } from 'class-transformer';
 
-class VariantDto {
+export class VariantDto {
+  @IsOptional()
+  @IsString({ message: 'ID must be a string' })
+  @ApiProperty({
+    example: 'var123',
+    description: 'ID of the variant',
+    required: false,
+  })
+  id?: string;
+
   @IsString({ message: 'Size must be a string' })
   @ApiProperty({
     example: 'M',
@@ -48,6 +57,13 @@ export class CreateProductDto {
   })
   price: number;
 
+  @IsNumber({}, { message: 'Discount percent must be a number' })
+  @ApiProperty({
+    example: 20,
+    description: 'Discount percentage of the product',
+  })
+  discountPercent: number;
+
   @ValidateNested({ each: true })
   @Type(() => VariantDto)
   @IsArray({ message: 'Variants must be an array' })
@@ -62,13 +78,6 @@ export class CreateProductDto {
     required: false,
   })
   variants: VariantDto[];
-
-  @IsNumber({}, { message: 'Discount percent must be a number' })
-  @ApiProperty({
-    example: 20,
-    description: 'Discount percentage of the product',
-  })
-  discountPercent: number;
 
   @IsString({ message: 'Category ID must be a number' })
   @ApiProperty({

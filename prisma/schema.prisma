@@ -65,7 +65,6 @@ model ProductVariant {
   productId String
   size      String
   stock     Int
-  sku       String?
   isDeleted Boolean  @default(false)
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -80,6 +79,7 @@ model Product {
   price           Float
   discountPercent Float?
   categoryId      String
+  tryOn           Boolean       @default(false)
   status          ProductStatus @default(inactive)
   createdAt       DateTime      @default(now())
   updatedAt       DateTime      @updatedAt

@@ -19,6 +19,15 @@ export class PrismaCategoryRepository implements ICategoryRepository {
 
   async findAll(): Promise<CategoryEntity[]> {
     const docs = await this._prisma.category.findMany();
+
+    return docs.map(CategoryMapper.toEntity);
+  }
+
+  async findAllActive(): Promise<CategoryEntity[]> {
+    const docs = await this._prisma.category.findMany({
+      where: { status: 'active' },
+    });
+
     return docs.map(CategoryMapper.toEntity);
   }
 
@@ -26,6 +35,7 @@ export class PrismaCategoryRepository implements ICategoryRepository {
     const doc = await this._prisma.category.findUnique({
       where: { id },
     });
+
     return doc ? CategoryMapper.toEntity(doc) : null;
   }
 

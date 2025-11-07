@@ -33,6 +33,7 @@ export const ProductMapper = {
       doc.discountPercent,
       doc.category,
       doc.variants,
+      doc.tryOn,
       doc.status,
       doc.createdAt,
       doc.updatedAt,
@@ -43,6 +44,7 @@ export const ProductMapper = {
     entity: Omit<
       Product,
       | 'id'
+      | 'variants'
       | 'createdAt'
       | 'discountPrice'
       | 'discountPercentage'
@@ -81,6 +83,7 @@ export const ProductMapper = {
       description: entity.description,
       price: entity.price,
       discountPercent: entity.discountPercent || 0,
+      tryOn: entity.tryOn,
       categoryId: entity.category?.id || undefined,
       status: entity.status ?? 'inactive',
     };

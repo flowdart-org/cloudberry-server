@@ -46,7 +46,7 @@ export class CategoryController {
   @Roles(Role.ADMIN)
   @ApiResponseWithType({}, CategoryResponseDto)
   async findAll(): Promise<HTTP_RESPONSE<CategoryResponseDto[]>> {
-    const data = await this._categoryService.findAllActive();
+    const data = await this._categoryService.findAll();
 
     return {
       success: true,
