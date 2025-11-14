@@ -11,6 +11,8 @@ import { MediaModule } from './media/media.module';
 import { JwtAuthGuard } from '@/common/guards/jwt-auth.guard';
 import { PrismaModule } from '@/common/prisma/prisma.module';
 import { CartModule } from './cart/cart.module';
+import { PaymentModule } from './payment/payment.module';
+import { WebhookModule } from './webhook/webhook.module';
 
 @Module({
   imports: [
@@ -22,6 +24,8 @@ import { CartModule } from './cart/cart.module';
     TryOnModule,
     MediaModule,
     CartModule,
+    PaymentModule,
+    WebhookModule,
   ],
   providers: [
     {

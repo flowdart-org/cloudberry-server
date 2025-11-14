@@ -19,7 +19,7 @@ export const UserMapper = {
 
   toPersistence(
     user: UserEntity,
-  ): Omit<PrismaUser, 'id' | 'createdAt' | 'updatedAt'> {
+  ): Omit<PrismaUser, 'id' | 'cartId' | 'createdAt' | 'updatedAt'> {
     return {
       name: user.name,
       email: user.email,

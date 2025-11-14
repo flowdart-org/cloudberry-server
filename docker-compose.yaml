@@ -1,17 +1,17 @@
 services:
-  #  db:
-  #    container_name: postgresDB
-  #    image: postgres:18
-  #    environment:
-  #      POSTGRES_DB: user
-  #      POSTGRES_USER: postgres
-  #      POSTGRES_PASSWORD: postgres
-  #    ports:
-  #      - '5432:5432'
-  #    logging:
-  #      driver: 'none'
-  #    volumes:
-  #      - db-data:/var/lib/postgresql
+  db:
+    container_name: postgresDB
+    image: postgres:18
+    environment:
+      POSTGRES_DB: user
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+    ports:
+      - '5432:5432'
+    logging:
+      driver: 'none'
+    volumes:
+      - db-data:/var/lib/postgresql
 
   redis:
     container_name: redis
@@ -34,20 +34,28 @@ services:
     volumes:
       - ./:/app/
       - /app/node_modules
-      - ./.env:/app/.env
-      - ./node_modules/@prisma/client:/app/node_modules/@prisma/client
     environment:
       NODE_ENV: development
       PORT: 4000
-      DATABASE_URL: postgres://postgres:Cloudberry@0@34.93.78.52:5432/cloudberry
+      DATABASE_URL: postgres://postgres:postgres@db:5432/cloudberry
       REDIS_URL: redis://redis:6379
     env_file:
       - ./.env
     ports:
       - "4000:4000"
 
+  cloudflared:
+    image: cloudflare/cloudflared:latest
+    container_name: cloudflared
+    restart: unless-stopped
+    volumes:
+      - ./cloudflared:/etc/cloudflared
+    command: tunnel run
+    depends_on:
+      - server
+
 volumes:
   db-data:
-    name: zen-fashion-studio_db-data
+    name: cloudberry_db-data
   redis-data:
-    name: zen-fashion-studio_redis-data
+    name: cloudberry_redis-data
