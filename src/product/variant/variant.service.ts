@@ -48,6 +48,14 @@ export class VariantService {
     return results;
   }
 
+  findByProductId(productId: string) {
+    return this._variantRepository.findManyByProductId(productId);
+  }
+
+  findById(variantId: string) {
+    return this._variantRepository.findById(variantId);
+  }
+
   // async deleteByProductId(productId: string) {
   //   return this._variantRepository.deleteByProductId(productId);
   // }

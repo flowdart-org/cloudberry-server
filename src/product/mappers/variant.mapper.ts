@@ -6,7 +6,7 @@ export const VariantMapper = {
     return new ProductVariant(
       doc.id,
       doc.productId,
-      doc.size || '',
+      doc.size,
       doc.stock,
       doc.isDeleted,
       doc.createdAt,

@@ -6,9 +6,9 @@ import {
   Res,
   UnauthorizedException,
 } from '@nestjs/common';
-import { ApiOperation, ApiResponse } from '@nestjs/swagger';
-import type { HTTP_RESPONSE } from '@/common/types';
 import type { Request, Response } from 'express';
+import type { HTTP_RESPONSE } from '@/common/types';
+import { ApiOperation, ApiResponse } from '@nestjs/swagger';
 
 import {
   clearAuthCookies,

@@ -29,11 +29,11 @@ export class CategoryController {
     };
   }
 
-  @Get()
-  @Public()
+  @Get('all')
+  @Roles(Role.ADMIN)
   @ApiResponseWithType({}, CategoryResponseDto)
-  async findAllActive(): Promise<HTTP_RESPONSE<CategoryResponseDto[]>> {
-    const data = await this._categoryService.findAllActive();
+  async findAll(): Promise<HTTP_RESPONSE<CategoryResponseDto[]>> {
+    const data = await this._categoryService.findAll();
 
     return {
       success: true,
@@ -43,10 +43,10 @@ export class CategoryController {
   }
 
   @Get()
-  @Roles(Role.ADMIN)
+  @Public()
   @ApiResponseWithType({}, CategoryResponseDto)
-  async findAll(): Promise<HTTP_RESPONSE<CategoryResponseDto[]>> {
-    const data = await this._categoryService.findAll();
+  async findAllActive(): Promise<HTTP_RESPONSE<CategoryResponseDto[]>> {
+    const data = await this._categoryService.findAllActive();
 
     return {
       success: true,

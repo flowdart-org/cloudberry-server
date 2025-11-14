@@ -1,17 +1,38 @@
-import { INestApplication, ValidationPipe } from '@nestjs/common';
-import { SwaggerModule, DocumentBuilder } from '@nestjs/swagger';
-import { ConfigService } from '@nestjs/config';
+import {
+  INestApplication,
+  RawBodyRequest,
+  ValidationPipe,
+} from '@nestjs/common';
 import morgan from 'morgan';
-import cookieParser from 'cookie-parser';
+import { Request } from 'express';
 import bodyParser from 'body-parser';
-import { GlobalExceptionFilter } from '@/common/filters/http-exception.filter';
+import cookieParser from 'cookie-parser';
+import { ConfigService } from '@nestjs/config';
+import { SwaggerModule, DocumentBuilder } from '@nestjs/swagger';
 
-export function setupApp(app: INestApplication) {
+import { GlobalExceptionFilter } from '@/common/filters/http-exception.filter';
+import { NestFactory } from '@nestjs/core';
+import { AppModule } from '@/app.module';
+import { LoggerInstance } from '@/common/logger/winston-logger';
+
+export async function setupApp(): Promise<INestApplication> {
+  const app = await NestFactory.create(AppModule, {
+    logger: LoggerInstance,
+  });
+
   const configService = app.get(ConfigService);
 
   app.use(cookieParser());
 
-  app.use(bodyParser.json({ limit: '50mb' }));
+  app.use(
+    bodyParser.json({
+      limit: '50mb',
+      verify: (req: RawBodyRequest<Request>, _res, buf) => {
+        req.rawBody = buf;
+      },
+    }),
+  );
+
   app.use(bodyParser.urlencoded({ limit: '50mb', extended: true }));
 
   const origins = configService.getOrThrow<string>('CORS_ORIGIN').split(',');
@@ -57,4 +78,6 @@ export function setupApp(app: INestApplication) {
   SwaggerModule.setup('api/docs-json', app, document, {
     ui: false,
   });
+
+  return app;
 }

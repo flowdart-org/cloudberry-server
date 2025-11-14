@@ -6,7 +6,7 @@ import {
 import { Request } from 'express';
 
 export const UserId = createParamDecorator(
-  (data: unknown, ctx: ExecutionContext) => {
+  (_data: unknown, ctx: ExecutionContext) => {
     const request = ctx.switchToHttp().getRequest<Request>();
     const userId = request.user.id;
     if (!userId)
