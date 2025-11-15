@@ -8,16 +8,29 @@ import { PrismaClient } from '@/common/prisma/prisma-client';
 
 export class PrismaAdminRepository implements IAdminRepository {
   constructor(@Inject('PrismaClient') private readonly prisma: PrismaClient) {
-    // (async () => {
-    //   await this.prisma.admin.create({
-    //     data: {
-    //       name: 'Admin',
-    //       email: 'admin@gmail.com',
-    //       password: 'password',
-    //     },
-    //   });
-    //   console.log(await this.prisma.admin.findMany());
-    // })();
+    (async () => {
+      const admin = await this.prisma.admin.findUnique({
+        where: {
+          email: 'admin@gmail.com',
+        },
+      });
+
+      if (!admin) {
+        await this.prisma.admin.create({
+          data: {
+            name: 'Admin',
+            email: 'admin@gmail.com',
+            password: 'password',
+          },
+        });
+
+        console.log(
+          'admin has created',
+          '\n',
+          await this.prisma.admin.findMany(),
+        );
+      }
+    })();
   }
 
   create(
