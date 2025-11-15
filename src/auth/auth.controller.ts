@@ -57,7 +57,7 @@ export class AuthController {
 
     setAuthCookies(res, { accessToken, refreshToken });
 
-    return { success: true, message: 'OTP verified' };
+    return { success: true, message: 'OTP verified', accessToken };
   }
 
   @Public()
@@ -73,7 +73,11 @@ export class AuthController {
 
     setAuthCookies(res, { accessToken, refreshToken });
 
-    return { success: true, message: 'Admin logged in successfully' };
+    return {
+      success: true,
+      message: 'Admin logged in successfully',
+      accessToken,
+    };
   }
 
   @Public()
@@ -97,7 +101,11 @@ export class AuthController {
       refreshToken: newRefreshToken,
     });
 
-    return { success: true, message: 'Tokens refreshed successfully' };
+    return {
+      success: true,
+      message: 'Tokens refreshed successfully',
+      accessToken,
+    };
   }
 
   @Post('logout')

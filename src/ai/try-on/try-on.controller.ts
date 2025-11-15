@@ -1,11 +1,11 @@
 import { Controller, Post, Body } from '@nestjs/common';
-import { HTTP_RESPONSE } from '@/common/types';
 
-import { CreateTryOnDto } from '@/ai/try-on/dto/create-try-on.dto';
-import { TryOnResponse } from '@/ai/vertex/vertex.service';
+import { HTTP_RESPONSE } from '@/common/types';
+import { Role } from '@/common/enums/role.enum';
 import { TryOnService } from '@/ai/try-on/try-on.service';
 import { Roles } from '@/common/decorators/roles.decorator';
-import { Role } from '@/common/enums/role.enum';
+import { UserId } from '@/common/decorators/user-id.decorator';
+import { CreateTryOnDto } from '@/ai/try-on/dto/create-try-on.dto';
 
 @Controller('ai/try-on')
 export class TryOnController {
@@ -15,12 +15,16 @@ export class TryOnController {
   @Roles(Role.USER)
   async tryOn(
     @Body() createTryOnDto: CreateTryOnDto,
-  ): Promise<HTTP_RESPONSE<TryOnResponse>> {
-    await this._tryOnService.generateTryOn(createTryOnDto);
+    @UserId() userId: string,
+  ): Promise<HTTP_RESPONSE<string[]>> {
+    console.log('Received try-on request:', { userId, createTryOnDto });
+
+    const data = await this._tryOnService.generateTryOn(userId, createTryOnDto);
 
     return {
       success: true,
       message: 'Try-on operation completed successfully',
+      data,
     };
   }
 }

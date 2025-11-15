@@ -1,5 +1,6 @@
 import { Inject, Injectable } from '@nestjs/common';
 import { PrismaClient } from '@prisma/client';
+
 import { CartRepository } from '@/cart/repositories/interfaces/cart.repository';
 import { Cart } from '@/cart/entities/cart.entity';
 
@@ -41,7 +42,8 @@ export class PrismaCartRepository implements CartRepository {
       include: {
         items: {
           include: {
-            product: { include: { category: true, variants: true } },
+            product: { include: { category: true } },
+            variant: true,
           },
         },
       },

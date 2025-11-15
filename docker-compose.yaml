@@ -48,6 +48,8 @@ services:
     image: cloudflare/cloudflared:latest
     container_name: cloudflared
     restart: unless-stopped
+    logging:
+      driver: 'none'
     volumes:
       - ./cloudflared:/etc/cloudflared
     command: tunnel run

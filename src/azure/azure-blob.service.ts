@@ -6,6 +6,7 @@ import {
   BlobSASPermissions,
   generateBlobSASQueryParameters,
   SASProtocol,
+  ContainerClient,
 } from '@azure/storage-blob';
 
 @Injectable()
@@ -16,6 +17,7 @@ export class AzureBlobService {
 
   private readonly sharedKeyCredential: StorageSharedKeyCredential;
   private readonly blobServiceClient: BlobServiceClient;
+  private readonly containerClient: ContainerClient;
 
   constructor() {
     const configService = new ConfigService();
@@ -35,6 +37,10 @@ export class AzureBlobService {
     this.blobServiceClient = new BlobServiceClient(
       `https://${this.accountName}.blob.core.windows.net`,
       this.sharedKeyCredential,
+    );
+
+    this.containerClient = this.blobServiceClient.getContainerClient(
+      this.containerName,
     );
   }
 
@@ -82,5 +88,15 @@ export class AzureBlobService {
       blobs.push(blob.name);
     }
     return blobs;
+  }
+
+  async uploadBuffer(blobName: string, buffer: Buffer, mimeType: string) {
+    const blockBlob = this.containerClient.getBlockBlobClient(blobName);
+
+    await blockBlob.uploadData(buffer, {
+      blobHTTPHeaders: { blobContentType: mimeType },
+    });
+
+    return blockBlob.url;
   }
 }

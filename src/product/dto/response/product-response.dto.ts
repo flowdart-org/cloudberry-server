@@ -119,8 +119,9 @@ export class ProductResponseDto {
     this.name = entity.name;
     this.description = entity.description;
     this.price = entity.price;
-    this.discountPrice = 0;
     this.discountPercent = entity.discountPercent || undefined;
+    this.discountPrice =
+      (entity.price / 100) * (100 - (entity.discountPercent || 0));
     this.images = images;
     this.variants = entity.variants;
     this.createdAt = entity.createdAt;

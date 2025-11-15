@@ -4,6 +4,7 @@ import { Role } from '@/common/enums/role.enum';
 import type { HTTP_RESPONSE } from '@/common/types';
 import { MediaService } from '@/media/media.service';
 import { Roles } from '@/common/decorators/roles.decorator';
+import { UserId } from '@/common/decorators/user-id.decorator';
 
 @Controller('media')
 export class MediaController {
@@ -49,6 +50,19 @@ export class MediaController {
   ): HTTP_RESPONSE<string> {
     return {
       data: this._mediaService.getProductUploadUrl(productId, order, mimeType),
+      message: 'Upload URL generated successfully',
+      success: true,
+    };
+  }
+
+  @Get('/upload/user/try-on')
+  @Roles(Role.USER)
+  getUserTryOnUploadUrl(
+    @Query('mimeType') mimeType: string,
+    @UserId() userId: string,
+  ): HTTP_RESPONSE<string> {
+    return {
+      data: this._mediaService.getUserTryOnUploadUrl(userId, mimeType),
       message: 'Upload URL generated successfully',
       success: true,
     };

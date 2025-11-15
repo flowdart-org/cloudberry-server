@@ -5,7 +5,21 @@ import { CartItemRepository } from '@/cart/repositories/interfaces/cart-item.rep
 
 @Injectable()
 export class PrismaCartItemRepository implements CartItemRepository {
-  constructor(@Inject('PrismaClient') private readonly prisma: PrismaClient) {}
+  constructor(@Inject('PrismaClient') private readonly prisma: PrismaClient) {
+    // (async () => {
+    // console.log(
+    //   await this.prisma.cartItem.findMany({
+    //     include: {
+    //       product: {
+    //         include: {
+    //           category: true,
+    //         },
+    //       },
+    //     },
+    //   }),
+    // );
+    // })();
+  }
 
   async addToCart(
     cartId: string,

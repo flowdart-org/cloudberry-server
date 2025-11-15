@@ -8,11 +8,13 @@ import {
 import crypto from 'crypto';
 import type { Request } from 'express';
 import { ConfigService } from '@nestjs/config';
+import { ApiExcludeController } from '@nestjs/swagger';
 
 import { Public } from '@/common/decorators/public.decorator';
 import { RawBody } from '@/common/decorators/raw-body.decorator';
 
 @Controller('webhook/razorpay')
+@ApiExcludeController()
 export class RazorpayWebhookController {
   private readonly RAZORPAY_WEBHOOK_SECRET: string;
 

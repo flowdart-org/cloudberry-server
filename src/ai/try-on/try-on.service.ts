@@ -1,27 +1,46 @@
-import { Injectable } from '@nestjs/common';
+import axios from 'axios';
+
+import { UserService } from '@/user/user.service';
+import { ProductService } from '@/product/product.service';
+import { TryOnMediaService } from '@/media/tryon-upload.service';
+import { BadRequestException, Injectable } from '@nestjs/common';
 import { CreateTryOnDto } from '@/ai/try-on/dto/create-try-on.dto';
 import { TryOnRequest, VertexService } from '@/ai/vertex/vertex.service';
-import axios from 'axios';
 
 @Injectable()
 export class TryOnService {
-  constructor(private readonly _vertexService: VertexService) {}
+  constructor(
+    private readonly _vertexService: VertexService,
+    private readonly _productService: ProductService,
+    private readonly _userService: UserService,
+    private readonly _tryOnMediaService: TryOnMediaService,
+  ) {}
 
-  private async urlToBase64(this: void, url: string): Promise<string> {
+  private async _urlToBase64(this: void, url: string): Promise<string> {
     const response = await axios.get(url, { responseType: 'arraybuffer' });
     return Buffer.from(response.data).toString('base64');
   }
 
-  async generateTryOn(createTryOnDto: CreateTryOnDto): Promise<void> {
-    const personImageUrl =
-      'https://res.cloudinary.com/snapcart-website/image/upload/v1761713058/IMG_9277_Medium_df39i6.jpg';
-    const productImageUrls = [
-      'https://res.cloudin[ary.com/snapcart-website/image/upload/v1761713131/product-1_qu8n03.webp',
-    ];
+  async generateTryOn(userId: string, dto: CreateTryOnDto): Promise<string[]> {
+    const product = await this._productService.findOne(dto.productId);
+
+    const user = await this._userService.findById(userId);
+
+    if (!product) {
+      throw new BadRequestException('Product not found');
+    } else if (!product.tryOn) {
+      throw new BadRequestException('Try-On not available for this product');
+    } else if (!user || !user.tryOnImage) {
+      throw new BadRequestException('User profile image not found');
+    }
+
+    const personImageUrl = user.tryOnImage;
+
+    const productImageUrls = [product.thumbnail];
 
     const [personImageBase64, ...productImagesBase64] = await Promise.all([
-      this.urlToBase64(personImageUrl),
-      ...productImageUrls.map(this.urlToBase64),
+      this._urlToBase64(personImageUrl),
+      ...productImageUrls.map(this._urlToBase64),
     ]);
 
     const req: TryOnRequest = {
@@ -32,6 +51,18 @@ export class TryOnService {
     };
 
     const data = await this._vertexService.virtualTryOn(req);
-    console.log('Virtual Try-On Response:', data);
+
+    const result = await Promise.all(
+      data.predictions.map(async (prediction) =>
+        this._tryOnMediaService.uploadTryOnResultBase64(
+          userId,
+          product.id,
+          prediction.bytesBase64Encoded,
+        ),
+      ),
+    );
+
+    console.log('Virtual Try-On Response:', result);
+    return result;
   }
 }

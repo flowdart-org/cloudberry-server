@@ -5,6 +5,7 @@ import { CreateCartDto } from '@/cart/dto/create-cart.dto';
 import { VariantService } from '@/product/variant/variant.service';
 import type { CartRepository } from '@/cart/repositories/interfaces/cart.repository';
 import type { CartItemRepository } from '@/cart/repositories/interfaces/cart-item.repository';
+import { GetCartResponseDto } from '@/cart/dto/response/get-cart.response.dto';
 
 @Injectable()
 export class CartService {
@@ -26,22 +27,37 @@ export class CartService {
 
     if (!variant) throw new NotFoundException('Product or Variant not found');
 
+    let cart = await this._cartRepository.findByUserId(userId);
+
+    if (!cart) {
+      cart = await this.createCart(userId);
+    }
+
     const existingItem = await this._cartItemRepository.findExistingItem(
-      userId,
+      cart.id,
+      variant.productId,
       variantId,
     );
 
     if (existingItem) {
       return this._cartItemRepository.updateQuantity(existingItem.id, {
-        quantity: existingItem.quantity + quantity,
+        quantity: quantity,
       });
     }
 
-    return this._cartItemRepository.addToCart(userId, dto);
+    return this._cartItemRepository.addToCart(cart.id, {
+      productId: variant.productId,
+      variantId,
+      quantity,
+    });
   }
 
-  async getUserCart(userId: string) {
-    return this._cartRepository.findByUserId(userId);
+  async getUserCart(userId: string): Promise<GetCartResponseDto> {
+    let cart = await this._cartRepository.findByUserId(userId);
+    if (!cart) {
+      cart = await this.createCart(userId);
+    }
+    return new GetCartResponseDto(cart);
   }
 
   async updateQuantity(userId: string, itemId: string, dto: UpdateCartDto) {
@@ -58,9 +74,22 @@ export class CartService {
   }
 
   async removeItem(userId: string, itemId: string) {
-    const item = await this._cartItemRepository.findItemById(itemId);
-    if (!item) throw new NotFoundException('Cart item not found');
-    return this._cartItemRepository.removeItem(userId, itemId);
+    const cart = await this._cartRepository.findByUserId(userId);
+
+    if (!cart) throw new NotFoundException('Cart not found');
+
+    const item = cart?.items.find((item) => {
+      console.log(item.id, itemId);
+      return item.id === itemId;
+    });
+
+    // const item = await this._cartItemRepository.findItemById(itemId);
+
+    console.log(cart, 'item', item);
+
+    if (!item) throw new NotFoundException('Item not found in this cart');
+
+    return this._cartItemRepository.removeItem(itemId);
   }
 
   async clearCart(userId: string) {

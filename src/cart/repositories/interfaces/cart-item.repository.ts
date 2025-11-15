@@ -5,6 +5,7 @@ export interface CartItemRepository {
     userId: string,
     dto: {
       variantId: string;
+      productId: string;
       quantity: number;
     },
   ): Promise<CartItem>;
@@ -14,7 +15,7 @@ export interface CartItemRepository {
       quantity: number;
     },
   ): Promise<CartItem>;
-  removeItem(userId: string, itemId: string): Promise<CartItem>;
+  removeItem(itemId: string): Promise<CartItem>;
   clearCart(userId: string): Promise<void>;
   findItemById(itemId: string): Promise<CartItem | null>;
   findExistingItem(

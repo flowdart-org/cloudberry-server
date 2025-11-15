@@ -2,7 +2,7 @@ export interface HTTP_RESPONSE<T = any> {
   message: string;
   success: boolean;
   data?: T;
-  token?: string;
+  accessToken?: string;
 }
 
 export interface User {

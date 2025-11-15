@@ -24,7 +24,7 @@ export class PrismaUserRepository implements IUserRepository {
 
   async findAll(): Promise<User[]> {
     const docs = await this._prisma.user.findMany();
-    return docs.length ? docs.map(UserMapper.toEntity) : [];
+    return docs.length ? docs.map((d) => UserMapper.toEntity(d)) : [];
   }
 
   async findById(id: string): Promise<User | null> {

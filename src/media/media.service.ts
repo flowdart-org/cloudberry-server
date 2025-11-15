@@ -58,4 +58,17 @@ export class MediaService {
 
     return this._azureBlobService.generateReadUrl(blobName);
   }
+
+  getUserTryOnUploadUrl(userId: string, mimeType: string) {
+    if (!mimeType.startsWith('image/'))
+      throw new BadRequestException('Only image uploads are allowed');
+
+    const blobName = `user/${userId}/try-on.jpg`;
+    return this._azureBlobService.generateUploadUrl(blobName);
+  }
+
+  getUserTryOnImageUrl(userId: string): string {
+    const blobName = `user/${userId}/try-on.jpg`;
+    return this._azureBlobService.generateReadUrl(blobName);
+  }
 }

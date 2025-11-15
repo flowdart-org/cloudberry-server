@@ -12,13 +12,13 @@ import { Reflector } from '@nestjs/core';
 @Injectable()
 export class JwtAuthGuard implements CanActivate {
   constructor(
-    private readonly reflector: Reflector,
+    private readonly _reflector: Reflector,
     private readonly _jwtService: JwtService,
   ) {}
 
   canActivate(context: ExecutionContext): boolean {
     const isPublic =
-      this.reflector.getAllAndOverride<boolean>(IS_PUBLIC_KEY, [
+      this._reflector.getAllAndOverride<boolean>(IS_PUBLIC_KEY, [
         context.getHandler(),
         context.getClass(),
       ]) || false;
@@ -26,7 +26,17 @@ export class JwtAuthGuard implements CanActivate {
     if (isPublic) return true;
 
     const request = context.switchToHttp().getRequest<Request>();
-    const accessToken = request.cookies['access_token'] as string;
+
+    let accessToken: string | undefined;
+    const authHeader = request.headers['authorization'];
+
+    if (authHeader && authHeader.startsWith('Bearer ')) {
+      accessToken = authHeader.split(' ')[1];
+    }
+
+    if (!accessToken) {
+      accessToken = request.cookies['access_token'] as string;
+    }
 
     if (!accessToken) {
       throw new UnauthorizedException('Missing access token');

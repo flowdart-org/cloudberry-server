@@ -1,16 +1,13 @@
 import { ApiProperty } from '@nestjs/swagger';
 import { HTTP_RESPONSE } from '@/common/types';
 
-export class HttpResponse<T> implements HTTP_RESPONSE {
+export class StringArrayResponse implements HTTP_RESPONSE {
   @ApiProperty({ example: true })
   success: boolean;
 
   @ApiProperty({ example: 'Response sent successfully' })
   message: string;
 
-  @ApiProperty({ required: false })
-  data?: T;
-
-  @ApiProperty({ required: false })
-  accessToken: string;
+  @ApiProperty({ type: [String] })
+  data: string[];
 }

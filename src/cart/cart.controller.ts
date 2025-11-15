@@ -12,6 +12,9 @@ import { CartService } from '@/cart/cart.service';
 import { CreateCartDto } from '@/cart/dto/create-cart.dto';
 import { UpdateCartDto } from '@/cart/dto/update-cart.dto';
 import { UserId } from '@/common/decorators/user-id.decorator';
+import { GetCartResponseDto } from '@/cart/dto/response/get-cart.response.dto';
+import { HTTP_RESPONSE } from '@/common/types';
+import { ApiResponseWithType } from '@/common/decorators/api-response.decorator';
 
 @Controller('cart')
 export class CartController {
@@ -23,8 +26,17 @@ export class CartController {
   }
 
   @Get()
-  getUserCart(@UserId() userId: string) {
-    return this.cartService.getUserCart(userId);
+  @ApiResponseWithType({}, GetCartResponseDto)
+  async getUserCart(
+    @UserId() userId: string,
+  ): Promise<HTTP_RESPONSE<GetCartResponseDto>> {
+    const data = await this.cartService.getUserCart(userId);
+
+    return {
+      message: 'Cart retrieved successfully',
+      success: true,
+      data,
+    };
   }
 
   @Patch(':itemId')
@@ -39,10 +51,5 @@ export class CartController {
   @Delete(':itemId')
   removeItem(@UserId() userId: string, @Param('itemId') itemId: string) {
     return this.cartService.removeItem(userId, itemId);
-  }
-
-  @Delete()
-  clearCart(@UserId() userId: string) {
-    return this.cartService.clearCart(userId);
   }
 }

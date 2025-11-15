@@ -1,6 +1,8 @@
 import { BadRequestException, Inject, Injectable } from '@nestjs/common';
 
+import { UserDto } from '@/user/dto/user.dto';
 import { User } from '@/user/entities/user.entity';
+import { MediaService } from '@/media/media.service';
 import { UpdateUserDto } from '@/user/dto/request/update-user.dto';
 import { CreateUserDto } from '@/user/dto/request/create-user.dto';
 import { UserResponseDto } from '@/user/dto/response/user-response.dto';
@@ -10,6 +12,7 @@ import type { IUserRepository } from '@/user/repositories/interfaces/user.reposi
 @Injectable()
 export class UserService {
   constructor(
+    private readonly _mediaService: MediaService,
     @Inject('UserRepository') private readonly _userRepository: IUserRepository,
   ) {}
 
@@ -26,12 +29,17 @@ export class UserService {
     });
   }
 
-  async findAll(): Promise<User[]> {
-    return this._userRepository.findAll();
+  async findAll(): Promise<UserDto[]> {
+    const users = await this._userRepository.findAll();
+    return users.length ? users.map((u) => new UserDto(u)) : [];
   }
 
-  findById(id: string): Promise<User | null> {
-    return this._userRepository.findById(id);
+  async findById(id: string): Promise<UserDto | null> {
+    const user = await this._userRepository.findById(id);
+    const tryOnImage = user
+      ? this._mediaService.getUserTryOnImageUrl(id)
+      : null;
+    return user ? new UserDto(user, tryOnImage) : null;
   }
 
   findByEmail(email: string): Promise<User | null> {
@@ -48,7 +56,9 @@ export class UserService {
     if (!doc)
       throw new BadRequestException('User update failed. User not found');
 
-    return new UserResponseDto(doc);
+    const userDto = new UserDto(doc);
+
+    return new UserResponseDto(userDto);
   }
 
   async updateStatus(
@@ -64,6 +74,8 @@ export class UserService {
         'User status update failed. User not found',
       );
 
-    return new UserResponseDto(doc);
+    const userDto = new UserDto(doc);
+
+    return new UserResponseDto(userDto);
   }
 }

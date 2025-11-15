@@ -1,5 +1,5 @@
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
-import { User } from '@/user/entities/user.entity';
+import { UserDto } from '@/user/dto/user.dto';
 
 export class UserResponseDto {
   @ApiProperty({
@@ -44,6 +44,13 @@ export class UserResponseDto {
   public gender?: 'male' | 'female' | 'other';
 
   @ApiProperty({
+    example: 'https://example.com/try-on-image.jpg',
+    description: 'URL of the user try-on image',
+  })
+  @ApiPropertyOptional()
+  public tryOnImage: string | null;
+
+  @ApiProperty({
     example: 'active',
     description: 'Current status of the user account',
   })
@@ -61,13 +68,14 @@ export class UserResponseDto {
   })
   public updatedAt: Date;
 
-  constructor(entity: User) {
+  constructor(entity: UserDto) {
     this.id = entity.id;
     this.name = entity.name || undefined;
     this.email = entity.email || undefined;
     this.phone = entity.phone || undefined;
     this.dob = entity.dob || undefined;
     this.gender = entity.gender || undefined;
+    this.tryOnImage = entity.tryOnImage || null;
     this.status = entity.status;
     this.createdAt = entity.createdAt;
     this.updatedAt = entity.updatedAt;

@@ -3,8 +3,10 @@ import { UserService } from './user.service';
 import { UserController } from './user.controller';
 import { PrismaUserRepository } from '@/user/repositories/prisma-user.repository';
 import { PrismaClient } from '@/common/prisma/prisma-client';
+import { MediaModule } from '@/media/media.module';
 
 @Module({
+  imports: [MediaModule],
   controllers: [UserController],
   providers: [
     UserService,
