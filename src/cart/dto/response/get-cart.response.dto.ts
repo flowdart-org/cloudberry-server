@@ -1,6 +1,8 @@
 import { ApiProperty } from '@nestjs/swagger';
 
 import { Cart } from '@/cart/entities/cart.entity';
+import { Product } from '@/product/entities/product.entity';
+import { ProductVariant } from '@/product/variant/entities/product-variant.entity';
 
 export class GetCartResponseDto {
   @ApiProperty({
@@ -81,7 +83,19 @@ export class GetCartResponseDto {
   })
   updatedAt: Date;
 
-  constructor(cart: Cart) {
-    Object.assign(this, cart);
+  constructor(
+    cart: Cart & {
+      items: GetCartResponseDto['items'] &
+        {
+          product: Product;
+          variant: ProductVariant;
+        }[];
+    },
+  ) {
+    this.id = cart.id;
+    this.count = cart.items.length;
+    this.items = cart.items;
+    this.createdAt = cart.createdAt;
+    this.updatedAt = cart.updatedAt;
   }
 }

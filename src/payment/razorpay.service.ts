@@ -28,7 +28,12 @@ export class RazorpayService {
     });
   }
 
-  async createOrder(amount: number, currency = 'INR', receipt?: string) {
+  async createOrder(
+    userId: string,
+    amount: number,
+    currency: string,
+    receipt?: string,
+  ) {
     try {
       const options:
         | Orders.RazorpayOrderCreateRequestBody
@@ -37,6 +42,9 @@ export class RazorpayService {
         amount: amount * 100,
         currency,
         receipt: receipt ?? `rcpt_${Date.now()}`,
+        notes: {
+          userId,
+        },
       };
 
       const order = await this.razorpay.orders.create(options);
@@ -50,16 +58,25 @@ export class RazorpayService {
     }
   }
 
-  async createPaymentLink(amount: number, email?: string, contact?: string) {
+  async createPaymentLink(
+    userId: string,
+    amount: number,
+    currency: string = 'INR',
+    email?: string,
+    contact?: string,
+  ) {
     try {
       const link = await this.razorpay.paymentLink.create({
         amount: amount * 100,
-        currency: 'INR',
+        currency,
         description: 'Payment for your SnapCart order',
         customer: {
           name: 'rahil',
           contact,
           email,
+        },
+        notes: {
+          userId,
         },
         notify: {
           sms: true,

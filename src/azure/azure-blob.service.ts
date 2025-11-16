@@ -46,7 +46,7 @@ export class AzureBlobService {
 
   generateUploadUrl(blobName: string): string {
     const expiresOn = new Date(Date.now() + 15 * 60 * 1000);
-    const permissions = BlobSASPermissions.parse('cw');
+    const permissions = BlobSASPermissions.parse('cwr');
 
     const sasToken = generateBlobSASQueryParameters(
       {

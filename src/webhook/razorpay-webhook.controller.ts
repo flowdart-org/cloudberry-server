@@ -12,13 +12,17 @@ import { ApiExcludeController } from '@nestjs/swagger';
 
 import { Public } from '@/common/decorators/public.decorator';
 import { RawBody } from '@/common/decorators/raw-body.decorator';
+import { RazorpayWebhookService } from '@/payment/razorpay-webhook.service';
+import { RazorpayWebhookPayload } from '@/common/types/razorpay';
 
 @Controller('webhook/razorpay')
 @ApiExcludeController()
 export class RazorpayWebhookController {
   private readonly RAZORPAY_WEBHOOK_SECRET: string;
 
-  constructor() {
+  constructor(
+    private readonly _razorpayWebhookService: RazorpayWebhookService,
+  ) {
     const configService = new ConfigService();
     this.RAZORPAY_WEBHOOK_SECRET = configService.getOrThrow<string>(
       'RAZORPAY_WEBHOOK_SECRET',
@@ -49,8 +53,9 @@ export class RazorpayWebhookController {
       throw new BadRequestException('Invalid signature');
     }
 
-    console.log('✔️ Webhook Verified Successfully');
-    console.log('Payload:', req.body);
+    const event = req.body as RazorpayWebhookPayload<any, unknown>;
+
+    this._razorpayWebhookService.handleWebhook(event);
 
     return { status: 'ok' };
   }

@@ -39,6 +39,8 @@ export class VariantService {
       }
     }
 
+    console.log(results);
+
     // @ts-ignore
     const toDelete = existingVariants.filter((v) => !incomingIds.has(v.id));
     for (const variant of toDelete) {

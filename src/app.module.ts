@@ -13,6 +13,7 @@ import { PrismaModule } from '@/common/prisma/prisma.module';
 import { CartModule } from './cart/cart.module';
 import { PaymentModule } from './payment/payment.module';
 import { WebhookModule } from './webhook/webhook.module';
+import { OrderModule } from './order/order.module';
 
 @Module({
   imports: [
@@ -26,6 +27,7 @@ import { WebhookModule } from './webhook/webhook.module';
     CartModule,
     PaymentModule,
     WebhookModule,
+    OrderModule,
   ],
   providers: [
     {

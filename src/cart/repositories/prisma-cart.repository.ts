@@ -1,8 +1,8 @@
 import { Inject, Injectable } from '@nestjs/common';
 import { PrismaClient } from '@prisma/client';
 
-import { CartRepository } from '@/cart/repositories/interfaces/cart.repository';
 import { Cart } from '@/cart/entities/cart.entity';
+import { CartRepository } from '@/cart/repositories/interfaces/cart.repository';
 
 @Injectable()
 export class PrismaCartRepository implements CartRepository {
@@ -14,11 +14,7 @@ export class PrismaCartRepository implements CartRepository {
       update: {},
       create: { userId },
       include: {
-        items: {
-          include: {
-            product: { include: { category: true, variants: true } },
-          },
-        },
+        items: true,
       },
     });
   }
@@ -27,11 +23,7 @@ export class PrismaCartRepository implements CartRepository {
     return this.prisma.cart.findUnique({
       where: { id },
       include: {
-        items: {
-          include: {
-            product: { include: { category: true, variants: true } },
-          },
-        },
+        items: true,
       },
     });
   }
@@ -40,12 +32,7 @@ export class PrismaCartRepository implements CartRepository {
     return this.prisma.cart.findUnique({
       where: { userId },
       include: {
-        items: {
-          include: {
-            product: { include: { category: true } },
-            variant: true,
-          },
-        },
+        items: true,
       },
     });
   }

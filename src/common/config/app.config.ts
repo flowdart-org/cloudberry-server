@@ -61,6 +61,8 @@ export async function setupApp(): Promise<INestApplication> {
     .setTitle('CloudBerry API')
     .setDescription('API documentation for the CLoudBerry E-commerce Api')
     .setVersion('1.0')
+    .addServer('http://api.dev.cloudberrytryon.com')
+    .addServer('https://api.cloudberrytryon.com')
     .setContact(
       'Rahil K',
       'https://www.linkedin.com/in/rahil234/',

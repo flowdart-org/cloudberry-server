@@ -2,18 +2,24 @@ import { Injectable, NotFoundException, Inject } from '@nestjs/common';
 
 import { UpdateCartDto } from '@/cart/dto/update-cart.dto';
 import { CreateCartDto } from '@/cart/dto/create-cart.dto';
+import { ProductService } from '@/product/product.service';
 import { VariantService } from '@/product/variant/variant.service';
+import { GetCartResponseDto } from '@/cart/dto/response/get-cart.response.dto';
 import type { CartRepository } from '@/cart/repositories/interfaces/cart.repository';
 import type { CartItemRepository } from '@/cart/repositories/interfaces/cart-item.repository';
-import { GetCartResponseDto } from '@/cart/dto/response/get-cart.response.dto';
+import { RazorpayService } from '@/payment/razorpay.service';
+import { CheckoutCartResponseDto } from '@/cart/dto/response/checkout-cart.response.dto';
+import { CheckoutCartLinkResponseDto } from '@/cart/dto/response/checkout-cart-link.response.dto';
 
 @Injectable()
 export class CartService {
   constructor(
-    private readonly _variantService: VariantService,
     @Inject('CartRepository') private readonly _cartRepository: CartRepository,
     @Inject('CartItemRepository')
     private readonly _cartItemRepository: CartItemRepository,
+    private readonly _variantService: VariantService,
+    private readonly _productService: ProductService,
+    private readonly _paymentService: RazorpayService,
   ) {}
 
   async createCart(userId: string) {
@@ -54,10 +60,28 @@ export class CartService {
 
   async getUserCart(userId: string): Promise<GetCartResponseDto> {
     let cart = await this._cartRepository.findByUserId(userId);
+
     if (!cart) {
       cart = await this.createCart(userId);
     }
-    return new GetCartResponseDto(cart);
+
+    const data = await Promise.all(
+      cart.items.map(async (item) => {
+        const variant = await this._variantService.findById(item.variantId);
+        const product = variant
+          ? await this._productService.findOne(variant.productId)
+          : null;
+
+        return {
+          ...item,
+          product,
+          variant,
+        };
+      }),
+    );
+
+    // @ts-expect-error TODO fix ts error
+    return new GetCartResponseDto({ ...cart, items: data });
   }
 
   async updateQuantity(userId: string, itemId: string, dto: UpdateCartDto) {
@@ -90,6 +114,48 @@ export class CartService {
     if (!item) throw new NotFoundException('Item not found in this cart');
 
     return this._cartItemRepository.removeItem(itemId);
+  }
+
+  async checkout(userId: string): Promise<CheckoutCartResponseDto> {
+    const cart = await this._cartRepository.findByUserId(userId);
+
+    if (!cart) throw new NotFoundException('Cart not found');
+
+    let amount = 0;
+
+    for (const item of cart.items) {
+      const product = await this._productService.findOne(item.productId);
+
+      if (!product) {
+        throw new NotFoundException('Product not found');
+      }
+      amount += product.price * item.quantity;
+    }
+
+    return new CheckoutCartResponseDto(
+      await this._paymentService.createOrder(userId, amount, 'INR'),
+    );
+  }
+
+  async checkoutLink(userId: string): Promise<CheckoutCartLinkResponseDto> {
+    const cart = await this._cartRepository.findByUserId(userId);
+
+    if (!cart) throw new NotFoundException('Cart not found');
+
+    let amount = 0;
+
+    for (const item of cart.items) {
+      const product = await this._productService.findOne(item.productId);
+
+      if (!product) {
+        throw new NotFoundException('Product not found');
+      }
+      amount += product.price * item.quantity;
+    }
+
+    return new CheckoutCartLinkResponseDto(
+      await this._paymentService.createPaymentLink(userId, amount, 'INR'),
+    );
   }
 
   async clearCart(userId: string) {
