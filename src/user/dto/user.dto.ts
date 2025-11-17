@@ -9,6 +9,7 @@ export class UserDto {
   public dob?: Date;
   public gender?: 'male' | 'female' | 'other';
   public tryOnImage: string | null;
+  public tryOnLimit: number;
   public status: string;
   public createdAt: Date;
   public updatedAt: Date;
@@ -22,6 +23,7 @@ export class UserDto {
     this.dob = entity.dob || undefined;
     this.tryOnImage = tryOnImage || null;
     this.gender = entity.gender || undefined;
+    this.tryOnLimit = entity.tryOnLimit;
     this.status = entity.status;
     this.createdAt = entity.createdAt;
     this.updatedAt = entity.updatedAt;

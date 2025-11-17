@@ -6,6 +6,8 @@ import { TryOnService } from '@/ai/try-on/try-on.service';
 import { Roles } from '@/common/decorators/roles.decorator';
 import { UserId } from '@/common/decorators/user-id.decorator';
 import { CreateTryOnDto } from '@/ai/try-on/dto/create-try-on.dto';
+import { TryOnResponseDto } from '@/ai/try-on/dto/response/try-on.response.dto';
+import { ApiResponseWithType } from '@/common/decorators/api-response.decorator';
 
 @Controller('ai/try-on')
 export class TryOnController {
@@ -13,18 +15,17 @@ export class TryOnController {
 
   @Post()
   @Roles(Role.USER)
+  @ApiResponseWithType({}, TryOnResponseDto)
   async tryOn(
     @Body() createTryOnDto: CreateTryOnDto,
     @UserId() userId: string,
-  ): Promise<HTTP_RESPONSE<string[]>> {
-    console.log('Received try-on request:', { userId, createTryOnDto });
-
+  ): Promise<HTTP_RESPONSE<TryOnResponseDto>> {
     const data = await this._tryOnService.generateTryOn(userId, createTryOnDto);
 
     return {
       success: true,
       message: 'Try-on operation completed successfully',
-      data,
+      data: TryOnResponseDto.fromImages(data),
     };
   }
 }

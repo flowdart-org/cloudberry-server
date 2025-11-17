@@ -1,4 +1,4 @@
-import { Inject, Injectable } from '@nestjs/common';
+import { Inject, Injectable, NotFoundException } from '@nestjs/common';
 
 import { Admin } from '@/admin/entities/admin.entity';
 import type { IAdminRepository } from '@/admin/repositories/interfaces/admin.repository';
@@ -10,14 +10,20 @@ export class AdminService {
     private readonly _adminRepository: IAdminRepository,
   ) {}
 
-  async findById(userId: string): Promise<Admin | null> {
-    const admin = await this._adminRepository.findById(userId);
-    return admin ? admin : null;
+  async findById(id: string): Promise<Admin> {
+    const admin = await this._adminRepository.findById(id);
+
+    if (!admin) throw new NotFoundException('Admin not found');
+
+    return admin;
   }
 
   async findByEmail(email: string): Promise<Admin | null> {
     const admin = await this._adminRepository.findByEmail(email);
-    return admin ? admin : null;
+
+    if (!admin) throw new NotFoundException('Admin not found');
+
+    return admin;
   }
 
   findAll(): Promise<Admin[]> {

@@ -25,7 +25,7 @@ export class ProductController {
     return {
       success: true,
       message: 'Product created successfully',
-      data,
+      data: ProductResponseDto.fromDto(data),
     };
   }
 
@@ -39,7 +39,7 @@ export class ProductController {
     return {
       success: true,
       message: 'Products fetched successfully',
-      data,
+      data: data.map(ProductResponseDto.fromDto),
     };
   }
 
@@ -52,7 +52,7 @@ export class ProductController {
     return {
       success: true,
       message: 'Products fetched successfully',
-      data,
+      data: data.map(ProductResponseDto.fromDto),
     };
   }
 
@@ -62,12 +62,12 @@ export class ProductController {
   async findOne(
     @Param('id') id: string,
   ): Promise<HTTP_RESPONSE<ProductResponseDto>> {
-    const data = await this.productService.findOne(id);
+    const data = await this.productService.findById(id);
 
     return {
       message: 'Product fetched successfully',
       success: true,
-      data,
+      data: ProductResponseDto.fromDto(data),
     };
   }
 
@@ -83,7 +83,7 @@ export class ProductController {
     return {
       success: true,
       message: 'Product updated successfully',
-      data,
+      data: ProductResponseDto.fromDto(data),
     };
   }
 }

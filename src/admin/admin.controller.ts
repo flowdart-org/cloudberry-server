@@ -1,10 +1,10 @@
-import type { Request } from 'express';
-import { Controller, Get, Req, UnauthorizedException } from '@nestjs/common';
+import { Controller, Get } from '@nestjs/common';
 
 import { HTTP_RESPONSE } from '@/common/types';
+import { Role } from '@/common/enums/role.enum';
 import { AdminService } from '@/admin/admin.service';
 import { Roles } from '@/common/decorators/roles.decorator';
-import { Role } from '@/common/enums/role.enum';
+import { UserId } from '@/common/decorators/user-id.decorator';
 import { AdminResponseDto } from '@/admin/dto/response/admin-response.dto';
 import { ApiResponseWithType } from '@/common/decorators/api-response.decorator';
 
@@ -15,18 +15,14 @@ export class AdminController {
   @Get('/me')
   @Roles(Role.ADMIN)
   @ApiResponseWithType({}, AdminResponseDto)
-  async getAdmin(@Req() req: Request): Promise<HTTP_RESPONSE> {
-    const userId = req.user['id'];
-
-    if (!userId) {
-      throw new UnauthorizedException('User not authenticated');
-    }
-
-    const admin = await this._adminService.findById(userId);
+  async getAdmin(
+    @UserId() userId: string,
+  ): Promise<HTTP_RESPONSE<AdminResponseDto>> {
+    const data = await this._adminService.findById(userId);
 
     return {
       message: 'Admin fetched successfully',
-      data: admin,
+      data: AdminResponseDto.fromEntity(data),
       success: true,
     };
   }

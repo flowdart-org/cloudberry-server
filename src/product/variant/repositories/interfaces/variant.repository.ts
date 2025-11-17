@@ -13,7 +13,7 @@ export interface VariantRepository {
 
   findById(id: string): Promise<ProductVariant | null>;
 
-  findManyByProductId(productId: string): Promise<ProductVariant[] | []>;
+  findManyByProductId(productId: string): Promise<ProductVariant[]>;
 
   findAll(): Promise<ProductVariant[]>;
 

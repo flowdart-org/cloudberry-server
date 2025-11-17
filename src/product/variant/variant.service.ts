@@ -1,6 +1,8 @@
 import { Inject, Injectable } from '@nestjs/common';
+
 import { VariantDto } from '@/product/dto/request/create-product.dto';
 import type { VariantRepository } from '@/product/variant/repositories/interfaces/variant.repository';
+import { ProductVariant } from '@/product/variant/entities/product-variant.entity';
 
 @Injectable()
 export class VariantService {
@@ -16,8 +18,12 @@ export class VariantService {
     const existingVariants =
       await this._variantRepository.findManyByProductId(productId);
 
-    // @ts-ignore
-    const existingMap = new Map(existingVariants.map((v) => [v.id, v]));
+    console.log('variant update 1', existingVariants, variants);
+
+    const existingMap = new Map<string, ProductVariant>(
+      existingVariants.map((v): [string, ProductVariant] => [v.id, v]),
+    );
+
     const incomingIds = new Set(variants.filter((v) => v.id).map((v) => v.id));
 
     const results: VariantDto[] = [];
@@ -39,9 +45,8 @@ export class VariantService {
       }
     }
 
-    console.log(results);
+    console.log('variant update', results);
 
-    // @ts-ignore
     const toDelete = existingVariants.filter((v) => !incomingIds.has(v.id));
     for (const variant of toDelete) {
       await this._variantRepository.update(variant.id, { isDeleted: true });
@@ -57,8 +62,4 @@ export class VariantService {
   findById(variantId: string) {
     return this._variantRepository.findById(variantId);
   }
-
-  // async deleteByProductId(productId: string) {
-  //   return this._variantRepository.deleteByProductId(productId);
-  // }
 }

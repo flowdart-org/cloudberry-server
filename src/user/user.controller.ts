@@ -13,11 +13,12 @@ import { Role } from '@/common/enums/role.enum';
 import { UserService } from '@/user/user.service';
 import { Roles } from '@/common/decorators/roles.decorator';
 import { ReqUser } from '@/common/decorators/user.decorator';
+import { UserId } from '@/common/decorators/user-id.decorator';
 import type { HTTP_RESPONSE, RequestUser } from '@/common/types';
-import { UserResponseDto } from '@/user/dto/response/user-response.dto';
-import { ApiResponseWithType } from '@/common/decorators/api-response.decorator';
 import { UpdateUserDto } from '@/user/dto/request/update-user.dto';
+import { UserResponseDto } from '@/user/dto/response/user-response.dto';
 import { UpdateStatusUserDto } from '@/user/dto/request/update-status-user.dto';
+import { ApiResponseWithType } from '@/common/decorators/api-response.decorator';
 
 @Controller('user')
 export class UserController {
@@ -26,14 +27,8 @@ export class UserController {
   @Get('me')
   @Roles(Role.USER)
   @ApiResponseWithType({}, UserResponseDto)
-  async me(@Req() req: Request): Promise<HTTP_RESPONSE> {
-    const userId = req.user['id'];
-
-    if (!userId) throw new UnauthorizedException('User not authenticated');
-
+  async me(@UserId() userId: string): Promise<HTTP_RESPONSE> {
     const data = await this._userService.findById(userId);
-
-    if (!data) throw new UnauthorizedException('User not found');
 
     return {
       success: true,
@@ -48,24 +43,26 @@ export class UserController {
   async findAll(): Promise<HTTP_RESPONSE<UserResponseDto[]>> {
     const docs = await this._userService.findAll();
 
-    const data = docs.map((doc) => new UserResponseDto(doc));
-
     return {
       success: true,
       message: 'Users fetched successfully',
-      data,
+      data: docs.map(UserResponseDto.fromEntity),
     };
   }
 
   @Get(':id')
   @Roles(Role.ADMIN)
   @ApiResponseWithType({}, UserResponseDto)
-  async findOne(@Param('id') id: string) {
-    const doc = await this._userService.findById(id);
+  async findOne(
+    @Param('id') id: string,
+  ): Promise<HTTP_RESPONSE<UserResponseDto>> {
+    const data = await this._userService.findById(id);
 
-    if (!doc) throw new UnauthorizedException('User not found');
-
-    return new UserResponseDto(doc);
+    return {
+      message: 'User fetched successfully',
+      success: true,
+      data: UserResponseDto.fromEntity(data),
+    };
   }
 
   @Patch()
@@ -98,10 +95,6 @@ export class UserController {
     @Param('id') userId: string,
     @Body() dto: UpdateStatusUserDto,
   ): Promise<HTTP_RESPONSE> {
-    console.log('userUpdate', dto);
-
-    if (!userId) throw new UnauthorizedException('User not authenticated');
-
     const data = await this._userService.updateStatus(userId, dto);
 
     return {

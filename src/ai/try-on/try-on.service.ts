@@ -22,9 +22,15 @@ export class TryOnService {
   }
 
   async generateTryOn(userId: string, dto: CreateTryOnDto): Promise<string[]> {
-    const product = await this._productService.findOne(dto.productId);
+    const product = await this._productService.findById(dto.productId);
 
     const user = await this._userService.findById(userId);
+
+    const success = await this._userService.consumeTryOnLimit(user.id);
+
+    if (!success) {
+      throw new BadRequestException('Try-On limit exceeded');
+    }
 
     if (!product) {
       throw new BadRequestException('Product not found');

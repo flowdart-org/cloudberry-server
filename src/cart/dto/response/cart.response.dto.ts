@@ -1,10 +1,10 @@
 import { ApiProperty } from '@nestjs/swagger';
 
-import { Cart } from '@/cart/entities/cart.entity';
-import { Product } from '@/product/entities/product.entity';
+import { CartWithItems } from '@/common/types/cart';
+import { ProductDto } from '@/product/dto/product.dto';
 import { ProductVariant } from '@/product/variant/entities/product-variant.entity';
 
-export class GetCartResponseDto {
+export class CartResponseDto {
   @ApiProperty({
     example: 'cart_1234567890',
     description: 'Unique identifier for the cart',
@@ -53,49 +53,46 @@ export class GetCartResponseDto {
       },
     },
   })
-  items: Array<{
+  items: {
     id: string;
-    productId: string;
-    variantId: string;
     quantity: number;
-    product: {
-      id: string;
-      name: string;
-      description: string;
-      price: number;
-      thumbnail: string;
-      category: {
-        id: string;
-        name: string;
-      };
+    product: Pick<
+      ProductDto,
+      'description' | 'id' | 'name' | 'price' | 'thumbnail' | 'images'
+    > & {
+      category: Pick<ProductDto['category'], 'id' | 'name'>;
     };
-  }>;
+    variant: Pick<ProductVariant, 'id' | 'size' | 'stock'>;
+  }[];
 
-  @ApiProperty({
-    example: '2024-01-01T00:00:00.000Z',
-    description: 'Timestamp when the cart was created',
-  })
-  createdAt: Date;
+  static fromEntity(cart: CartWithItems): CartResponseDto {
+    const dto = new CartResponseDto();
 
-  @ApiProperty({
-    example: '2024-01-02T00:00:00.000Z',
-    description: 'Timestamp when the cart was last updated',
-  })
-  updatedAt: Date;
+    dto.id = cart.id;
+    dto.count = cart.items.length;
 
-  constructor(
-    cart: Cart & {
-      items: GetCartResponseDto['items'] &
-        {
-          product: Product;
-          variant: ProductVariant;
-        }[];
-    },
-  ) {
-    this.id = cart.id;
-    this.count = cart.items.length;
-    this.items = cart.items;
-    this.createdAt = cart.createdAt;
-    this.updatedAt = cart.updatedAt;
+    dto.items = cart.items.map((item) => ({
+      id: item.id,
+      quantity: item.quantity,
+      product: {
+        id: item.product.id,
+        name: item.product.name,
+        description: item.product.description,
+        price: item.product.price,
+        thumbnail: item.product.thumbnail,
+        category: {
+          id: item.product.category.id,
+          name: item.product.category.name,
+        },
+        images: item.product.images,
+      },
+      variant: {
+        id: item.variant.id,
+        size: item.variant.size,
+        stock: item.variant.stock,
+      },
+    }));
+
+    return dto;
   }
 }

@@ -1,15 +1,15 @@
 import { Injectable } from '@nestjs/common';
+
 import {
   PaymentCapturedWebhook,
   PaymentFailedWebhook,
   RazorpayWebhookPayload,
 } from '@/common/types/razorpay';
-
-import { CartService } from '@/cart/cart.service';
+import { OrderService } from '@/order/order.service';
 
 @Injectable()
 export class RazorpayWebhookService {
-  constructor(private readonly _cartService: CartService) {}
+  constructor(private readonly _orderService: OrderService) {}
 
   private handlePaymentCaptured(event: PaymentCapturedWebhook) {
     const payment = event.payload.payment.entity;

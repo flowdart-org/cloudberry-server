@@ -9,11 +9,11 @@ import {
 } from '@nestjs/common';
 
 import { HTTP_RESPONSE } from '@/common/types';
-import { CartService } from '@/cart/cart.service';
 import { CreateCartDto } from '@/cart/dto/create-cart.dto';
 import { UpdateCartDto } from '@/cart/dto/update-cart.dto';
+import { CartService } from '@/cart/services/cart.service';
 import { UserId } from '@/common/decorators/user-id.decorator';
-import { GetCartResponseDto } from '@/cart/dto/response/get-cart.response.dto';
+import { CartResponseDto } from '@/cart/dto/response/cart.response.dto';
 import { ApiResponseWithType } from '@/common/decorators/api-response.decorator';
 import { CheckoutCartResponseDto } from '@/cart/dto/response/checkout-cart.response.dto';
 import { CheckoutCartLinkResponseDto } from '@/cart/dto/response/checkout-cart-link.response.dto';
@@ -28,16 +28,16 @@ export class CartController {
   }
 
   @Get()
-  @ApiResponseWithType({}, GetCartResponseDto)
+  @ApiResponseWithType({}, CartResponseDto)
   async getUserCart(
     @UserId() userId: string,
-  ): Promise<HTTP_RESPONSE<GetCartResponseDto>> {
+  ): Promise<HTTP_RESPONSE<CartResponseDto>> {
     const data = await this._cartService.getUserCart(userId);
 
     return {
       message: 'Cart retrieved successfully',
       success: true,
-      data,
+      data: CartResponseDto.fromEntity(data),
     };
   }
 

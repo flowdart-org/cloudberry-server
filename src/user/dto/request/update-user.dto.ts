@@ -43,14 +43,4 @@ export class UpdateUserDto {
   })
   @IsOptional()
   public gender?: 'male' | 'female' | 'other';
-
-  @ApiProperty({
-    example: 'strongpassword123',
-    description: 'Password of the user',
-  })
-  @IsOptional()
-  @IsString({
-    message: 'Password must be a string',
-  })
-  public password?: string;
 }

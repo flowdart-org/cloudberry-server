@@ -43,7 +43,7 @@ export class PrismaVariantRepository implements VariantRepository {
     return doc ? VariantMapper.toEntity(doc) : null;
   }
 
-  async findManyByProductId(productId: string): Promise<ProductVariant[] | []> {
+  async findManyByProductId(productId: string): Promise<ProductVariant[]> {
     const docs = await this._prisma.productVariant.findMany({
       where: { productId },
     });

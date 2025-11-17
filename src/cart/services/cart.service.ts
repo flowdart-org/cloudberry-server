@@ -4,12 +4,13 @@ import { UpdateCartDto } from '@/cart/dto/update-cart.dto';
 import { CreateCartDto } from '@/cart/dto/create-cart.dto';
 import { ProductService } from '@/product/product.service';
 import { VariantService } from '@/product/variant/variant.service';
-import { GetCartResponseDto } from '@/cart/dto/response/get-cart.response.dto';
 import type { CartRepository } from '@/cart/repositories/interfaces/cart.repository';
 import type { CartItemRepository } from '@/cart/repositories/interfaces/cart-item.repository';
 import { RazorpayService } from '@/payment/razorpay.service';
 import { CheckoutCartResponseDto } from '@/cart/dto/response/checkout-cart.response.dto';
 import { CheckoutCartLinkResponseDto } from '@/cart/dto/response/checkout-cart-link.response.dto';
+import { CartItem } from '@prisma/client';
+import { CartWithItems } from '@/common/types/cart';
 
 @Injectable()
 export class CartService {
@@ -58,19 +59,22 @@ export class CartService {
     });
   }
 
-  async getUserCart(userId: string): Promise<GetCartResponseDto> {
+  async getUserCart(userId: string): Promise<CartWithItems> {
     let cart = await this._cartRepository.findByUserId(userId);
 
     if (!cart) {
       cart = await this.createCart(userId);
     }
 
-    const data = await Promise.all(
+    const cartItems = await Promise.all(
       cart.items.map(async (item) => {
         const variant = await this._variantService.findById(item.variantId);
-        const product = variant
-          ? await this._productService.findOne(variant.productId)
-          : null;
+
+        if (!variant) {
+          throw new NotFoundException('Variant not found');
+        }
+
+        const product = await this._productService.findById(variant.productId);
 
         return {
           ...item,
@@ -80,11 +84,14 @@ export class CartService {
       }),
     );
 
-    // @ts-expect-error TODO fix ts error
-    return new GetCartResponseDto({ ...cart, items: data });
+    return { ...cart, items: cartItems };
   }
 
-  async updateQuantity(userId: string, itemId: string, dto: UpdateCartDto) {
+  async updateQuantity(
+    userId: string,
+    itemId: string,
+    dto: UpdateCartDto,
+  ): Promise<CartItem> {
     const item = await this._cartItemRepository.findItemById(itemId);
     if (!item) throw new NotFoundException('Cart item not found');
 
@@ -124,7 +131,7 @@ export class CartService {
     let amount = 0;
 
     for (const item of cart.items) {
-      const product = await this._productService.findOne(item.productId);
+      const product = await this._productService.findById(item.productId);
 
       if (!product) {
         throw new NotFoundException('Product not found');
@@ -145,7 +152,7 @@ export class CartService {
     let amount = 0;
 
     for (const item of cart.items) {
-      const product = await this._productService.findOne(item.productId);
+      const product = await this._productService.findById(item.productId);
 
       if (!product) {
         throw new NotFoundException('Product not found');

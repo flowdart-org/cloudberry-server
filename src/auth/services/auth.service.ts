@@ -2,6 +2,7 @@ import { BadRequestException, Injectable } from '@nestjs/common';
 
 import { SmsService } from '@/sms/sms.service';
 import { OtpService } from '@/otp/otp.service';
+import { Role } from '@/common/enums/role.enum';
 import { OTPPurpose } from '@/otp/otp.interface';
 import { UserService } from '@/user/user.service';
 import { AdminService } from '@/admin/admin.service';
@@ -23,7 +24,7 @@ export class AuthService {
     private readonly _adminService: AdminService,
   ) {}
 
-  async requestOtp(dto: LoginRequestOTPDto) {
+  async requestOtp(dto: LoginRequestOTPDto): Promise<void> {
     const { identifier } = dto;
 
     if (isEmail(identifier)) {
@@ -31,7 +32,7 @@ export class AuthService {
       // await this._emailService.sendEmail(
       //   identifier,
       //   'Your Login OTP',
-      //   `Welcome to ZenFashionStudio! Your OTP is ${otp}. Do not share it with anyone.`,
+      //   `Welcome to Cloudberry! Your OTP is ${otp}. Do not share it with anyone.`,
       // );
 
       console.log('OTP sent to email:', identifier, '=>', otp);
@@ -39,7 +40,7 @@ export class AuthService {
       const { otp } = await this._otpService.generateOTP('LOGIN', identifier);
       // await this._smsService.sendSMS(
       //   identifier,
-      //   `Welcome to ZenFashionStudio! Your OTP is ${otp}. Do not share it with anyone.`,
+      //   `Welcome to Cloudberry! Your OTP is ${otp}. Do not share it with anyone.`,
       // );
 
       console.log('OTP sent to phone:', identifier, '=>', otp);
@@ -79,12 +80,12 @@ export class AuthService {
 
     const accessToken = this._jwtService.generateAccessToken({
       sub: user.id,
-      role: 'user',
+      role: Role.USER,
     });
 
     const refreshToken = this._jwtService.generateRefreshToken({
       sub: user.id,
-      role: 'user',
+      role: Role.USER,
     });
 
     return {
@@ -102,12 +103,12 @@ export class AuthService {
 
     const accessToken = this._jwtService.generateAccessToken({
       sub: admin.id,
-      role: 'admin',
+      role: Role.ADMIN,
     });
 
     const refreshToken = this._jwtService.generateRefreshToken({
       sub: admin.id,
-      role: 'admin',
+      role: Role.ADMIN,
     });
 
     return {
@@ -118,7 +119,7 @@ export class AuthService {
 
   async refreshTokens(refreshToken: string) {
     const payload = this._jwtService.verifyRefreshToken(refreshToken);
-    const isAdmin = payload.role === 'admin';
+    const isAdmin = payload.role === Role.ADMIN.toString();
 
     const user = isAdmin
       ? await this._adminService.findById(payload.sub)

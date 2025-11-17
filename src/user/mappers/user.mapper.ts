@@ -12,6 +12,7 @@ export const UserMapper = {
       prismaUser.gender,
       prismaUser.status,
       prismaUser.password,
+      prismaUser.tryOnLimit,
       prismaUser.createdAt,
       prismaUser.updatedAt,
     );
@@ -19,7 +20,10 @@ export const UserMapper = {
 
   toPersistence(
     user: UserEntity,
-  ): Omit<PrismaUser, 'id' | 'cartId' | 'createdAt' | 'updatedAt'> {
+  ): Omit<
+    PrismaUser,
+    'id' | 'cartId' | 'tryOnLimit' | 'createdAt' | 'updatedAt'
+  > {
     return {
       name: user.name,
       email: user.email,

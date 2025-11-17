@@ -1,12 +1,12 @@
 import { forwardRef, Module } from '@nestjs/common';
 
-import { CartService } from '@/cart/cart.service';
 import { CartController } from '@/cart/cart.controller';
+import { ProductModule } from '@/product/product.module';
+import { PaymentModule } from '@/payment/payment.module';
+import { CartService } from '@/cart/services/cart.service';
 import { VariantModule } from '@/product/variant/variant.module';
 import { PrismaCartRepository } from '@/cart/repositories/prisma-cart.repository';
 import { PrismaCartItemRepository } from '@/cart/repositories/prisma-cart-item.repository';
-import { ProductModule } from '@/product/product.module';
-import { PaymentModule } from '@/payment/payment.module';
 
 @Module({
   imports: [ProductModule, VariantModule, forwardRef(() => PaymentModule)],

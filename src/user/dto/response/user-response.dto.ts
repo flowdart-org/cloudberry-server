@@ -1,4 +1,5 @@
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
+
 import { UserDto } from '@/user/dto/user.dto';
 
 export class UserResponseDto {
@@ -51,6 +52,13 @@ export class UserResponseDto {
   public tryOnImage: string | null;
 
   @ApiProperty({
+    example: 'https://example.com/try-on-image.jpg',
+    description: 'URL of the user try-on image',
+  })
+  @ApiPropertyOptional()
+  public tryOnLimit: number;
+
+  @ApiProperty({
     example: 'active',
     description: 'Current status of the user account',
   })
@@ -60,24 +68,20 @@ export class UserResponseDto {
     example: '2024-01-01T00:00:00.000Z',
     description: 'Account creation timestamp',
   })
-  public createdAt: Date;
+  public joined: Date;
 
-  @ApiProperty({
-    example: '2024-06-01T00:00:00.000Z',
-    description: 'Last account update timestamp',
-  })
-  public updatedAt: Date;
-
-  constructor(entity: UserDto) {
-    this.id = entity.id;
-    this.name = entity.name || undefined;
-    this.email = entity.email || undefined;
-    this.phone = entity.phone || undefined;
-    this.dob = entity.dob || undefined;
-    this.gender = entity.gender || undefined;
-    this.tryOnImage = entity.tryOnImage || null;
-    this.status = entity.status;
-    this.createdAt = entity.createdAt;
-    this.updatedAt = entity.updatedAt;
+  static fromEntity(this: void, entity: UserDto): UserResponseDto {
+    return {
+      id: entity.id,
+      name: entity.name || undefined,
+      email: entity.email || undefined,
+      phone: entity.phone || undefined,
+      dob: entity.dob || undefined,
+      gender: entity.gender || undefined,
+      tryOnImage: entity.tryOnImage || null,
+      tryOnLimit: entity.tryOnLimit,
+      status: entity.status,
+      joined: entity.createdAt,
+    };
   }
 }

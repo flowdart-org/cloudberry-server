@@ -1,53 +1,51 @@
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 
-import { Product } from '@/product/entities/product.entity';
-import { Category } from '@/product/category/entities/category.entity';
+import { ProductDto } from '@/product/dto/product.dto';
+
+type VariantShape = { id: string; size: string; stock: number };
 
 export class ProductResponseDto {
   @ApiProperty({
     example: '1',
     description: 'Unique identifier for the product',
   })
-  public readonly id: string;
+  id: string;
 
   @ApiProperty({
     example: 'Cool T-Shirt',
     description: 'Name of the product',
   })
-  public readonly name: string;
+  name: string;
 
   @ApiProperty({
     example: 'A very cool t-shirt made from 100% cotton.',
     description: 'Description of the product',
   })
-  public readonly description: string;
+  description: string;
 
   @ApiProperty({
     example: 29.99,
     description: 'Actual price of the product',
   })
-  public readonly price: number;
+  price: number;
 
-  @ApiProperty({
+  @ApiPropertyOptional({
     example: 19.99,
     description: 'Discounted price of the product',
   })
-  @ApiPropertyOptional()
-  public readonly discountPrice?: number;
+  discountPrice?: number;
 
-  @ApiProperty({
+  @ApiPropertyOptional({
     example: 33,
     description: 'Discount percentage of the product',
   })
-  @ApiPropertyOptional()
-  public readonly discountPercent?: number;
+  discountPercent?: number;
 
-  @ApiProperty({
+  @ApiPropertyOptional({
     example: 'https://example.com/thumbnail.jpg',
-    description: 'Discount percentage of the product',
+    description: 'Product thumbnail URL',
   })
-  @ApiPropertyOptional()
-  public readonly thumbnail?: string;
+  thumbnail?: string;
 
   @ApiProperty({
     example: [
@@ -56,34 +54,36 @@ export class ProductResponseDto {
     ],
     description: 'Array of image URLs for the product',
   })
-  public readonly images: string[];
+  images: string[];
 
   @ApiProperty({
     example: [
-      { size: 'M', stock: 10 },
-      { size: 'L', stock: 5 },
+      { id: 'v1', size: 'M', stock: 10 },
+      { id: 'v2', size: 'L', stock: 5 },
     ],
     description: 'Array of product variants with size and stock information',
   })
-  public readonly variants: { id: string; size: string; stock: number }[];
+  variants: VariantShape[];
 
   @ApiProperty({
     example: '123e4567-e89b-12d3-a456-426614174000',
     description: 'Identifier for the category the product belongs to',
   })
-  public readonly categoryId: string;
+  categoryId: string;
 
-  @ApiProperty({
+  @ApiPropertyOptional({
     example: {
       id: '123e4567-e89b-12d3-a456-426614174000',
       name: 'Clothing',
       description: 'Apparel and garments',
-      createdAt: new Date().toISOString(),
-      updatedAt: new Date().toISOString(),
     },
-    description: 'Category details of the product',
+    description: 'Category details of the product (optional)',
   })
-  public readonly category: Category;
+  category: {
+    id: string;
+    name: string;
+    description?: string | null;
+  };
 
   @ApiProperty({
     example: true,
@@ -92,51 +92,60 @@ export class ProductResponseDto {
   tryOn: boolean;
 
   @ApiProperty({
-    example: '123e4567-e89b-12d3-a456-426614174000',
-    description: 'Identifier for the category the product belongs to',
+    example: 'active',
+    description: 'Current product status',
   })
-  public readonly status: 'active' | 'inactive';
+  status: 'active' | 'inactive';
 
   @ApiProperty({
     example: new Date().toISOString(),
     description: 'Timestamp when the product was created',
   })
-  public readonly createdAt: Date;
+  createdAt: Date;
 
-  @ApiProperty({
-    example: new Date().toISOString(),
-    description: 'Timestamp when the product was last updated',
-  })
-  public readonly updatedAt: Date;
+  static fromDto(this: void, data: ProductDto): ProductResponseDto {
+    const dto = new ProductResponseDto();
 
-  constructor(
-    entity: Product,
-    category: Category,
-    images: string[] = [],
-    thumbnail?: string,
-  ) {
-    this.id = entity.id;
-    this.name = entity.name;
-    this.description = entity.description;
-    this.price = entity.price;
-    this.discountPercent = entity.discountPercent || undefined;
-    this.discountPrice =
-      (entity.price / 100) * (100 - (entity.discountPercent || 0));
-    this.images = images;
-    this.variants = entity.variants;
-    this.createdAt = entity.createdAt;
-    this.updatedAt = entity.updatedAt;
-    this.status = entity.status;
-    this.tryOn = entity.tryOn;
-    this.thumbnail = thumbnail || images[0];
-    if (category) {
-      this.category = {
-        ...entity.category,
-        updatedAt: undefined,
-        createdAt: undefined,
-      };
-    } else {
-      this.categoryId = entity.category.id;
-    }
+    dto.id = data.id;
+    dto.name = data.name;
+    dto.description = data.description;
+    dto.price = data.price;
+    dto.discountPercent = data.discountPercent ?? undefined;
+
+    // discountPrice = price * (1 - discountPercent/100)
+    dto.discountPrice =
+      data.discountPercent != null
+        ? +(data.price * (1 - data.discountPercent / 100)).toFixed(2)
+        : undefined;
+
+    dto.images = data.images;
+    dto.thumbnail = data.thumbnail ?? dto.images[0];
+
+    dto.variants = data.variants;
+
+    dto.categoryId = data.category?.id ?? data.categoryId;
+
+    dto.category = data.category;
+
+    dto.tryOn = data.tryOn;
+    dto.status = data.status;
+    dto.createdAt = data.createdAt;
+
+    return {
+      id: data.id,
+      name: data.name,
+      description: data.description,
+      price: data.price,
+      discountPrice: data.discountPrice,
+      discountPercent: data.discountPercent || undefined,
+      thumbnail: data.thumbnail,
+      images: data.images,
+      variants: data.variants,
+      categoryId: data.categoryId,
+      category: data.category,
+      tryOn: data.tryOn,
+      status: data.status,
+      createdAt: data.createdAt,
+    };
   }
 }

@@ -1,13 +1,13 @@
 import { BadRequestException, Inject, Injectable } from '@nestjs/common';
 
+import { MediaService } from '@/media/media.service';
+import { ProductDto } from '@/product/dto/product.dto';
+import { Product } from '@/product/entities/product.entity';
 import { VariantService } from '@/product/variant/variant.service';
 import { CategoryService } from '@/product/category/category.service';
 import { CreateProductDto } from '@/product/dto/request/create-product.dto';
 import { UpdateProductDto } from '@/product/dto/request/update-product.dto';
-import { ProductResponseDto } from '@/product/dto/response/product-response.dto';
 import type { ProductRepository } from '@/product/repositories/interfaces/product.repository';
-import { MediaService } from '@/media/media.service';
-import { Product } from '@/product/entities/product.entity';
 
 @Injectable()
 export class ProductService {
@@ -19,26 +19,24 @@ export class ProductService {
     private readonly _mediaService: MediaService,
   ) {}
 
-  private _toProductResponseDto = async (
-    product: Product,
-  ): Promise<ProductResponseDto> => {
+  private _toProductDto = async (product: Product): Promise<ProductDto> => {
     const category = await this._categoryService.findOne(product.category.id);
     const images = await this._mediaService.getProductImages(product.id);
     const thumbnail = this._mediaService.getProductThumbnail(product.id);
-    return new ProductResponseDto(product, category, images, thumbnail);
+    return new ProductDto(product, category, images, thumbnail);
   };
 
-  private _toProductsResponseDto = async (
+  private _toProductsDto = async (
     products: Product[],
-  ): Promise<ProductResponseDto[]> => {
+  ): Promise<ProductDto[]> => {
     return Promise.all(
       products.map(async (p) => {
-        return await this._toProductResponseDto(p);
+        return await this._toProductDto(p);
       }),
     );
   };
 
-  async create(dto: CreateProductDto): Promise<ProductResponseDto> {
+  async create(dto: CreateProductDto): Promise<ProductDto> {
     const category = await this._categoryService.findOne(dto.categoryId);
     if (!category) throw new BadRequestException('Category not found');
 
@@ -59,38 +57,39 @@ export class ProductService {
 
     if (!doc) throw new BadRequestException('Error creating product');
 
-    return new ProductResponseDto(doc, category, []);
+    return new ProductDto(doc, category, []);
   }
 
-  async findAll(): Promise<ProductResponseDto[]> {
+  async findAll(): Promise<ProductDto[]> {
     const docs = await this._productRepository.findAll();
 
-    return docs.length ? this._toProductsResponseDto(docs) : [];
+    return docs.length ? this._toProductsDto(docs) : [];
   }
 
-  async findFeed(): Promise<ProductResponseDto[]> {
+  async findFeed(): Promise<ProductDto[]> {
     const docs = await this._productRepository.findAllActive();
 
-    return docs.length ? this._toProductsResponseDto(docs) : [];
+    return docs.length ? this._toProductsDto(docs) : [];
   }
 
-  async findOne(id: string): Promise<ProductResponseDto> {
+  async findById(id: string): Promise<ProductDto> {
     const doc = await this._productRepository.findById(id);
 
     if (!doc) throw new BadRequestException('Product not found');
 
-    return this._toProductResponseDto(doc);
+    return this._toProductDto(doc);
   }
 
-  async update(id: string, dto: UpdateProductDto): Promise<ProductResponseDto> {
+  async update(id: string, dto: UpdateProductDto): Promise<ProductDto> {
     const doc = await this._productRepository.update(id, dto);
 
-    await this._variantsService.createOrUpdateMany(id, doc.variants);
+    if (dto.variants && dto.variants.length)
+      await this._variantsService.createOrUpdateMany(id, dto.variants);
 
     const product = await this._productRepository.findById(doc.id);
 
     if (!product) throw new BadRequestException('Product not found');
 
-    return this._toProductResponseDto(product);
+    return this._toProductDto(product);
   }
 }
