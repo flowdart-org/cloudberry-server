@@ -1,5 +1,6 @@
 import { Product } from '@/product/entities/product.entity';
 import { Category } from '@/product/category/entities/category.entity';
+import { ProductVariant } from '@/product/variant/entities/product-variant.entity';
 
 export class ProductDto {
   public readonly id: string;
@@ -35,6 +36,7 @@ export class ProductDto {
   constructor(
     entity: Product,
     category: Category,
+    variants: ProductVariant[],
     images: string[] = [],
     thumbnail?: string,
   ) {
@@ -46,7 +48,7 @@ export class ProductDto {
     this.discountPrice =
       (entity.price / 100) * (100 - (entity.discountPercent || 0));
     this.images = images;
-    this.variants = entity.variants;
+    this.variants = variants;
     this.createdAt = entity.createdAt;
     this.updatedAt = entity.updatedAt;
     this.status = entity.status;
@@ -54,12 +56,12 @@ export class ProductDto {
     this.thumbnail = thumbnail || images[0];
     if (category) {
       this.category = {
-        ...entity.category,
+        ...category,
         updatedAt: undefined,
         createdAt: undefined,
       };
     } else {
-      this.categoryId = entity.category.id;
+      this.categoryId = entity.categoryId;
     }
   }
 }

@@ -6,6 +6,7 @@ import {
   Param,
   Req,
   UnauthorizedException,
+  Query,
 } from '@nestjs/common';
 import type { Request } from 'express';
 
@@ -19,6 +20,7 @@ import { UpdateUserDto } from '@/user/dto/request/update-user.dto';
 import { UserResponseDto } from '@/user/dto/response/user-response.dto';
 import { UpdateStatusUserDto } from '@/user/dto/request/update-status-user.dto';
 import { ApiResponseWithType } from '@/common/decorators/api-response.decorator';
+import { UserPaginatedQueryDto } from '@/user/dto/request/user-paginated-query.dto';
 
 @Controller('user')
 export class UserController {
@@ -40,8 +42,10 @@ export class UserController {
   @Get()
   @Roles(Role.ADMIN)
   @ApiResponseWithType({ isArray: true }, UserResponseDto)
-  async findAll(): Promise<HTTP_RESPONSE<UserResponseDto[]>> {
-    const docs = await this._userService.findAll();
+  async find(
+    @Query() query: UserPaginatedQueryDto,
+  ): Promise<HTTP_RESPONSE<UserResponseDto[]>> {
+    const docs = await this._userService.find(query);
 
     return {
       success: true,

@@ -1,14 +1,26 @@
-import { Body, Controller, Get, Param, Patch, Post } from '@nestjs/common';
+import {
+  Body,
+  Controller,
+  Get,
+  Param,
+  Patch,
+  Post,
+  Query,
+} from '@nestjs/common';
 
-import { HTTP_RESPONSE } from '@/common/types';
+import {
+  HttpPaginatedResponse,
+  HttpResponse,
+} from '@/common/dto/http-response.dto';
 import { Role } from '@/common/enums/role.enum';
 import { Roles } from '@/common/decorators/roles.decorator';
 import { Public } from '@/common/decorators/public.decorator';
 import { CategoryService } from '@/product/category/category.service';
-import { CreateCategoryDto } from '@/product/category/dto/create-category.dto';
-import { UpdateCategoryDto } from '@/product/category/dto/update-category.dto';
 import { ApiResponseWithType } from '@/common/decorators/api-response.decorator';
+import { UpdateCategoryDto } from '@/product/category/dto/request/update-category.dto';
+import { CreateCategoryDto } from '@/product/category/dto/request/create-category.dto';
 import { CategoryResponseDto } from '@/product/category/dto/response/category-response.dto';
+import { CategoryPaginatedQueryDto } from '@/product/category/dto/request/category-paginated-query.dto';
 
 @Controller('category')
 export class CategoryController {
@@ -19,7 +31,7 @@ export class CategoryController {
   @ApiResponseWithType({}, CategoryResponseDto)
   async create(
     @Body() createCategoryDto: CreateCategoryDto,
-  ): Promise<HTTP_RESPONSE<CategoryResponseDto>> {
+  ): Promise<HttpResponse<CategoryResponseDto>> {
     const data = await this._categoryService.create(createCategoryDto);
 
     return {
@@ -31,21 +43,27 @@ export class CategoryController {
 
   @Get('all')
   @Roles(Role.ADMIN)
-  @ApiResponseWithType({}, CategoryResponseDto)
-  async findAll(): Promise<HTTP_RESPONSE<CategoryResponseDto[]>> {
-    const data = await this._categoryService.findAll();
+  @ApiResponseWithType({ isArray: true, pagination: true }, CategoryResponseDto)
+  async findAll(
+    @Query() query: CategoryPaginatedQueryDto,
+  ): Promise<HttpPaginatedResponse<CategoryResponseDto[]>> {
+    const { items, total, page, limit } =
+      await this._categoryService.findAll(query);
 
     return {
       success: true,
       message: 'Categories retrieved successfully',
-      data,
+      data: items,
+      total,
+      page,
+      limit,
     };
   }
 
   @Get()
   @Public()
   @ApiResponseWithType({}, CategoryResponseDto)
-  async findAllActive(): Promise<HTTP_RESPONSE<CategoryResponseDto[]>> {
+  async findAllActive(): Promise<HttpResponse<CategoryResponseDto[]>> {
     const data = await this._categoryService.findAllActive();
 
     return {
@@ -60,7 +78,7 @@ export class CategoryController {
   @Roles(Role.ADMIN)
   async findOne(
     @Param('id') id: string,
-  ): Promise<HTTP_RESPONSE<CategoryResponseDto>> {
+  ): Promise<HttpResponse<CategoryResponseDto>> {
     const data = await this._categoryService.findOne(id);
 
     return {
@@ -76,7 +94,7 @@ export class CategoryController {
   async update(
     @Param('id') id: string,
     @Body() updateCategoryDto: UpdateCategoryDto,
-  ): Promise<HTTP_RESPONSE<CategoryResponseDto>> {
+  ): Promise<HttpResponse<CategoryResponseDto>> {
     const data = await this._categoryService.update(id, updateCategoryDto);
 
     return {

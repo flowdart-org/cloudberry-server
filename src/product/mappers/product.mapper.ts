@@ -1,38 +1,16 @@
-import {
-  Product as PrismaProduct,
-  Category as PrismaCategory,
-  ProductVariant as PrismaProductVariant,
-  Prisma,
-} from '@prisma/client';
+import { Product as PrismaProduct, Prisma } from '@prisma/client';
+
 import { Product } from '@/product/entities/product.entity';
 
-// interface Variant {
-//   id: string;
-//   createdAt: Date;
-//   updatedAt: Date;
-//   size: string;
-//   stock: number;
-//   productId: string;
-//   sku: string | null;
-//   isDeleted: boolean;
-// }
-
 export const ProductMapper = {
-  toEntity(
-    this: void,
-    doc: PrismaProduct & {
-      category: PrismaCategory;
-      variants: PrismaProductVariant[];
-    },
-  ): Product {
+  toEntity(this: void, doc: PrismaProduct): Product {
     return new Product(
       doc.id,
       doc.name,
       doc.description,
+      doc.categoryId,
       doc.price,
       doc.discountPercent,
-      doc.category,
-      doc.variants,
       doc.tryOn,
       doc.status,
       doc.createdAt,
@@ -57,8 +35,8 @@ export const ProductMapper = {
       name: entity.name,
       description: entity.description,
       price: entity.price,
-      discountPercent: entity.discountPercent || 0,
-      categoryId: entity.category.id,
+      discountPercent: entity.discountPercent,
+      categoryId: entity.categoryId,
       status: entity.status ?? 'inactive',
     };
   },
@@ -82,9 +60,9 @@ export const ProductMapper = {
       name: entity.name,
       description: entity.description,
       price: entity.price,
-      discountPercent: entity.discountPercent || 0,
+      discountPercent: entity.discountPercent,
       tryOn: entity.tryOn,
-      categoryId: entity.category?.id || undefined,
+      categoryId: entity.categoryId,
       status: entity.status ?? 'inactive',
     };
   },

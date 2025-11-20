@@ -1,9 +1,10 @@
 import { Inject, Injectable, NotFoundException } from '@nestjs/common';
 
 import { MediaService } from '@/media/media.service';
-import { CreateCategoryDto } from '@/product/category/dto/create-category.dto';
-import { UpdateCategoryDto } from '@/product/category/dto/update-category.dto';
-import { CategoryResponseDto } from '@/product/category/dto/response/category-response.dto';
+import { CategoryDto } from '@/product/category/dto/category.dto';
+import { CreateCategoryDto } from '@/product/category/dto/request/create-category.dto';
+import { UpdateCategoryDto } from '@/product/category/dto/request/update-category.dto';
+import { CategoryPaginatedQueryDto } from '@/product/category/dto/request/category-paginated-query.dto';
 import type { ICategoryRepository } from '@/product/category/repositories/interfaces/category.repository';
 
 @Injectable()
@@ -13,52 +14,69 @@ export class CategoryService {
     private readonly _categoryRepository: ICategoryRepository,
     private readonly _mediaService: MediaService,
   ) {}
-  async create(dto: CreateCategoryDto): Promise<CategoryResponseDto> {
+  async create(dto: CreateCategoryDto): Promise<CategoryDto> {
     const doc = await this._categoryRepository.create(dto);
 
-    return new CategoryResponseDto(
+    return new CategoryDto(
       doc,
       0,
       this._mediaService.getCategoryReadUrl(doc.id),
     );
   }
 
-  async findAll(): Promise<CategoryResponseDto[]> {
-    const data = await this._categoryRepository.findAll();
+  async findAll(query: CategoryPaginatedQueryDto): Promise<{
+    items: CategoryDto[];
+    total: number;
+    page: number;
+    limit: number;
+    totalPages: number;
+  }> {
+    const { page = 1, limit = 10, search, status } = query;
 
-    return data.length
-      ? data.map(
-          (d) =>
-            new CategoryResponseDto(
-              d,
-              0,
-              this._mediaService.getCategoryReadUrl(d.id),
-            ),
-        )
-      : [];
+    const skip = (page - 1) * limit;
+
+    const docs = await this._categoryRepository.findAll({
+      skip,
+      take: limit,
+      search,
+      status,
+    });
+
+    const total = await this._categoryRepository.count({
+      search,
+      status,
+    });
+
+    const items = docs.map(
+      (d) => new CategoryDto(d, 0, this._mediaService.getCategoryReadUrl(d.id)),
+    );
+
+    return {
+      items,
+      total,
+      page,
+      limit,
+      totalPages: Math.ceil(total / limit),
+    };
   }
 
-  async findAllActive(): Promise<CategoryResponseDto[]> {
+  async findAllActive(): Promise<CategoryDto[]> {
     const data = await this._categoryRepository.findAllActive();
 
     return data.length
       ? data.map(
           (d) =>
-            new CategoryResponseDto(
-              d,
-              0,
-              this._mediaService.getCategoryReadUrl(d.id),
-            ),
+            new CategoryDto(d, 0, this._mediaService.getCategoryReadUrl(d.id)),
         )
       : [];
   }
 
-  async findOne(id: string): Promise<CategoryResponseDto> {
+  async findOne(id: string): Promise<CategoryDto> {
     const doc = await this._categoryRepository.findById(id);
 
     if (!doc) throw new NotFoundException('Category not found');
 
-    return new CategoryResponseDto(
+    return new CategoryDto(
       doc,
       0,
       this._mediaService.getCategoryReadUrl(doc.id),
@@ -68,7 +86,7 @@ export class CategoryService {
   async update(
     id: string,
     updateCategoryDto: UpdateCategoryDto,
-  ): Promise<CategoryResponseDto> {
+  ): Promise<CategoryDto> {
     const existingCategory = await this._categoryRepository.findById(id);
 
     if (!existingCategory) throw new NotFoundException('Category not found');
@@ -78,7 +96,7 @@ export class CategoryService {
       ...updateCategoryDto,
     });
 
-    return new CategoryResponseDto(
+    return new CategoryDto(
       updatedCategory,
       0,
       this._mediaService.getCategoryReadUrl(updatedCategory.id),

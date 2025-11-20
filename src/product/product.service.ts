@@ -8,6 +8,8 @@ import { CategoryService } from '@/product/category/category.service';
 import { CreateProductDto } from '@/product/dto/request/create-product.dto';
 import { UpdateProductDto } from '@/product/dto/request/update-product.dto';
 import type { ProductRepository } from '@/product/repositories/interfaces/product.repository';
+import { ProductPaginatedQueryDto } from '@/product/dto/request/product-paginated-query.dto';
+import { ProductFeedPaginatedQueryDto } from '@/product/dto/request/product-feed-paginated-query.dto';
 
 @Injectable()
 export class ProductService {
@@ -20,10 +22,11 @@ export class ProductService {
   ) {}
 
   private _toProductDto = async (product: Product): Promise<ProductDto> => {
-    const category = await this._categoryService.findOne(product.category.id);
+    const category = await this._categoryService.findOne(product.categoryId);
+    const variants = await this._variantsService.findByProductId(product.id);
     const images = await this._mediaService.getProductImages(product.id);
     const thumbnail = this._mediaService.getProductThumbnail(product.id);
-    return new ProductDto(product, category, images, thumbnail);
+    return new ProductDto(product, category, variants, images, thumbnail);
   };
 
   private _toProductsDto = async (
@@ -42,7 +45,7 @@ export class ProductService {
 
     const createdProduct = await this._productRepository.create({
       ...dto,
-      category,
+      categoryId: category.id,
       discountPercent: dto.discountPercent || 0,
     });
 
@@ -60,14 +63,14 @@ export class ProductService {
     return new ProductDto(doc, category, []);
   }
 
-  async findAll(): Promise<ProductDto[]> {
-    const docs = await this._productRepository.findAll();
+  async find(query: ProductPaginatedQueryDto): Promise<ProductDto[]> {
+    const docs = await this._productRepository.find(query);
 
     return docs.length ? this._toProductsDto(docs) : [];
   }
 
-  async findFeed(): Promise<ProductDto[]> {
-    const docs = await this._productRepository.findAllActive();
+  async findFeed(query: ProductFeedPaginatedQueryDto): Promise<ProductDto[]> {
+    const docs = await this._productRepository.find(query);
 
     return docs.length ? this._toProductsDto(docs) : [];
   }

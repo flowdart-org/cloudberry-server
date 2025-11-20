@@ -8,11 +8,21 @@ export interface ICategoryRepository {
 
   findById(id: string): Promise<CategoryEntity | null>;
 
-  findAll(): Promise<CategoryEntity[]>;
+  findAll(params: {
+    skip?: number;
+    take?: number;
+    search?: string;
+    status?: 'active' | 'inactive';
+  }): Promise<CategoryEntity[]>;
 
   findAllActive(): Promise<CategoryEntity[]>;
 
   update(id: string, data: Partial<PrismaCategory>): Promise<CategoryEntity>;
+
+  count(params: {
+    search?: string;
+    status?: 'active' | 'inactive';
+  }): Promise<number>;
 
   delete(id: string): Promise<void>;
 }

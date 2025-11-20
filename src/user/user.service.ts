@@ -11,6 +11,7 @@ import { MediaService } from '@/media/media.service';
 import { UpdateUserDto } from '@/user/dto/request/update-user.dto';
 import { CreateUserDto } from '@/user/dto/request/create-user.dto';
 import { UpdateStatusUserDto } from '@/user/dto/request/update-status-user.dto';
+import { UserPaginatedQueryDto } from '@/user/dto/request/user-paginated-query.dto';
 import type { IUserRepository } from '@/user/repositories/interfaces/user.repository';
 
 @Injectable()
@@ -33,8 +34,8 @@ export class UserService {
     });
   }
 
-  async findAll(): Promise<UserDto[]> {
-    const users = await this._userRepository.findAll();
+  async find(query: UserPaginatedQueryDto): Promise<UserDto[]> {
+    const users = await this._userRepository.find(query);
     return users.length ? users.map((u) => new UserDto(u)) : [];
   }
 

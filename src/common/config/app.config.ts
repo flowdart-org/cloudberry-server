@@ -58,8 +58,8 @@ export async function setupApp(): Promise<INestApplication> {
   app.useGlobalFilters(new GlobalExceptionFilter());
 
   const config = new DocumentBuilder()
-    .setTitle('CloudBerry API')
-    .setDescription('API documentation for the CLoudBerry E-commerce Api')
+    .setTitle('Cloudberry API')
+    .setDescription('API documentation for the Cloudberry E-commerce Api')
     .setVersion('1.0')
     .addServer('http://api.dev.cloudberrytryon.com')
     .addServer('https://api.cloudberrytryon.com')
@@ -75,6 +75,7 @@ export async function setupApp(): Promise<INestApplication> {
 
   SwaggerModule.setup('api/docs', app, document, {
     ui: true,
+    swaggerOptions: {},
   });
 
   SwaggerModule.setup('api/docs-json', app, document, {

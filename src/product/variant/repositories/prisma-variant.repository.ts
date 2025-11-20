@@ -1,6 +1,7 @@
 import { Injectable, Inject, NotFoundException } from '@nestjs/common';
+
 import { PrismaClient } from '@/common/prisma/prisma-client';
-import { VariantMapper } from '@/product/mappers/variant.mapper';
+import { VariantMapper } from '@/product/variant/mappers/variant.mapper';
 import { ProductVariant } from '@/product/variant/entities/product-variant.entity';
 import { VariantRepository } from '@/product/variant/repositories/interfaces/variant.repository';
 

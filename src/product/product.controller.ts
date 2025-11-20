@@ -1,4 +1,12 @@
-import { Controller, Get, Post, Body, Patch, Param } from '@nestjs/common';
+import {
+  Controller,
+  Get,
+  Post,
+  Body,
+  Patch,
+  Param,
+  Query,
+} from '@nestjs/common';
 
 import { Role } from '@/common/enums/role.enum';
 import type { HTTP_RESPONSE } from '@/common/types';
@@ -9,6 +17,8 @@ import { CreateProductDto } from '@/product/dto/request/create-product.dto';
 import { UpdateProductDto } from '@/product/dto/request/update-product.dto';
 import { ApiResponseWithType } from '@/common/decorators/api-response.decorator';
 import { ProductResponseDto } from '@/product/dto/response/product-response.dto';
+import { ProductPaginatedQueryDto } from '@/product/dto/request/product-paginated-query.dto';
+import { ProductFeedPaginatedQueryDto } from '@/product/dto/request/product-feed-paginated-query.dto';
 
 @Controller('product')
 export class ProductController {
@@ -31,10 +41,11 @@ export class ProductController {
 
   @Get('feed')
   @Public()
-  @Roles(Role.USER)
   @ApiResponseWithType({ isArray: true }, ProductResponseDto)
-  async findFeed(): Promise<HTTP_RESPONSE<ProductResponseDto[]>> {
-    const data = await this.productService.findFeed();
+  async findFeed(
+    query: ProductFeedPaginatedQueryDto,
+  ): Promise<HTTP_RESPONSE<ProductResponseDto[]>> {
+    const data = await this.productService.findFeed(query);
 
     return {
       success: true,
@@ -46,8 +57,10 @@ export class ProductController {
   @Get()
   @Roles(Role.ADMIN)
   @ApiResponseWithType({ isArray: true }, ProductResponseDto)
-  async findAll(): Promise<HTTP_RESPONSE<ProductResponseDto[]>> {
-    const data = await this.productService.findAll();
+  async find(
+    @Query() query: ProductPaginatedQueryDto,
+  ): Promise<HTTP_RESPONSE<ProductResponseDto[]>> {
+    const data = await this.productService.find(query);
 
     return {
       success: true,

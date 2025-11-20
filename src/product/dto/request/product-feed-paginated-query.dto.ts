@@ -1,0 +1,35 @@
+import { Type } from 'class-transformer';
+import { ApiProperty } from '@nestjs/swagger';
+import { IsArray, IsNumber, IsOptional, IsString } from 'class-validator';
+
+import { PaginatedQueryDto } from '@/common/dto/paginated-query.dto';
+
+export class ProductFeedPaginatedQueryDto extends PaginatedQueryDto {
+  @ApiProperty({ required: false, example: 'blue shirts' })
+  @IsOptional()
+  @IsString()
+  search?: string;
+
+  @ApiProperty({ required: false, example: 10 })
+  @IsOptional()
+  @Type(() => Number)
+  @IsNumber()
+  minPrice?: number;
+
+  @ApiProperty({ required: false, example: 100 })
+  @IsOptional()
+  @Type(() => Number)
+  @IsNumber()
+  maxPrice?: number;
+
+  @ApiProperty({
+    required: false,
+    example: ['cat123', 'cat456'],
+    description: 'Array of category IDs',
+    type: [String],
+  })
+  @IsOptional()
+  @IsArray()
+  @IsString({ each: true })
+  categories?: string[];
+}
