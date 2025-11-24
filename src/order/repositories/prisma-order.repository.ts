@@ -45,10 +45,10 @@ export class PrismaOrderRepository implements IOrderRepository {
     return found ? OrderMapper.toEntity(found) : null;
   }
 
-  public async update(order: OrderEntity): Promise<OrderEntity> {
+  public async update(id: string, order: OrderEntity): Promise<OrderEntity> {
     const data = OrderMapper.toPersistenceUpdate(order);
     const updated = await this.prisma.order.update({
-      where: { id: order.id },
+      where: { id },
       data,
     });
     return OrderMapper.toEntity(updated);

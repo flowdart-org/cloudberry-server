@@ -1,8 +1,8 @@
 import { Inject, Injectable } from '@nestjs/common';
-import { Prisma, Product as PrismaProduct } from '@prisma/client';
 
 import { PrismaClient } from '@/common/prisma/prisma-client';
 import { ProductMapper } from '@/product/mappers/product.mapper';
+import { Prisma, Product as PrismaProduct } from '@prisma/client';
 import { Product as ProductEntity } from '@/product/entities/product.entity';
 import { ProductRepository } from '@/product/repositories/interfaces/product.repository';
 import { ProductPaginatedQueryDto } from '@/product/dto/request/product-paginated-query.dto';

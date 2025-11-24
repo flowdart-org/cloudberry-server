@@ -1,5 +1,4 @@
 import { Product as PrismaProduct, Prisma } from '@prisma/client';
-
 import { Product } from '@/product/entities/product.entity';
 
 export const ProductMapper = {

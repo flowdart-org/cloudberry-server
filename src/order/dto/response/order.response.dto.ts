@@ -1,4 +1,5 @@
-import { Order as OrderEntity, OrderItem } from '@/order/entities/order.entity';
+import { OrderDto } from '@/order/dto/order.dto';
+import { OrderItem } from '@/order/entities/order.entity';
 
 export class OrderItemDto implements OrderItem {
   productId!: string;
@@ -14,63 +15,46 @@ export class OrderItemDto implements OrderItem {
 export class OrderResponseDto {
   id!: string;
   orderNumber!: string;
-  userId!: string;
+  customer: {
+    id: string;
+    name?: string;
+    email?: string;
+    phone?: string;
+  };
   placedAt!: Date;
   updatedAt!: Date | null;
   deliveredAt?: Date | null;
   cancelledAt?: Date | null;
 
-  subtotal!: number;
-  shippingCharge!: number;
-  tax!: number;
-  discount!: number;
-  total!: number;
+  subtotal: number;
+  shippingCharge: number;
+  discount: number;
+  total: number;
 
-  items!: OrderItemDto[];
-  metadata?: Record<string, unknown> | null;
+  items: OrderItemDto[];
 
   paymentMethod?: string | null;
   paymentStatus!: string;
   orderStatus!: string;
 
-  // address
-  shippingAddressJson?: Record<string, unknown> | null;
-  addressLine1?: string | null;
-  addressLine2?: string | null;
-  city?: string | null;
-  state?: string | null;
-  country?: string | null;
-  postalCode?: string | null;
-  addressLabel?: string | null;
-  recipientName?: string | null;
-  recipientPhone?: string | null;
-
-  courierName?: string | null;
-  trackingNumber?: string | null;
-  trackingUrl?: string | null;
-
-  cancelReason?: string | null;
-  refundAmount?: number | null;
-
   isDeleted!: boolean;
 
-  static fromEntity(this: void, entity: OrderEntity): OrderResponseDto {
+  static fromEntity(this: void, orderDto: OrderDto): OrderResponseDto {
     const dto = new OrderResponseDto();
-    dto.id = entity.id;
-    dto.orderNumber = entity.orderNumber;
-    dto.userId = entity.userId;
-    dto.placedAt = entity.placedAt;
-    dto.updatedAt = entity.updatedAt;
-    dto.deliveredAt = entity.deliveredAt ?? null;
-    dto.cancelledAt = entity.cancelledAt ?? null;
+    dto.id = orderDto.id;
+    dto.orderNumber = orderDto.orderNumber;
+    dto.customer = orderDto.customer;
+    dto.placedAt = orderDto.placedAt;
+    dto.updatedAt = orderDto.updatedAt;
+    dto.deliveredAt = orderDto.deliveredAt ?? null;
+    dto.cancelledAt = orderDto.cancelledAt ?? null;
 
-    dto.subtotal = entity.subtotal;
-    dto.shippingCharge = entity.shippingCharge;
-    dto.tax = entity.tax;
-    dto.discount = entity.discount;
-    dto.total = entity.total;
+    dto.subtotal = orderDto.subtotal;
+    dto.shippingCharge = orderDto.shippingCharge;
+    dto.discount = orderDto.discount;
+    dto.total = orderDto.total;
 
-    dto.items = entity.items.map((i) => ({
+    dto.items = orderDto.items.map((i) => ({
       productId: i.productId,
       variantId: i.variantId ?? null,
       name: i.name,
@@ -81,31 +65,9 @@ export class OrderResponseDto {
       metadata: i.metadata ?? null,
     }));
 
-    dto.metadata = entity.metadata ?? null;
-
-    dto.paymentMethod = entity.paymentMethod ?? null;
-    dto.paymentStatus = entity.paymentStatus;
-    dto.orderStatus = entity.orderStatus;
-
-    dto.shippingAddressJson = entity.shippingAddressJson ?? null;
-    dto.addressLine1 = entity.addressLine1 ?? null;
-    dto.addressLine2 = entity.addressLine2 ?? null;
-    dto.city = entity.city ?? null;
-    dto.state = entity.state ?? null;
-    dto.country = entity.country ?? null;
-    dto.postalCode = entity.postalCode ?? null;
-    dto.addressLabel = entity.addressLabel ?? null;
-    dto.recipientName = entity.recipientName ?? null;
-    dto.recipientPhone = entity.recipientPhone ?? null;
-
-    dto.courierName = entity.courierName ?? null;
-    dto.trackingNumber = entity.trackingNumber ?? null;
-    dto.trackingUrl = entity.trackingUrl ?? null;
-
-    dto.cancelReason = entity.cancelReason ?? null;
-    dto.refundAmount = entity.refundAmount ?? null;
-
-    dto.isDeleted = entity.isDeleted;
+    dto.paymentMethod = orderDto.paymentMethod ?? null;
+    dto.paymentStatus = orderDto.paymentStatus;
+    dto.orderStatus = orderDto.orderStatus;
 
     return dto;
   }

@@ -41,11 +41,10 @@ export class UserService {
 
   async findById(id: string): Promise<UserDto> {
     const user = await this._userRepository.findById(id);
-    const tryOnImage = user
-      ? this._mediaService.getUserTryOnImageUrl(id)
-      : null;
 
     if (!user) throw new UnauthorizedException('User not found');
+
+    const tryOnImage = await this._mediaService.getUserTryOnReadUrl(id);
 
     return new UserDto(user, tryOnImage);
   }

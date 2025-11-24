@@ -1,8 +1,11 @@
-import { Prisma, ProductVariant as PrismaVariant } from '@prisma/client';
+import {
+  Prisma,
+  ProductVariant as PrismaProductVariant,
+} from '@prisma/client';
 import { ProductVariant } from '@/product/variant/entities/product-variant.entity';
 
 export const VariantMapper = {
-  toEntity(this: void, doc: PrismaVariant): ProductVariant {
+  toEntity(this: void, doc: PrismaProductVariant): ProductVariant {
     return new ProductVariant(
       doc.id,
       doc.productId,

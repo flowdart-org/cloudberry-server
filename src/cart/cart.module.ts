@@ -7,9 +7,15 @@ import { CartService } from '@/cart/services/cart.service';
 import { VariantModule } from '@/product/variant/variant.module';
 import { PrismaCartRepository } from '@/cart/repositories/prisma-cart.repository';
 import { PrismaCartItemRepository } from '@/cart/repositories/prisma-cart-item.repository';
+import { OrderModule } from '@/order/order.module';
 
 @Module({
-  imports: [ProductModule, VariantModule, forwardRef(() => PaymentModule)],
+  imports: [
+    ProductModule,
+    VariantModule,
+    forwardRef(() => PaymentModule),
+    OrderModule,
+  ],
   controllers: [CartController],
   providers: [
     CartService,

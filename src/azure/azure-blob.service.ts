@@ -1,5 +1,3 @@
-import { Injectable } from '@nestjs/common';
-import { ConfigService } from '@nestjs/config';
 import {
   BlobServiceClient,
   StorageSharedKeyCredential,
@@ -8,6 +6,8 @@ import {
   SASProtocol,
   ContainerClient,
 } from '@azure/storage-blob';
+import { Injectable } from '@nestjs/common';
+import { ConfigService } from '@nestjs/config';
 
 @Injectable()
 export class AzureBlobService {
@@ -46,7 +46,7 @@ export class AzureBlobService {
 
   generateUploadUrl(blobName: string): string {
     const expiresOn = new Date(Date.now() + 15 * 60 * 1000);
-    const permissions = BlobSASPermissions.parse('cwr');
+    const permissions = BlobSASPermissions.parse('w');
 
     const sasToken = generateBlobSASQueryParameters(
       {
@@ -62,7 +62,7 @@ export class AzureBlobService {
   }
 
   generateReadUrl(blobName: string): string {
-    const expiresOn = new Date(Date.now() + 15 * 60 * 1000);
+    const expiresOn = new Date(Date.now() + 24 * 60 * 60 * 1000);
     const permissions = BlobSASPermissions.parse('r');
 
     const sasToken = generateBlobSASQueryParameters(
@@ -98,5 +98,9 @@ export class AzureBlobService {
     });
 
     return blockBlob.url;
+  }
+
+  async blobExists(blobName: string): Promise<boolean> {
+    return this.containerClient.getBlobClient(blobName).exists();
   }
 }

@@ -11,15 +11,27 @@ import { OrderService } from '@/order/order.service';
 export class RazorpayWebhookService {
   constructor(private readonly _orderService: OrderService) {}
 
-  private handlePaymentCaptured(event: PaymentCapturedWebhook) {
+  private async handlePaymentCaptured(event: PaymentCapturedWebhook) {
     const payment = event.payload.payment.entity;
 
-    const { userId } = payment.notes;
+    const { orderId, orderNumber } = payment.notes as {
+      orderId: string;
+      orderNumber: string;
+    };
+
+    if (!orderId || !orderNumber) {
+      console.warn('⚠️ Order details missing in payment notes');
+      return;
+    }
 
     console.log(
-      `💰 Payment Captured: User=${userId}, Amount=${payment.amount} ${payment.currency}`,
+      `💰 Payment Captured: Order=${orderId}, Amount=${payment.amount} ${payment.currency}`,
     );
-    // Add your business logic here, e.g., update order status, notify user, etc.
+
+    await this._orderService.update(orderId, {
+      paymentStatus: 'paid',
+      orderStatus: 'processing',
+    });
   }
 
   private handlePaymentFailed(event: PaymentFailedWebhook) {
@@ -34,12 +46,12 @@ export class RazorpayWebhookService {
     // Add your business logic here, e.g., update order status, notify user, etc.
   }
 
-  handleWebhook(payload: RazorpayWebhookPayload<any, unknown>) {
+  async handleWebhook(payload: RazorpayWebhookPayload<any, unknown>) {
     console.log('✔️ Webhook Verified Successfully');
 
     switch (payload.event) {
       case 'payment.captured':
-        this.handlePaymentCaptured(payload as PaymentCapturedWebhook);
+        await this.handlePaymentCaptured(payload as PaymentCapturedWebhook);
         break;
       case 'payment.failed':
         this.handlePaymentFailed(payload as PaymentFailedWebhook);

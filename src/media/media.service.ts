@@ -1,45 +1,45 @@
-import { BadRequestException, Injectable } from '@nestjs/common';
+import { Injectable } from '@nestjs/common';
 
 import { AzureBlobService } from '@/azure/azure-blob.service';
+
+interface UploadUrlResponse {
+  uploadUrl: string;
+  readUrl: string;
+}
+
+export interface ReadUrlResponse {
+  readUrl: string;
+}
 
 @Injectable()
 export class MediaService {
   constructor(private readonly _azureBlobService: AzureBlobService) {}
 
-  getCategoryUploadUrl(categoryId: string, mimeType: string) {
-    if (!mimeType.startsWith('image/'))
-      throw new BadRequestException('Only image uploads are allowed');
-
+  getCategoryUploadUrl(categoryId: string): UploadUrlResponse {
     const blobName = `category/${categoryId}`;
 
-    // const categoryExists = await this._categoryService.findOne(categoryId);
-    //
-    // if (!categoryExists)
-    //   throw new BadRequestException('Category does not exist');
-
-    return this._azureBlobService.generateUploadUrl(blobName);
+    return {
+      uploadUrl: this._azureBlobService.generateUploadUrl(blobName),
+      readUrl: this._azureBlobService.generateReadUrl(blobName),
+    };
   }
 
-  getCategoryReadUrl(categoryId: string): string {
-    return this._azureBlobService.generateReadUrl(`category/${categoryId}`);
+  getCategoryReadUrl(categoryId: string): ReadUrlResponse {
+    return {
+      readUrl: this._azureBlobService.generateReadUrl(`category/${categoryId}`),
+    };
   }
 
-  getProductUploadUrl(productId: string, order: number, mimeType: string) {
-    if (!mimeType.startsWith('image/'))
-      throw new BadRequestException('Only image uploads are allowed');
-
+  getProductUploadUrl(productId: string, order: number): UploadUrlResponse {
     const blobName = `product/${productId}/${order}.jpg`;
-    return this._azureBlobService.generateUploadUrl(blobName);
+
+    return {
+      uploadUrl: this._azureBlobService.generateUploadUrl(blobName),
+      readUrl: this._azureBlobService.generateReadUrl(blobName),
+    };
   }
 
-  getProductThumbnailUploadUrl(productId: string, mimeType: string) {
-    if (!mimeType.startsWith('image/'))
-      throw new BadRequestException('Only image uploads are allowed');
-    const blobName = `product/${productId}/thumbnail.jpg`;
-    return this._azureBlobService.generateUploadUrl(blobName);
-  }
-
-  async getProductImages(productId: string) {
+  async getProductReadUrls(productId: string): Promise<UploadUrlResponse[]> {
     const prefix = `product/${productId}/`;
     const blobs = await this._azureBlobService.listBlobs(prefix);
 
@@ -50,25 +50,50 @@ export class MediaService {
         const bOrder = parseInt(b.match(/(\d+)\.jpg$/)?.[1] ?? '0', 10);
         return aOrder - bOrder;
       })
-      .map((b) => this._azureBlobService.generateReadUrl(b));
+      .map((b) => {
+        return {
+          uploadUrl: this._azureBlobService.generateUploadUrl(b),
+          readUrl: this._azureBlobService.generateReadUrl(b),
+        };
+      });
   }
 
-  getProductThumbnail(productId: string) {
+  getProductThumbnailUploadUrl(productId: string): UploadUrlResponse {
     const blobName = `product/${productId}/thumbnail.jpg`;
 
-    return this._azureBlobService.generateReadUrl(blobName);
+    return {
+      uploadUrl: this._azureBlobService.generateUploadUrl(blobName),
+      readUrl: this._azureBlobService.generateReadUrl(blobName),
+    };
   }
 
-  getUserTryOnUploadUrl(userId: string, mimeType: string) {
-    if (!mimeType.startsWith('image/'))
-      throw new BadRequestException('Only image uploads are allowed');
+  getProductThumbnailReadUrl(productId: string): ReadUrlResponse {
+    const blobName = `product/${productId}/thumbnail.jpg`;
 
-    const blobName = `user/${userId}/try-on.jpg`;
-    return this._azureBlobService.generateUploadUrl(blobName);
+    return {
+      readUrl: this._azureBlobService.generateReadUrl(blobName),
+    };
   }
 
-  getUserTryOnImageUrl(userId: string): string {
+  getUserTryOnUploadUrl(userId: string): UploadUrlResponse {
     const blobName = `user/${userId}/try-on.jpg`;
-    return this._azureBlobService.generateReadUrl(blobName);
+    return {
+      uploadUrl: this._azureBlobService.generateUploadUrl(blobName),
+      readUrl: this._azureBlobService.generateReadUrl(blobName),
+    };
+  }
+
+  async getUserTryOnReadUrl(userId: string): Promise<ReadUrlResponse | null> {
+    const blobName = `user/${userId}/try-on.jpg`;
+
+    const exists = await this._azureBlobService.blobExists(blobName);
+
+    if (!exists) {
+      return null;
+    }
+
+    return {
+      readUrl: this._azureBlobService.generateReadUrl(blobName),
+    };
   }
 }

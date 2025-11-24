@@ -131,7 +131,6 @@ enum PaymentStatus {
   paid
   failed
   refunded
-  partially_refunded
 }
 
 model Order {
@@ -167,7 +166,6 @@ model Order {
   recipientName       String?
   recipientPhone      String?
 
-  // delivery / tracking
   courierName    String?
   trackingNumber String?
   trackingUrl    String?

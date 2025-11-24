@@ -7,25 +7,29 @@ import { VariantService } from '@/product/variant/variant.service';
 import { CategoryService } from '@/product/category/category.service';
 import { CreateProductDto } from '@/product/dto/request/create-product.dto';
 import { UpdateProductDto } from '@/product/dto/request/update-product.dto';
-import type { ProductRepository } from '@/product/repositories/interfaces/product.repository';
+import { ProductRepository } from '@/product/repositories/interfaces/product.repository';
 import { ProductPaginatedQueryDto } from '@/product/dto/request/product-paginated-query.dto';
 import { ProductFeedPaginatedQueryDto } from '@/product/dto/request/product-feed-paginated-query.dto';
 
 @Injectable()
 export class ProductService {
   constructor(
+    private readonly _mediaService: MediaService,
+    private readonly _variantsService: VariantService,
+    private readonly _categoryService: CategoryService,
     @Inject('ProductRepository')
     private readonly _productRepository: ProductRepository,
-    private readonly _categoryService: CategoryService,
-    private readonly _variantsService: VariantService,
-    private readonly _mediaService: MediaService,
   ) {}
 
   private _toProductDto = async (product: Product): Promise<ProductDto> => {
     const category = await this._categoryService.findOne(product.categoryId);
     const variants = await this._variantsService.findByProductId(product.id);
-    const images = await this._mediaService.getProductImages(product.id);
-    const thumbnail = this._mediaService.getProductThumbnail(product.id);
+    const images = (
+      await this._mediaService.getProductReadUrls(product.id)
+    ).map((i) => i.readUrl);
+    const thumbnail = this._mediaService.getProductThumbnailReadUrl(
+      product.id,
+    ).readUrl;
     return new ProductDto(product, category, variants, images, thumbnail);
   };
 
@@ -70,7 +74,10 @@ export class ProductService {
   }
 
   async findFeed(query: ProductFeedPaginatedQueryDto): Promise<ProductDto[]> {
-    const docs = await this._productRepository.find(query);
+    const docs = await this._productRepository.find({
+      ...query,
+      status: 'active',
+    });
 
     return docs.length ? this._toProductsDto(docs) : [];
   }

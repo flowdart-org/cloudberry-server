@@ -7,12 +7,7 @@ export type OrderStatus =
   | 'cancelled'
   | 'returned';
 
-export type PaymentStatus =
-  | 'pending'
-  | 'paid'
-  | 'failed'
-  | 'refunded'
-  | 'partially_refunded';
+export type PaymentStatus = 'pending' | 'paid' | 'failed' | 'refunded';
 
 export type OrderItem = {
   productId: string;
@@ -161,7 +156,6 @@ export class Order {
     this.isDeleted = props.isDeleted ?? false;
   }
 
-  // convenience: produce a shallow copy with overrides
   public with(patch: Partial<Order>): Order {
     return new Order({
       id: patch.id ?? this.id,

@@ -10,9 +10,9 @@ export class PaymentController {
   @Post('verify')
   verifyPayment(@Body() body: VarifyPaymentDto) {
     const isValid = this._razorpayService.verifyPaymentSignature({
-      orderId: body.razorpay_order_id,
-      paymentId: body.razorpay_payment_id,
-      signature: body.razorpay_signature,
+      razorpayOrderId: body.razorpay_order_id,
+      razorpayPaymentId: body.razorpay_payment_id,
+      razorpaySignature: body.razorpay_signature,
     });
 
     return { success: isValid };

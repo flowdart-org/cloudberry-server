@@ -5,13 +5,12 @@ import {
 } from '@/order/entities/order.entity';
 
 export class CreateOrderDto {
-  userId!: string;
-  subtotal!: number;
+  userId: string;
+  subtotal: number;
   shippingCharge?: number;
-  tax?: number;
   discount?: number;
-  total!: number;
-  items!: OrderItem[];
+  total: number;
+  items: OrderItem[];
   metadata?: Record<string, unknown> | null;
 
   paymentMethod?: string | null;

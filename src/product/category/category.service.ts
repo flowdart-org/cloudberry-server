@@ -14,13 +14,14 @@ export class CategoryService {
     private readonly _categoryRepository: ICategoryRepository,
     private readonly _mediaService: MediaService,
   ) {}
+
   async create(dto: CreateCategoryDto): Promise<CategoryDto> {
     const doc = await this._categoryRepository.create(dto);
 
     return new CategoryDto(
       doc,
       0,
-      this._mediaService.getCategoryReadUrl(doc.id),
+      this._mediaService.getCategoryReadUrl(doc.id).readUrl,
     );
   }
 
@@ -48,7 +49,12 @@ export class CategoryService {
     });
 
     const items = docs.map(
-      (d) => new CategoryDto(d, 0, this._mediaService.getCategoryReadUrl(d.id)),
+      (d) =>
+        new CategoryDto(
+          d,
+          0,
+          this._mediaService.getCategoryReadUrl(d.id).readUrl,
+        ),
     );
 
     return {
@@ -66,7 +72,11 @@ export class CategoryService {
     return data.length
       ? data.map(
           (d) =>
-            new CategoryDto(d, 0, this._mediaService.getCategoryReadUrl(d.id)),
+            new CategoryDto(
+              d,
+              0,
+              this._mediaService.getCategoryReadUrl(d.id).readUrl,
+            ),
         )
       : [];
   }
@@ -79,7 +89,7 @@ export class CategoryService {
     return new CategoryDto(
       doc,
       0,
-      this._mediaService.getCategoryReadUrl(doc.id),
+      this._mediaService.getCategoryReadUrl(doc.id).readUrl,
     );
   }
 
@@ -99,7 +109,7 @@ export class CategoryService {
     return new CategoryDto(
       updatedCategory,
       0,
-      this._mediaService.getCategoryReadUrl(updatedCategory.id),
+      this._mediaService.getCategoryReadUrl(updatedCategory.id).readUrl,
     );
   }
 }

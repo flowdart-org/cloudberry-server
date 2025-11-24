@@ -1,5 +1,4 @@
 import { Prisma, Order as PrismaOrder } from '@prisma/client';
-
 import { Order, OrderItems } from '@/order/entities/order.entity';
 
 export const OrderMapper = {

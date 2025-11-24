@@ -1,10 +1,10 @@
-import { Category as PrismaCategory } from '@prisma/client';
+import { Inject } from '@nestjs/common';
 
 import { PrismaClient } from '@/common/prisma/prisma-client';
+import { Category as PrismaCategory } from '@prisma/client';
 import { CategoryMapper } from '@/product/category/mappers/category.mapper';
 import { Category as CategoryEntity } from '@/product/category/entities/category.entity';
 import { ICategoryRepository } from '@/product/category/repositories/interfaces/category.repository';
-import { Inject } from '@nestjs/common';
 
 export class PrismaCategoryRepository implements ICategoryRepository {
   constructor(@Inject('PrismaClient') private readonly _prisma: PrismaClient) {}

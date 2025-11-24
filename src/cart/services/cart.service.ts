@@ -1,16 +1,16 @@
 import { Injectable, NotFoundException, Inject } from '@nestjs/common';
 
+import { CartItem } from '@prisma/client';
+import { CartWithItems } from '@/common/types/cart';
+import { OrderService } from '@/order/order.service';
+import { OrderItem } from '@/order/entities/order.entity';
 import { UpdateCartDto } from '@/cart/dto/update-cart.dto';
 import { CreateCartDto } from '@/cart/dto/create-cart.dto';
 import { ProductService } from '@/product/product.service';
+import { RazorpayService } from '@/payment/razorpay.service';
 import { VariantService } from '@/product/variant/variant.service';
 import type { CartRepository } from '@/cart/repositories/interfaces/cart.repository';
 import type { CartItemRepository } from '@/cart/repositories/interfaces/cart-item.repository';
-import { RazorpayService } from '@/payment/razorpay.service';
-import { CheckoutCartResponseDto } from '@/cart/dto/response/checkout-cart.response.dto';
-import { CheckoutCartLinkResponseDto } from '@/cart/dto/response/checkout-cart-link.response.dto';
-import { CartItem } from '@prisma/client';
-import { CartWithItems } from '@/common/types/cart';
 
 @Injectable()
 export class CartService {
@@ -21,6 +21,7 @@ export class CartService {
     private readonly _variantService: VariantService,
     private readonly _productService: ProductService,
     private readonly _paymentService: RazorpayService,
+    private readonly _orderService: OrderService,
   ) {}
 
   async createCart(userId: string) {
@@ -123,46 +124,131 @@ export class CartService {
     return this._cartItemRepository.removeItem(itemId);
   }
 
-  async checkout(userId: string): Promise<CheckoutCartResponseDto> {
+  // async checkout(userId: string): Promise<CheckoutCartResponseDto> {
+  //   const cart = await this._cartRepository.findByUserId(userId);
+  //
+  //   if (!cart) throw new NotFoundException('Cart not found');
+  //
+  //   let amount = 0;
+  //
+  //   for (const item of cart.items) {
+  //     const product = await this._productService.findById(item.productId);
+  //
+  //     if (!product) {
+  //       throw new NotFoundException('Product not found');
+  //     }
+  //     amount += product.price * item.quantity;
+  //   }
+  //
+  //   return new CheckoutCartResponseDto(
+  //     await this._paymentService.createOrder(userId, amount, 'INR'),
+  //   );
+  // }
+
+  async checkout(userId: string) {
     const cart = await this._cartRepository.findByUserId(userId);
 
     if (!cart) throw new NotFoundException('Cart not found');
 
     let amount = 0;
 
-    for (const item of cart.items) {
-      const product = await this._productService.findById(item.productId);
+    const items: OrderItem[] = [];
 
-      if (!product) {
-        throw new NotFoundException('Product not found');
+    for (const item of cart.items) {
+      const variant = await this._variantService.findById(item.variantId);
+
+      if (!variant) throw new NotFoundException('Variant not found');
+
+      const product = await this._productService.findById(variant.productId);
+
+      if (!product) throw new NotFoundException('Product not found');
+
+      if (variant.stock < item.quantity) {
+        throw new Error(
+          `Insufficient stock for ${product.name} - ${product.name}. Available: ${variant.stock}`,
+        );
       }
-      amount += product.price * item.quantity;
+
+      const lineTotal = product.price * item.quantity;
+      amount += lineTotal;
+
+      items.push({
+        productId: product.id,
+        variantId: variant.id,
+        name: product.name,
+        price: product.price,
+        quantity: item.quantity,
+        subtotal: lineTotal,
+      });
     }
 
-    return new CheckoutCartResponseDto(
-      await this._paymentService.createOrder(userId, amount, 'INR'),
-    );
+    const order = await this._orderService.create({
+      userId,
+      subtotal: amount,
+      total: amount,
+      items,
+      metadata: { cartId: cart.id },
+      paymentStatus: 'pending',
+      orderStatus: 'pending',
+    });
+
+    return this._paymentService.createOrder(userId, amount, 'INR', {
+      orderId: order.id,
+      orderNumber: order.orderNumber,
+    });
   }
 
-  async checkoutLink(userId: string): Promise<CheckoutCartLinkResponseDto> {
+  async checkoutLink(userId: string) {
     const cart = await this._cartRepository.findByUserId(userId);
 
     if (!cart) throw new NotFoundException('Cart not found');
 
     let amount = 0;
 
-    for (const item of cart.items) {
-      const product = await this._productService.findById(item.productId);
+    const items: OrderItem[] = [];
 
-      if (!product) {
-        throw new NotFoundException('Product not found');
+    for (const item of cart.items) {
+      const variant = await this._variantService.findById(item.variantId);
+
+      if (!variant) throw new NotFoundException('Variant not found');
+
+      const product = await this._productService.findById(variant.productId);
+
+      if (!product) throw new NotFoundException('Product not found');
+
+      if (variant.stock < item.quantity) {
+        throw new Error(
+          `Insufficient stock for ${product.name} - ${product.name}. Available: ${variant.stock}`,
+        );
       }
-      amount += product.price * item.quantity;
+
+      const lineTotal = product.price * item.quantity;
+      amount += lineTotal;
+
+      items.push({
+        productId: product.id,
+        variantId: variant.id,
+        name: product.name,
+        price: product.price,
+        quantity: item.quantity,
+        subtotal: lineTotal,
+      });
     }
 
-    return new CheckoutCartLinkResponseDto(
-      await this._paymentService.createPaymentLink(userId, amount, 'INR'),
-    );
+    const order = await this._orderService.create({
+      userId,
+      subtotal: amount,
+      total: amount,
+      items,
+      metadata: { cartId: cart.id },
+      paymentStatus: 'pending',
+      orderStatus: 'pending',
+    });
+
+    return this._paymentService.createPaymentLink(userId, amount, 'INR', {
+      orderId: order.id,
+      orderNumber: order.orderNumber,
+    });
   }
 
   async clearCart(userId: string) {

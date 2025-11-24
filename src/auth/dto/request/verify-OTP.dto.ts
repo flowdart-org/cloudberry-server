@@ -3,7 +3,7 @@ import { IsNotEmpty, IsString, Length } from 'class-validator';
 
 export class LoginVerifyOTPDto {
   @ApiProperty({
-    example: '+919605119661 or rahilsardar234@gmail.com',
+    example: '+910000000000',
     description: 'Phone number of the user',
   })
   @IsNotEmpty({ message: 'Identifier is required' })

@@ -1,11 +1,15 @@
 import { Controller, Get, Patch, Param, Body, Query } from '@nestjs/common';
 
-import { HTTP_RESPONSE } from '@/common/types';
+import {
+  HttpPaginatedResponse,
+  HttpResponse,
+} from '@/common/dto/http-response.dto';
 import { OrderService } from '@/order/order.service';
-import { UpdateOrderDto } from '@/order/dto/update-order.dto';
 import { UserId } from '@/common/decorators/user-id.decorator';
+import { PaginatedQueryDto } from '@/common/dto/paginated-query.dto';
 import { OrderResponseDto } from '@/order/dto/response/order.response.dto';
 import { ApiResponseWithType } from '@/common/decorators/api-response.decorator';
+import { UpdateOrderDto } from '@/order/dto/request/update-order.dto';
 
 @Controller('order')
 export class OrderController {
@@ -14,15 +18,19 @@ export class OrderController {
   @Get()
   @ApiResponseWithType({ isArray: true }, OrderResponseDto)
   async findAll(
-    @Query('limit') limit = 20,
-    @Query('offset') offset = 0,
-  ): Promise<HTTP_RESPONSE<OrderResponseDto[]>> {
-    const orders = await this.orderService.listAll(limit, offset);
+    @Query() query: PaginatedQueryDto,
+  ): Promise<HttpPaginatedResponse<OrderResponseDto[]>> {
+    const { page, limit } = query;
+
+    const { orders, total } = await this.orderService.listAll(limit, page);
 
     return {
       message: 'Orders retrieved successfully',
       success: true,
       data: orders.map(OrderResponseDto.fromEntity),
+      limit,
+      page,
+      total,
     };
   }
 
@@ -30,15 +38,19 @@ export class OrderController {
   @ApiResponseWithType({ isArray: true }, OrderResponseDto)
   async findAllByUser(
     @UserId() userId: string,
-    @Query('limit') limit = 20,
-    @Query('offset') offset = 0,
-  ): Promise<HTTP_RESPONSE<OrderResponseDto[]>> {
-    const orders = await this.orderService.listByUser(userId, limit, offset);
+    @Query() query: PaginatedQueryDto,
+  ): Promise<HttpPaginatedResponse<OrderResponseDto[]>> {
+    const { page, limit } = query;
+
+    const { orders } = await this.orderService.listByUser(userId, limit, page);
 
     return {
       message: 'User orders retrieved successfully',
       success: true,
       data: orders.map(OrderResponseDto.fromEntity),
+      limit: query.limit,
+      page: query.page,
+      total: orders.length,
     };
   }
 
@@ -46,7 +58,7 @@ export class OrderController {
   @ApiResponseWithType({}, OrderResponseDto)
   async findOne(
     @Param('id') id: string,
-  ): Promise<HTTP_RESPONSE<OrderResponseDto>> {
+  ): Promise<HttpResponse<OrderResponseDto>> {
     const order = await this.orderService.findById(id);
 
     return {
@@ -61,10 +73,8 @@ export class OrderController {
   async update(
     @Param('id') id: string,
     @Body() dto: UpdateOrderDto,
-  ): Promise<HTTP_RESPONSE<OrderResponseDto>> {
-    const existing = await this.orderService.findById(id);
-    const updatedEntity = existing.with(dto);
-    const updated = await this.orderService.update(updatedEntity);
+  ): Promise<HttpResponse<OrderResponseDto>> {
+    const updated = await this.orderService.updateStatus(id, dto);
 
     return {
       message: 'Order updated successfully',

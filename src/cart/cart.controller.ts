@@ -60,7 +60,7 @@ export class CartController {
     return {
       message: 'Cart checkout initiated successfully',
       success: true,
-      data,
+      data: new CheckoutCartResponseDto(data),
     };
   }
 
@@ -74,7 +74,7 @@ export class CartController {
     return {
       message: 'Cart checkout initiated successfully',
       success: true,
-      data,
+      data: new CheckoutCartLinkResponseDto(data),
     };
   }
 

@@ -1,10 +1,12 @@
-import { Controller, Get, Param, Query } from '@nestjs/common';
+import { Controller, Get, Param } from '@nestjs/common';
 
 import { Role } from '@/common/enums/role.enum';
-import type { HTTP_RESPONSE } from '@/common/types';
 import { MediaService } from '@/media/media.service';
 import { Roles } from '@/common/decorators/roles.decorator';
+import { HttpResponse } from '@/common/dto/http-response.dto';
 import { UserId } from '@/common/decorators/user-id.decorator';
+import { ApiResponseWithType } from '@/common/decorators/api-response.decorator';
+import { UploadMediaResponseDto } from '@/media/dto/response/upload-media.response.dto';
 
 @Controller('media')
 export class MediaController {
@@ -12,12 +14,14 @@ export class MediaController {
 
   @Get('/upload/category/:categoryId')
   @Roles(Role.ADMIN)
+  @ApiResponseWithType({}, UploadMediaResponseDto)
   getCategoryUploadUrl(
     @Param('categoryId') categoryId: string,
-    @Query('mimeType') mimeType: string,
-  ): HTTP_RESPONSE<string> {
+  ): HttpResponse<UploadMediaResponseDto> {
+    const data = this._mediaService.getCategoryUploadUrl(categoryId);
+
     return {
-      data: this._mediaService.getCategoryUploadUrl(categoryId, mimeType),
+      data: new UploadMediaResponseDto(data),
       message: 'Upload URL generated successfully',
       success: true,
     };
@@ -25,17 +29,14 @@ export class MediaController {
 
   @Get('/upload/product/:productId/thumbnail')
   @Roles(Role.ADMIN)
+  @ApiResponseWithType({}, UploadMediaResponseDto)
   getProductThumbnailUploadUrl(
     @Param('productId') productId: string,
-    @Query('mimeType') mimeType: string,
-  ): HTTP_RESPONSE<string> {
-    const data = this._mediaService.getProductThumbnailUploadUrl(
-      productId,
-      mimeType,
-    );
+  ): HttpResponse<UploadMediaResponseDto> {
+    const data = this._mediaService.getProductThumbnailUploadUrl(productId);
 
     return {
-      data,
+      data: new UploadMediaResponseDto(data),
       message: 'Upload URL generated successfully',
       success: true,
     };
@@ -43,13 +44,15 @@ export class MediaController {
 
   @Get('/upload/product/:productId/:order')
   @Roles(Role.ADMIN)
+  @ApiResponseWithType({}, UploadMediaResponseDto)
   getProductUploadUrl(
     @Param('productId') productId: string,
     @Param('order') order: number,
-    @Query('mimeType') mimeType: string,
-  ): HTTP_RESPONSE<string> {
+  ): HttpResponse<UploadMediaResponseDto> {
+    const data = this._mediaService.getProductUploadUrl(productId, order);
+
     return {
-      data: this._mediaService.getProductUploadUrl(productId, order, mimeType),
+      data: new UploadMediaResponseDto(data),
       message: 'Upload URL generated successfully',
       success: true,
     };
@@ -57,19 +60,16 @@ export class MediaController {
 
   @Get('/upload/user/try-on')
   @Roles(Role.USER)
+  @ApiResponseWithType({}, UploadMediaResponseDto)
   getUserTryOnUploadUrl(
-    @Query('mimeType') mimeType: string,
     @UserId() userId: string,
-  ): HTTP_RESPONSE<string> {
+  ): HttpResponse<UploadMediaResponseDto> {
+    const data = this._mediaService.getUserTryOnUploadUrl(userId);
+
     return {
-      data: this._mediaService.getUserTryOnUploadUrl(userId, mimeType),
+      data: new UploadMediaResponseDto(data),
       message: 'Upload URL generated successfully',
       success: true,
     };
   }
-
-  // @Delete()
-  // remove(@Param('id') id: string) {
-  //   return this.mediaService.remove(+id);
-  // }
 }

@@ -31,7 +31,7 @@ export class RazorpayWebhookController {
 
   @Post()
   @Public()
-  handleRazorpayWebhook(
+  async handleRazorpayWebhook(
     @RawBody() rawBody: Buffer,
     @Req() req: Request,
     @Headers('x-razorpay-signature') signature: string,
@@ -55,7 +55,7 @@ export class RazorpayWebhookController {
 
     const event = req.body as RazorpayWebhookPayload<any, unknown>;
 
-    this._razorpayWebhookService.handleWebhook(event);
+    await this._razorpayWebhookService.handleWebhook(event);
 
     return { status: 'ok' };
   }

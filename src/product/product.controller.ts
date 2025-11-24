@@ -9,10 +9,10 @@ import {
 } from '@nestjs/common';
 
 import { Role } from '@/common/enums/role.enum';
-import type { HTTP_RESPONSE } from '@/common/types';
 import { ProductService } from '@/product/product.service';
 import { Roles } from '@/common/decorators/roles.decorator';
 import { Public } from '@/common/decorators/public.decorator';
+import { HttpResponse } from '@/common/dto/http-response.dto';
 import { CreateProductDto } from '@/product/dto/request/create-product.dto';
 import { UpdateProductDto } from '@/product/dto/request/update-product.dto';
 import { ApiResponseWithType } from '@/common/decorators/api-response.decorator';
@@ -29,7 +29,7 @@ export class ProductController {
   @ApiResponseWithType({}, ProductResponseDto)
   async create(
     @Body() createProductDto: CreateProductDto,
-  ): Promise<HTTP_RESPONSE<ProductResponseDto>> {
+  ): Promise<HttpResponse<ProductResponseDto>> {
     const data = await this.productService.create(createProductDto);
 
     return {
@@ -43,8 +43,8 @@ export class ProductController {
   @Public()
   @ApiResponseWithType({ isArray: true }, ProductResponseDto)
   async findFeed(
-    query: ProductFeedPaginatedQueryDto,
-  ): Promise<HTTP_RESPONSE<ProductResponseDto[]>> {
+    @Query() query: ProductFeedPaginatedQueryDto,
+  ): Promise<HttpResponse<ProductResponseDto[]>> {
     const data = await this.productService.findFeed(query);
 
     return {
@@ -59,7 +59,7 @@ export class ProductController {
   @ApiResponseWithType({ isArray: true }, ProductResponseDto)
   async find(
     @Query() query: ProductPaginatedQueryDto,
-  ): Promise<HTTP_RESPONSE<ProductResponseDto[]>> {
+  ): Promise<HttpResponse<ProductResponseDto[]>> {
     const data = await this.productService.find(query);
 
     return {
@@ -74,7 +74,7 @@ export class ProductController {
   @ApiResponseWithType({}, ProductResponseDto)
   async findOne(
     @Param('id') id: string,
-  ): Promise<HTTP_RESPONSE<ProductResponseDto>> {
+  ): Promise<HttpResponse<ProductResponseDto>> {
     const data = await this.productService.findById(id);
 
     return {
@@ -90,7 +90,7 @@ export class ProductController {
   async update(
     @Param('id') id: string,
     @Body() updateProductDto: UpdateProductDto,
-  ): Promise<HTTP_RESPONSE<ProductResponseDto>> {
+  ): Promise<HttpResponse<ProductResponseDto>> {
     const data = await this.productService.update(id, updateProductDto);
 
     return {

@@ -1,14 +1,19 @@
 import { v4 as uuidv4 } from 'uuid';
 import { Inject, Injectable, NotFoundException } from '@nestjs/common';
 
+import { OrderDto } from '@/order/dto/order.dto';
+import { UserService } from '@/user/user.service';
 import { Order } from '@/order/entities/order.entity';
 import { CreateOrderDto } from '@/order/dto/create-order.dto';
-import type { IOrderRepository } from '@/order/repositories/interfaces/order.repository';
+import { UpdateOrderDto } from '@/order/dto/request/update-order.dto';
+import { IOrderRepository } from '@/order/repositories/interfaces/order.repository';
 
 @Injectable()
 export class OrderService {
   constructor(
-    @Inject('OrderRepository') private readonly repo: IOrderRepository,
+    @Inject('OrderRepository')
+    private readonly _orderRepository: IOrderRepository,
+    private readonly _userService: UserService,
   ) {}
 
   public async create(dto: CreateOrderDto): Promise<Order> {
@@ -21,7 +26,6 @@ export class OrderService {
       userId: dto.userId,
       subtotal: dto.subtotal,
       shippingCharge: dto.shippingCharge ?? 0,
-      tax: dto.tax ?? 0,
       discount: dto.discount ?? 0,
       total: dto.total,
       items: dto.items,
@@ -42,11 +46,26 @@ export class OrderService {
       isDeleted: false,
     });
 
-    return this.repo.create(entity);
+    return this._orderRepository.create(entity);
   }
 
-  public async listAll(limit = 20, offset = 0): Promise<Order[]> {
-    return this.repo.findAll(limit, offset);
+  public async listAll(
+    limit = 20,
+    offset = 0,
+  ): Promise<{ orders: OrderDto[]; total: number }> {
+    const orderEntity = await this._orderRepository.findAll(limit, offset);
+
+    const orders = await Promise.all(
+      orderEntity.map(async (o) => {
+        const user = await this._userService.findById(o.userId);
+        return new OrderDto(o, user);
+      }),
+    );
+
+    return {
+      orders,
+      total: await this._orderRepository.countAll(),
+    };
   }
 
   public async listAllWithCount(
@@ -54,52 +73,125 @@ export class OrderService {
     offset = 0,
   ): Promise<{ total: number; data: Order[] }> {
     const [total, data] = await Promise.all([
-      this.repo.countAll(),
-      this.repo.findAll(limit, offset),
+      this._orderRepository.countAll(),
+      this._orderRepository.findAll(limit, offset),
     ]);
 
     return { total, data };
   }
 
-  public async findById(id: string): Promise<Order> {
-    const found = await this.repo.findById(id);
-    if (!found) throw new NotFoundException(`Order ${id} not found`);
-    return found;
+  public async findById(id: string): Promise<OrderDto> {
+    const order = await this._orderRepository.findById(id);
+    if (!order) throw new NotFoundException(`Order ${id} not found`);
+    const user = await this._userService.findById(order.userId);
+    return new OrderDto(order, user);
   }
 
-  public async findByOrderNumber(orderNumber: string): Promise<Order> {
-    const found = await this.repo.findByOrderNumber(orderNumber);
-    if (!found) throw new NotFoundException(`Order ${orderNumber} not found`);
-    return found;
+  public async findByOrderNumber(orderNumber: string): Promise<OrderDto> {
+    const orderEntity =
+      await this._orderRepository.findByOrderNumber(orderNumber);
+    if (!orderEntity)
+      throw new NotFoundException(`Order ${orderNumber} not found`);
+
+    const user = await this._userService.findById(orderEntity.userId);
+
+    return new OrderDto(orderEntity, user);
   }
 
   public async listByUser(
     userId: string,
     limit?: number,
     offset?: number,
-  ): Promise<Order[]> {
-    return this.repo.listByUser(userId, limit, offset);
+  ): Promise<{ orders: OrderDto[] }> {
+    const orderEntities = await this._orderRepository.listByUser(
+      userId,
+      limit,
+      offset,
+    );
+
+    const orders = await Promise.all(
+      orderEntities.map(async (o) => {
+        const user = await this._userService.findById(o.userId);
+        return new OrderDto(o, user);
+      }),
+    );
+
+    return {
+      orders,
+    };
   }
 
-  public async update(order: Order): Promise<Order> {
-    // for DDD you might add validation here
-    const existing = await this.repo.findById(order.id);
-    if (!existing) throw new NotFoundException(`Order ${order.id} not found`);
-    return this.repo.update(order);
+  public async update(id: string, payload: Partial<Order>): Promise<OrderDto> {
+    const existing = await this._orderRepository.findById(id);
+
+    if (!existing) throw new NotFoundException(`Order ${id} not found`);
+
+    const updatableFields: Partial<Order> = {
+      subtotal: payload.subtotal ?? existing.subtotal,
+      shippingCharge: payload.shippingCharge ?? existing.shippingCharge,
+      tax: payload.tax ?? existing.tax,
+      discount: payload.discount ?? existing.discount,
+      total: payload.total ?? existing.total,
+
+      // Order status controls
+      paymentStatus: payload.paymentStatus ?? existing.paymentStatus,
+      orderStatus: payload.orderStatus ?? existing.orderStatus,
+
+      // Address
+      shippingAddressJson:
+        payload.shippingAddressJson ?? existing.shippingAddressJson,
+      addressLine1: payload.addressLine1 ?? existing.addressLine1,
+      addressLine2: payload.addressLine2 ?? existing.addressLine2,
+      city: payload.city ?? existing.city,
+      state: payload.state ?? existing.state,
+      country: payload.country ?? existing.country,
+      postalCode: payload.postalCode ?? existing.postalCode,
+      addressLabel: payload.addressLabel ?? existing.addressLabel,
+      recipientName: payload.recipientName ?? existing.recipientName,
+      recipientPhone: payload.recipientPhone ?? existing.recipientPhone,
+
+      // Metadata
+      metadata: payload.metadata ?? existing.metadata,
+      items: payload.items ?? existing.items,
+    };
+
+    const updated = existing.with(updatableFields);
+
+    const data = await this._orderRepository.update(id, updated);
+
+    const user = await this._userService.findById(data.userId);
+
+    return new OrderDto(data, user);
   }
 
-  public async cancel(id: string, reason?: string): Promise<Order> {
-    const existing = await this.findById(id);
-    const cancelled = existing.with({
-      orderStatus: 'cancelled',
-      cancelledAt: new Date(),
-      cancelReason: reason ?? null,
+  public async updateStatus(
+    id: string,
+    payload: UpdateOrderDto,
+  ): Promise<OrderDto> {
+    const existing = await this._orderRepository.findById(id);
+
+    if (!existing) throw new NotFoundException(`Order ${id} not found`);
+
+    const data = await this._orderRepository.update(id, {
+      orderStatus: payload.status ?? existing.orderStatus,
     });
-    return this.repo.update(cancelled);
+
+    const user = await this._userService.findById(data.userId);
+    return new OrderDto(data, user);
   }
+
+  // public async cancel(id: string, reason?: string): Promise<Order> {
+  //   const existing = await this.findById(id);
+  //   const cancelled = existing.with({
+  //     orderStatus: 'cancelled',
+  //     cancelledAt: new Date(),
+  //     cancelReason: reason ?? null,
+  //   });
+  //   return this._orderRepository.update(cancelled);
+  // }
 
   public async softDelete(id: string): Promise<void> {
-    await this.repo.softDelete(id);
+    await this._orderRepository.softDelete(id);
   }
 
   private generateOrderNumber(): string {

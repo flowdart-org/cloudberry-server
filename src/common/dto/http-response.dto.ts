@@ -22,15 +22,15 @@ export class HttpPaginatedResponse<T>
   @ApiProperty({
     example: 10,
   })
-  total?: number;
+  total: number;
 
   @ApiProperty({
     example: 10,
   })
-  limit?: number;
+  limit: number;
 
   @ApiProperty({
     example: 1,
   })
-  page?: number;
+  page: number;
 }
