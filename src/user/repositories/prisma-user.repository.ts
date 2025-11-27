@@ -19,6 +19,9 @@ export class PrismaUserRepository implements IUserRepository {
         dob: data.dob,
         password: data.password,
       },
+      include: {
+        addresses: true,
+      },
     });
     return UserMapper.toEntity(doc);
   }
@@ -40,6 +43,9 @@ export class PrismaUserRepository implements IUserRepository {
       skip: (page - 1) * limit,
       take: limit,
       orderBy: { createdAt: 'desc' },
+      include: {
+        addresses: true,
+      },
     });
 
     return docs.map((d) => UserMapper.toEntity(d));
@@ -48,6 +54,9 @@ export class PrismaUserRepository implements IUserRepository {
   async findById(id: string): Promise<User | null> {
     const doc = await this._prisma.user.findUnique({
       where: { id },
+      include: {
+        addresses: true,
+      },
     });
     return doc ? UserMapper.toEntity(doc) : null;
   }
@@ -55,6 +64,9 @@ export class PrismaUserRepository implements IUserRepository {
   async findByEmail(email: string): Promise<User | null> {
     const doc = await this._prisma.user.findUnique({
       where: { email },
+      include: {
+        addresses: true,
+      },
     });
     return doc ? UserMapper.toEntity(doc) : null;
   }
@@ -62,6 +74,9 @@ export class PrismaUserRepository implements IUserRepository {
   async findByPhone(phone: string): Promise<User | null> {
     const doc = await this._prisma.user.findUnique({
       where: { phone },
+      include: {
+        addresses: true,
+      },
     });
     return doc ? UserMapper.toEntity(doc) : null;
   }
@@ -73,6 +88,9 @@ export class PrismaUserRepository implements IUserRepository {
     const doc = await this._prisma.user.update({
       where: { id },
       data: data,
+      include: {
+        addresses: true,
+      },
     });
     return doc ? UserMapper.toEntity(doc) : null;
   }

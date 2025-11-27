@@ -2,8 +2,8 @@ import { v4 as uuidv4 } from 'uuid';
 import { Inject, Injectable, NotFoundException } from '@nestjs/common';
 
 import { OrderDto } from '@/order/dto/order.dto';
-import { UserService } from '@/user/user.service';
 import { Order } from '@/order/entities/order.entity';
+import { UserService } from '@/user/services/user.service';
 import { CreateOrderDto } from '@/order/dto/create-order.dto';
 import { UpdateOrderDto } from '@/order/dto/request/update-order.dto';
 import { IOrderRepository } from '@/order/repositories/interfaces/order.repository';

@@ -28,9 +28,30 @@ model User {
   gender     UserGender?
   tryOnLimit Int         @default(3)
   status     UserStatus  @default(active)
-  createdAt  DateTime    @default(now())
-  updatedAt  DateTime    @updatedAt
+  addresses  Address[]
   cart       Cart?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model Address {
+  id String @id @default(uuid())
+
+  userId String
+  user   User?  @relation(fields: [userId], references: [id])
+
+  isPrimary Boolean @default(false)
+
+  houseNo String?
+  street  String?
+  city    String?
+  state   String?
+  country String?
+  pincode String?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 }
 
 model Admin {

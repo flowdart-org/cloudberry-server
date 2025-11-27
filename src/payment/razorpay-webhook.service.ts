@@ -15,6 +15,7 @@ export class RazorpayWebhookService {
     const payment = event.payload.payment.entity;
 
     const { orderId, orderNumber } = payment.notes as {
+      userId: string;
       orderId: string;
       orderNumber: string;
     };
@@ -37,18 +38,18 @@ export class RazorpayWebhookService {
   private handlePaymentFailed(event: PaymentFailedWebhook) {
     const payment = event.payload.payment.entity;
 
-    const { userId } = payment.notes;
+    const { orderNumber } = payment.notes as {
+      userId: string;
+      orderId: string;
+      orderNumber: string;
+    };
 
     console.log(
-      `❌ Payment Failed: User=${userId}, Amount=${payment.amount} ${payment.currency}, Reason=${payment.error_description}`,
+      `❌ Payment Failed: Order=${orderNumber}, Amount=${payment.amount} ${payment.currency}, Reason=${payment.error_description}`,
     );
-
-    // Add your business logic here, e.g., update order status, notify user, etc.
   }
 
   async handleWebhook(payload: RazorpayWebhookPayload<any, unknown>) {
-    console.log('✔️ Webhook Verified Successfully');
-
     switch (payload.event) {
       case 'payment.captured':
         await this.handlePaymentCaptured(payload as PaymentCapturedWebhook);

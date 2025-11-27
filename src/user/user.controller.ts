@@ -7,35 +7,44 @@ import {
   Req,
   UnauthorizedException,
   Query,
+  Post,
 } from '@nestjs/common';
 import type { Request } from 'express';
 
 import { Role } from '@/common/enums/role.enum';
-import { UserService } from '@/user/user.service';
+import type { RequestUser } from '@/common/types';
+import { UserService } from '@/user/services/user.service';
 import { Roles } from '@/common/decorators/roles.decorator';
 import { ReqUser } from '@/common/decorators/user.decorator';
+import { HttpResponse } from '@/common/dto/http-response.dto';
 import { UserId } from '@/common/decorators/user-id.decorator';
-import type { HTTP_RESPONSE, RequestUser } from '@/common/types';
+import { AddressService } from '@/user/services/address.service';
 import { UpdateUserDto } from '@/user/dto/request/update-user.dto';
 import { UserResponseDto } from '@/user/dto/response/user-response.dto';
+import { UpdateAddressDto } from '@/user/dto/request/update-address.dto';
+import { CreateAddressDto } from '@/user/dto/request/create-address.dto';
+import { AddressResponseDto } from '@/user/dto/response/address-response.dto';
 import { UpdateStatusUserDto } from '@/user/dto/request/update-status-user.dto';
 import { ApiResponseWithType } from '@/common/decorators/api-response.decorator';
 import { UserPaginatedQueryDto } from '@/user/dto/request/user-paginated-query.dto';
 
 @Controller('user')
 export class UserController {
-  constructor(private readonly _userService: UserService) {}
+  constructor(
+    private readonly _userService: UserService,
+    private readonly _addressService: AddressService,
+  ) {}
 
   @Get('me')
   @Roles(Role.USER)
   @ApiResponseWithType({}, UserResponseDto)
-  async me(@UserId() userId: string): Promise<HTTP_RESPONSE> {
+  async me(@UserId() userId: string): Promise<HttpResponse<UserResponseDto>> {
     const data = await this._userService.findById(userId);
 
     return {
       success: true,
       message: 'User profile fetched successfully',
-      data,
+      data: UserResponseDto.fromEntity(data),
     };
   }
 
@@ -44,7 +53,7 @@ export class UserController {
   @ApiResponseWithType({ isArray: true }, UserResponseDto)
   async find(
     @Query() query: UserPaginatedQueryDto,
-  ): Promise<HTTP_RESPONSE<UserResponseDto[]>> {
+  ): Promise<HttpResponse<UserResponseDto[]>> {
     const docs = await this._userService.find(query);
 
     return {
@@ -59,7 +68,7 @@ export class UserController {
   @ApiResponseWithType({}, UserResponseDto)
   async findOne(
     @Param('id') id: string,
-  ): Promise<HTTP_RESPONSE<UserResponseDto>> {
+  ): Promise<HttpResponse<UserResponseDto>> {
     const data = await this._userService.findById(id);
 
     return {
@@ -76,7 +85,7 @@ export class UserController {
     @Req() req: Request,
     @ReqUser() user: RequestUser,
     @Body() dto: UpdateUserDto,
-  ): Promise<HTTP_RESPONSE> {
+  ): Promise<HttpResponse<UserResponseDto>> {
     const userId = req.user['id'];
 
     console.log('userUpdate', dto, userId, user);
@@ -88,7 +97,40 @@ export class UserController {
     return {
       success: true,
       message: 'User profile rahil successfully',
-      data,
+      data: UserResponseDto.fromEntity(data),
+    };
+  }
+
+  @Post('address')
+  @Roles(Role.USER)
+  @ApiResponseWithType({}, AddressResponseDto)
+  async createAddress(
+    @UserId() userId: string,
+    @Body() dto: CreateAddressDto,
+  ): Promise<HttpResponse<AddressResponseDto>> {
+    const data = await this._addressService.create(userId, dto);
+
+    return {
+      success: true,
+      message: 'User address created successfully',
+      data: AddressResponseDto.fromEntity(data),
+    };
+  }
+
+  @Patch('address/:id')
+  @Roles(Role.USER)
+  @ApiResponseWithType({}, UserResponseDto)
+  async updateAddress(
+    @UserId() userId: string,
+    @Body() dto: UpdateAddressDto,
+    @Param('id') addressId: string,
+  ): Promise<HttpResponse<AddressResponseDto>> {
+    const data = await this._addressService.update(addressId, userId, dto);
+
+    return {
+      success: true,
+      message: 'User address updated successfully',
+      data: AddressResponseDto.fromEntity(data),
     };
   }
 
@@ -98,13 +140,13 @@ export class UserController {
   async updateStatus(
     @Param('id') userId: string,
     @Body() dto: UpdateStatusUserDto,
-  ): Promise<HTTP_RESPONSE> {
+  ): Promise<HttpResponse<UserResponseDto>> {
     const data = await this._userService.updateStatus(userId, dto);
 
     return {
       success: true,
       message: 'User profile rahil successfully',
-      data,
+      data: UserResponseDto.fromEntity(data),
     };
   }
 }

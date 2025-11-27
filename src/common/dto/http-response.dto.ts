@@ -10,9 +10,6 @@ export class HttpResponse<T> implements HTTP_RESPONSE {
 
   @ApiProperty({ required: false })
   data?: T;
-
-  @ApiProperty({ required: false })
-  accessToken?: string;
 }
 
 export class HttpPaginatedResponse<T>

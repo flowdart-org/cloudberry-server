@@ -55,8 +55,6 @@ export class RazorpayWebhookController {
 
     const event = req.body as RazorpayWebhookPayload<any, unknown>;
 
-    await this._razorpayWebhookService.handleWebhook(event);
-
-    return { status: 'ok' };
+    return this._razorpayWebhookService.handleWebhook(event);
   }
 }

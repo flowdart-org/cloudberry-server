@@ -1,9 +1,9 @@
 import axios from 'axios';
-
-import { UserService } from '@/user/user.service';
-import { ProductService } from '@/product/product.service';
-import { TryOnMediaService } from '@/media/tryon-upload.service';
 import { BadRequestException, Injectable } from '@nestjs/common';
+
+import { ProductService } from '@/product/product.service';
+import { UserService } from '@/user/services/user.service';
+import { TryOnMediaService } from '@/media/tryon-upload.service';
 import { CreateTryOnDto } from '@/ai/try-on/dto/create-try-on.dto';
 import { TryOnRequest, VertexService } from '@/ai/vertex/vertex.service';
 

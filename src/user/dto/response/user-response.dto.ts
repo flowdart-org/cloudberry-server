@@ -1,6 +1,7 @@
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 
 import { UserDto } from '@/user/dto/user.dto';
+import { AddressResponseDto } from '@/user/dto/response/address-response.dto';
 
 export class UserResponseDto {
   @ApiProperty({
@@ -59,6 +60,13 @@ export class UserResponseDto {
   public tryOnLimit: number;
 
   @ApiProperty({
+    type: () => AddressResponseDto,
+    isArray: true,
+    description: 'List of user addresses',
+  })
+  public addresses: AddressResponseDto[];
+
+  @ApiProperty({
     example: 'active',
     description: 'Current status of the user account',
   })
@@ -80,6 +88,7 @@ export class UserResponseDto {
       gender: entity.gender || undefined,
       tryOnImage: entity.tryOnImage || null,
       tryOnLimit: entity.tryOnLimit,
+      addresses: entity.addresses.map(AddressResponseDto.fromEntity),
       status: entity.status,
       joined: entity.createdAt,
     };

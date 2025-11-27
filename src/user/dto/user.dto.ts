@@ -1,5 +1,6 @@
 import { User } from '@/user/entities/user.entity';
 import { ReadUrlResponse } from '@/media/media.service';
+import { Address } from '@/user/entities/address.entity';
 
 export class UserDto {
   public id: string;
@@ -11,6 +12,7 @@ export class UserDto {
   public gender?: 'male' | 'female' | 'other';
   public tryOnImage: string | null;
   public tryOnLimit: number;
+  public addresses: Address[];
   public status: string;
   public createdAt: Date;
   public updatedAt: Date;
@@ -25,6 +27,7 @@ export class UserDto {
     this.tryOnImage = tryOnImage?.readUrl || null;
     this.gender = entity.gender || undefined;
     this.tryOnLimit = entity.tryOnLimit;
+    this.addresses = entity.address;
     this.status = entity.status;
     this.createdAt = entity.createdAt;
     this.updatedAt = entity.updatedAt;

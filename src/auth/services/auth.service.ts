@@ -4,12 +4,12 @@ import { SmsService } from '@/sms/sms.service';
 import { OtpService } from '@/otp/otp.service';
 import { Role } from '@/common/enums/role.enum';
 import { OTPPurpose } from '@/otp/otp.interface';
-import { UserService } from '@/user/user.service';
 import { AdminService } from '@/admin/admin.service';
 import { EmailService } from '@/email/email.service';
 import { JwtService } from '@/auth/services/jwt.service';
-import { AdminLoginDto } from '@/auth/dto/request/admin-login.dto';
+import { UserService } from '@/user/services/user.service';
 import { isEmail, isPhone } from '@/auth/utils/identifier.util';
+import { AdminLoginDto } from '@/auth/dto/request/admin-login.dto';
 import { LoginVerifyOTPDto } from '@/auth/dto/request/verify-OTP.dto';
 import { LoginRequestOTPDto } from '@/auth/dto/request/request-OTP.dto';
 
