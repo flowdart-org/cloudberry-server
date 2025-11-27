@@ -1,4 +1,4 @@
-import { Type } from 'class-transformer';
+import { Transform, Type } from 'class-transformer';
 import { ApiProperty } from '@nestjs/swagger';
 import { IsArray, IsNumber, IsOptional, IsString } from 'class-validator';
 
@@ -29,6 +29,9 @@ export class ProductFeedPaginatedQueryDto extends PaginatedQueryDto {
     type: [String],
   })
   @IsOptional()
+  @Transform(({ value }: { value: string }) =>
+    Array.isArray(value) ? value : value ? [value] : [],
+  )
   @IsArray()
   @IsString({ each: true })
   categories?: string[];

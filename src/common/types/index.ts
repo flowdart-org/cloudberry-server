@@ -3,9 +3,6 @@ export interface HTTP_RESPONSE<T = any> {
   success: boolean;
   data?: T;
   accessToken?: string;
-  total?: number;
-  limit?: number;
-  page?: number;
 }
 
 export interface HTTP_PAGINATED_RESPONSE {

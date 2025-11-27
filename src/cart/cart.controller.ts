@@ -17,14 +17,25 @@ import { CartResponseDto } from '@/cart/dto/response/cart.response.dto';
 import { ApiResponseWithType } from '@/common/decorators/api-response.decorator';
 import { CheckoutCartResponseDto } from '@/cart/dto/response/checkout-cart.response.dto';
 import { CheckoutCartLinkResponseDto } from '@/cart/dto/response/checkout-cart-link.response.dto';
+import { CartItem } from '@/cart/entities/cart-item.entity';
 
 @Controller('cart')
 export class CartController {
   constructor(private readonly _cartService: CartService) {}
 
   @Post('add')
-  addToCart(@UserId() userId: string, @Body() dto: CreateCartDto) {
-    return this._cartService.addToCart(userId, dto);
+  @ApiResponseWithType({}, CartResponseDto)
+  async addToCart(
+    @UserId() userId: string,
+    @Body() dto: CreateCartDto,
+  ): Promise<HTTP_RESPONSE<CartItem>> {
+    const data = await this._cartService.addToCart(userId, dto);
+
+    return {
+      message: 'Item added to cart successfully',
+      success: true,
+      data,
+    };
   }
 
   @Get()
@@ -79,7 +90,17 @@ export class CartController {
   }
 
   @Delete(':itemId')
-  removeItem(@UserId() userId: string, @Param('itemId') itemId: string) {
-    return this._cartService.removeItem(userId, itemId);
+  @ApiResponseWithType({}, CartResponseDto)
+  async removeItem(
+    @UserId() userId: string,
+    @Param('itemId') itemId: string,
+  ): Promise<HTTP_RESPONSE<boolean>> {
+    await this._cartService.removeItem(userId, itemId);
+
+    return {
+      message: 'Item removed from cart successfully',
+      success: true,
+      data: true,
+    };
   }
 }

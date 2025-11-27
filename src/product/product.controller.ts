@@ -12,7 +12,10 @@ import { Role } from '@/common/enums/role.enum';
 import { ProductService } from '@/product/product.service';
 import { Roles } from '@/common/decorators/roles.decorator';
 import { Public } from '@/common/decorators/public.decorator';
-import { HttpResponse } from '@/common/dto/http-response.dto';
+import {
+  HttpPaginatedResponse,
+  HttpResponse,
+} from '@/common/dto/http-response.dto';
 import { CreateProductDto } from '@/product/dto/request/create-product.dto';
 import { UpdateProductDto } from '@/product/dto/request/update-product.dto';
 import { ApiResponseWithType } from '@/common/decorators/api-response.decorator';
@@ -59,13 +62,16 @@ export class ProductController {
   @ApiResponseWithType({ isArray: true }, ProductResponseDto)
   async find(
     @Query() query: ProductPaginatedQueryDto,
-  ): Promise<HttpResponse<ProductResponseDto[]>> {
-    const data = await this.productService.find(query);
+  ): Promise<HttpPaginatedResponse<ProductResponseDto[]>> {
+    const products = await this.productService.find(query);
 
     return {
       success: true,
       message: 'Products fetched successfully',
-      data: data.map(ProductResponseDto.fromDto),
+      data: products.map(ProductResponseDto.fromDto),
+      total: 20,
+      page: query.page,
+      limit: query.limit,
     };
   }
 
