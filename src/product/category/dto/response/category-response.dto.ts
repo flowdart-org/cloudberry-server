@@ -1,18 +1,17 @@
-import { Category } from '@/product/category/entities/category.entity';
+import { CategoryDto } from '@/product/category/dto/category.dto';
 
 export class CategoryResponseDto {
-  this: void;
   public id: string;
   public name: string;
   public status: 'active' | 'inactive';
-  public productsCount: number;
   public thumbnail: string;
 
-  constructor(entity: Category, productsCount: number, imageUrl: string) {
-    this.id = entity.id;
-    this.name = entity.name;
-    this.status = entity.status;
-    this.productsCount = productsCount || 0;
-    this.thumbnail = imageUrl;
+  static fromDto(this: void, entity: CategoryDto): CategoryResponseDto {
+    return {
+      id: entity.id,
+      name: entity.name,
+      status: entity.status,
+      thumbnail: entity.thumbnail,
+    };
   }
 }

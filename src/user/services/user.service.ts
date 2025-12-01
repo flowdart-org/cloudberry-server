@@ -7,7 +7,7 @@ import {
 
 import { UserDto } from '@/user/dto/user.dto';
 import { User } from '@/user/entities/user.entity';
-import { MediaService } from '@/media/media.service';
+import { MediaService } from '@/media/services/media.service';
 import { UpdateUserDto } from '@/user/dto/request/update-user.dto';
 import { CreateUserDto } from '@/user/dto/request/create-user.dto';
 import { UpdateStatusUserDto } from '@/user/dto/request/update-status-user.dto';

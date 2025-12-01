@@ -45,8 +45,10 @@ export class ProductDto {
     this.description = entity.description;
     this.price = entity.price;
     this.discountPercent = entity.discountPercent || null;
+
     this.discountPrice =
       (entity.price / 100) * (100 - (entity.discountPercent || 0));
+
     this.images = images;
     this.variants = variants;
     this.createdAt = entity.createdAt;
@@ -54,6 +56,7 @@ export class ProductDto {
     this.status = entity.status;
     this.tryOn = entity.tryOn;
     this.thumbnail = thumbnail || images[0];
+
     if (category) {
       this.category = {
         ...category,

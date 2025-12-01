@@ -96,4 +96,21 @@ export class MediaService {
       readUrl: this._azureBlobService.generateReadUrl(blobName),
     };
   }
+
+  getHeroImageUploadUrl(): UploadUrlResponse {
+    const blobName = `landing-page/hero.jpg`;
+
+    return {
+      uploadUrl: this._azureBlobService.generateUploadUrl(blobName),
+      readUrl: this._azureBlobService.generateReadUrl(blobName),
+    };
+  }
+
+  getHeroImageReadUrl(): ReadUrlResponse {
+    const blobName = `landing-page/hero.jpg`;
+
+    return {
+      readUrl: this._azureBlobService.generateReadUrl(blobName),
+    };
+  }
 }

@@ -1,6 +1,6 @@
 import { User } from '@/user/entities/user.entity';
-import { ReadUrlResponse } from '@/media/media.service';
 import { Address } from '@/user/entities/address.entity';
+import { ReadUrlResponse } from '@/media/services/media.service';
 
 export class UserDto {
   public id: string;

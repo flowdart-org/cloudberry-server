@@ -37,7 +37,7 @@ export class CategoryController {
     return {
       success: true,
       message: 'Category created successfully',
-      data,
+      data: CategoryResponseDto.fromDto(data),
     };
   }
 
@@ -53,7 +53,7 @@ export class CategoryController {
     return {
       success: true,
       message: 'Categories retrieved successfully',
-      data: items,
+      data: items.map(CategoryResponseDto.fromDto),
       total,
       page,
       limit,
@@ -69,7 +69,7 @@ export class CategoryController {
     return {
       success: true,
       message: 'Categories retrieved successfully',
-      data,
+      data: data.map(CategoryResponseDto.fromDto),
     };
   }
 
@@ -84,7 +84,7 @@ export class CategoryController {
     return {
       success: true,
       message: 'Category retrieved successfully',
-      data,
+      data: CategoryResponseDto.fromDto(data),
     };
   }
 
@@ -100,7 +100,7 @@ export class CategoryController {
     return {
       success: true,
       message: 'Category updated successfully',
-      data,
+      data: CategoryResponseDto.fromDto(data),
     };
   }
 }

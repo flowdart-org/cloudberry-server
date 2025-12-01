@@ -1,6 +1,6 @@
 import { Inject, Injectable, NotFoundException } from '@nestjs/common';
 
-import { MediaService } from '@/media/media.service';
+import { MediaService } from '@/media/services/media.service';
 import { CategoryDto } from '@/product/category/dto/category.dto';
 import { CreateCategoryDto } from '@/product/category/dto/request/create-category.dto';
 import { UpdateCategoryDto } from '@/product/category/dto/request/update-category.dto';

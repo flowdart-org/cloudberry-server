@@ -1,6 +1,6 @@
 import { Inject, Injectable } from '@nestjs/common';
 
-import { PrismaClient } from '@/common/prisma/prisma-client';
+import { PrismaService } from '@/common/prisma/prisma.service';
 import { ProductMapper } from '@/product/mappers/product.mapper';
 import { Prisma, Product as PrismaProduct } from '@prisma/client';
 import { Product as ProductEntity } from '@/product/entities/product.entity';
@@ -10,7 +10,7 @@ import { ProductFeedPaginatedQueryDto } from '@/product/dto/request/product-feed
 
 @Injectable()
 export class PrismaProductRepository implements ProductRepository {
-  constructor(@Inject('PrismaClient') private readonly _prisma: PrismaClient) {}
+  constructor(@Inject('PrismaClient') private readonly _prisma: PrismaService) {}
 
   async create(
     data: Omit<ProductEntity, 'id' | 'variants' | 'createdAt' | 'updatedAt'> &

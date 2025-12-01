@@ -1,8 +1,8 @@
 import { BadRequestException, Inject, Injectable } from '@nestjs/common';
 
-import { MediaService } from '@/media/media.service';
 import { ProductDto } from '@/product/dto/product.dto';
 import { Product } from '@/product/entities/product.entity';
+import { MediaService } from '@/media/services/media.service';
 import { VariantService } from '@/product/variant/variant.service';
 import { CategoryService } from '@/product/category/category.service';
 import { CreateProductDto } from '@/product/dto/request/create-product.dto';

@@ -1,13 +1,13 @@
 import { Injectable, Inject, NotFoundException } from '@nestjs/common';
 
-import { PrismaClient } from '@/common/prisma/prisma-client';
+import { PrismaService } from '@/common/prisma/prisma.service';
 import { VariantMapper } from '@/product/variant/mappers/variant.mapper';
 import { ProductVariant } from '@/product/variant/entities/product-variant.entity';
 import { VariantRepository } from '@/product/variant/repositories/interfaces/variant.repository';
 
 @Injectable()
 export class PrismaVariantRepository implements VariantRepository {
-  constructor(@Inject('PrismaClient') private readonly _prisma: PrismaClient) {}
+  constructor(@Inject('PrismaClient') private readonly _prisma: PrismaService) {}
 
   async create(
     data: Omit<ProductVariant, 'id' | 'status' | 'createdAt' | 'updatedAt'>,

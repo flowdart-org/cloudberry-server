@@ -1,7 +1,8 @@
 import { ApiProperty } from '@nestjs/swagger';
+
 import { HTTP_PAGINATED_RESPONSE, HTTP_RESPONSE } from '@/common/types';
 
-export class HttpResponse<T> implements HTTP_RESPONSE {
+export class HttpResponse<T = any> implements HTTP_RESPONSE {
   @ApiProperty({ example: true })
   success: boolean;
 
@@ -12,7 +13,7 @@ export class HttpResponse<T> implements HTTP_RESPONSE {
   data?: T;
 }
 
-export class HttpPaginatedResponse<T>
+export class HttpPaginatedResponse<T = any>
   extends HttpResponse<T>
   implements HTTP_PAGINATED_RESPONSE
 {

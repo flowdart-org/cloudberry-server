@@ -61,6 +61,7 @@ export const OrderMapper = {
 
     return {
       orderNumber: order.orderNumber,
+      // @ts-ignore userId is not updatable but included for type consistency
       userId: order.userId,
       placedAt: order.placedAt,
       deliveredAt: order.deliveredAt ?? null,
@@ -109,6 +110,7 @@ export const OrderMapper = {
 
     return {
       orderNumber: order.orderNumber,
+      // @ts-ignore userId is not updatable but included for type consistency
       userId: order.userId,
       placedAt: order.placedAt,
       deliveredAt: order.deliveredAt ?? undefined,

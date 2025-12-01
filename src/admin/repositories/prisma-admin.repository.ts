@@ -2,12 +2,12 @@ import { Inject } from '@nestjs/common';
 
 import { Admin as PrismaAdmin } from '@prisma/client';
 import { AdminMapper } from '@/admin/mappers/admin.mapper';
-import { PrismaClient } from '@/common/prisma/prisma-client';
+import { PrismaService } from '@/common/prisma/prisma.service';
 import { Admin as AdminEntity } from '@/admin/entities/admin.entity';
 import { IAdminRepository } from '@/admin/repositories/interfaces/admin.repository';
 
 export class PrismaAdminRepository implements IAdminRepository {
-  constructor(@Inject('PrismaClient') private readonly prisma: PrismaClient) {
+  constructor(@Inject('PrismaClient') private readonly prisma: PrismaService) {
     (async () => {
       const admin = await this.prisma.admin.findUnique({
         where: {

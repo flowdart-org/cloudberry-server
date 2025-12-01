@@ -1,13 +1,13 @@
 import { Inject, Injectable } from '@nestjs/common';
 
 import { OrderMapper } from '@/order/mappers/order.mapper';
-import { PrismaClient } from '@/common/prisma/prisma-client';
+import { PrismaService } from '@/common/prisma/prisma.service';
 import { Order, Order as OrderEntity } from '@/order/entities/order.entity';
 import { IOrderRepository } from '@/order/repositories/interfaces/order.repository';
 
 @Injectable()
 export class PrismaOrderRepository implements IOrderRepository {
-  constructor(@Inject('PrismaClient') private readonly prisma: PrismaClient) {}
+  constructor(@Inject('PrismaClient') private readonly prisma: PrismaService) {}
 
   public async create(order: OrderEntity): Promise<OrderEntity> {
     const data = OrderMapper.toPersistenceCreate(order);

@@ -2,7 +2,7 @@ import { Module } from '@nestjs/common';
 
 import { AdminService } from '@/admin/admin.service';
 import { AdminController } from '@/admin/admin.controller';
-import { PrismaClient } from '@/common/prisma/prisma-client';
+import { PrismaService } from '@/common/prisma/prisma.service';
 import { PrismaAdminRepository } from '@/admin/repositories/prisma-admin.repository';
 
 @Module({
@@ -13,7 +13,7 @@ import { PrismaAdminRepository } from '@/admin/repositories/prisma-admin.reposit
       provide: 'AdminRepository',
       useClass: PrismaAdminRepository,
     },
-    { provide: 'PrismaClient', useClass: PrismaClient },
+    { provide: 'PrismaClient', useClass: PrismaService },
   ],
   exports: [AdminService],
 })

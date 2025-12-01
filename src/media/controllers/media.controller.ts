@@ -1,9 +1,9 @@
 import { Controller, Get, Param } from '@nestjs/common';
 
 import { Role } from '@/common/enums/role.enum';
-import { MediaService } from '@/media/media.service';
 import { Roles } from '@/common/decorators/roles.decorator';
 import { HttpResponse } from '@/common/dto/http-response.dto';
+import { MediaService } from '@/media/services/media.service';
 import { UserId } from '@/common/decorators/user-id.decorator';
 import { ApiResponseWithType } from '@/common/decorators/api-response.decorator';
 import { UploadMediaResponseDto } from '@/media/dto/response/upload-media.response.dto';
