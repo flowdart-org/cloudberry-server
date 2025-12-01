@@ -11,7 +11,7 @@ export type PaymentStatus = 'pending' | 'paid' | 'failed' | 'refunded';
 
 export type OrderItem = {
   productId: string;
-  variantId?: string | null;
+  variantId: string;
   name: string;
   sku?: string | null;
   price: number;

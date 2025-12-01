@@ -1,42 +1,100 @@
+import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
+
 import { OrderDto } from '@/order/dto/order.dto';
 import { OrderItem } from '@/order/entities/order.entity';
 
 export class OrderItemDto implements OrderItem {
+  @ApiProperty()
   productId!: string;
-  variantId?: string | null;
+
+  @ApiProperty({
+    example: 'variant_12345',
+  })
+  variantId: string;
+
+  @ApiProperty()
   name!: string;
-  sku?: string | null;
+
+  @ApiPropertyOptional({
+    example: 'SKU_12345',
+  })
+  sku?: string;
+
+  @ApiProperty()
   price!: number;
+
+  @ApiProperty()
   quantity!: number;
+
+  @ApiProperty()
   subtotal!: number;
-  metadata?: Record<string, unknown> | null;
+
+  @ApiPropertyOptional({
+    type: 'object',
+    additionalProperties: true,
+  })
+  metadata?: Record<string, unknown>;
 }
 
 export class OrderResponseDto {
+  @ApiProperty()
   id!: string;
+
+  @ApiProperty()
   orderNumber!: string;
+
+  @ApiProperty({
+    type: () => ({
+      id: { type: 'string' },
+      name: { type: 'string', nullable: true },
+      email: { type: 'string', nullable: true },
+      phone: { type: 'string', nullable: true },
+    }),
+  })
   customer: {
     id: string;
     name?: string;
     email?: string;
     phone?: string;
   };
-  placedAt!: Date;
-  updatedAt!: Date | null;
-  deliveredAt?: Date | null;
-  cancelledAt?: Date | null;
 
+  @ApiProperty({ type: Date, nullable: true })
+  placedAt: Date | null;
+
+  @ApiProperty({ type: Date, nullable: true })
+  updatedAt: Date | null;
+
+  @ApiProperty({ type: Date, nullable: true })
+  deliveredAt: Date | null;
+
+  @ApiProperty({ type: Date, nullable: true })
+  cancelledAt: Date | null;
+
+  @ApiProperty()
   subtotal: number;
+
+  @ApiProperty()
   shippingCharge: number;
+
+  @ApiProperty()
   discount: number;
+
+  @ApiProperty()
   total: number;
 
+  @ApiProperty({ type: [OrderItemDto] })
   items: OrderItemDto[];
 
+  @ApiPropertyOptional({ nullable: true })
   paymentMethod?: string | null;
+
+  @ApiProperty()
   paymentStatus!: string;
+
+  @ApiProperty()
   orderStatus!: string;
 
+  @ApiProperty()
   isDeleted!: boolean;
 
   static fromEntity(this: void, orderDto: OrderDto): OrderResponseDto {
@@ -56,13 +114,13 @@ export class OrderResponseDto {
 
     dto.items = orderDto.items.map((i) => ({
       productId: i.productId,
-      variantId: i.variantId ?? null,
+      variantId: i.variantId,
       name: i.name,
-      sku: i.sku ?? null,
+      sku: i.sku ?? undefined,
       price: i.price,
       quantity: i.quantity,
       subtotal: i.subtotal,
-      metadata: i.metadata ?? null,
+      metadata: i.metadata ?? undefined,
     }));
 
     dto.paymentMethod = orderDto.paymentMethod ?? null;

@@ -12,12 +12,12 @@ import { HTTP_RESPONSE } from '@/common/types';
 import { CreateCartDto } from '@/cart/dto/create-cart.dto';
 import { UpdateCartDto } from '@/cart/dto/update-cart.dto';
 import { CartService } from '@/cart/services/cart.service';
+import { CartItem } from '@/cart/entities/cart-item.entity';
 import { UserId } from '@/common/decorators/user-id.decorator';
 import { CartResponseDto } from '@/cart/dto/response/cart.response.dto';
 import { ApiResponseWithType } from '@/common/decorators/api-response.decorator';
 import { CheckoutCartResponseDto } from '@/cart/dto/response/checkout-cart.response.dto';
 import { CheckoutCartLinkResponseDto } from '@/cart/dto/response/checkout-cart-link.response.dto';
-import { CartItem } from '@/cart/entities/cart-item.entity';
 
 @Controller('cart')
 export class CartController {

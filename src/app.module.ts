@@ -14,6 +14,8 @@ import { PaymentModule } from '@/payment/payment.module';
 import { WebhookModule } from '@/webhook/webhook.module';
 import { PrismaModule } from '@/common/prisma/prisma.module';
 import { JwtAuthGuard } from '@/common/guards/jwt-auth.guard';
+import { LandingPageModule } from '@/landing-page/landing-page.module';
+import { AnalyticsModule } from '@/analytics/analytics.module';
 
 @Module({
   imports: [
@@ -28,6 +30,8 @@ import { JwtAuthGuard } from '@/common/guards/jwt-auth.guard';
     PaymentModule,
     WebhookModule,
     OrderModule,
+    LandingPageModule,
+    AnalyticsModule,
   ],
   providers: [
     {

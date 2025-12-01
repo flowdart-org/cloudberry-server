@@ -33,6 +33,8 @@ model User {
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
+
+  orders Order[]
 }
 
 model Address {
@@ -155,9 +157,11 @@ enum PaymentStatus {
 }
 
 model Order {
-  id          String    @id @default(uuid())
-  orderNumber String    @unique
+  id          String @id @default(uuid())
+  orderNumber String @unique
   userId      String
+  user        User   @relation(fields: [userId], references: [id])
+
   placedAt    DateTime  @default(now())
   updatedAt   DateTime  @updatedAt
   deliveredAt DateTime?
@@ -195,4 +199,20 @@ model Order {
   refundAmount Float?
 
   isDeleted Boolean @default(false)
+}
+
+model LandingPage {
+  id String @id @default(uuid())
+
+  heroImage    String?
+  heroTitle    String?
+  heroSubtitle String?
+
+  topCategoryIds String[] @default([])
+  topProductIds  String[] @default([])
+
+  sections Json @default("[]")
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 }

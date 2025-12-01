@@ -6,10 +6,10 @@ import {
 } from '@/common/dto/http-response.dto';
 import { OrderService } from '@/order/order.service';
 import { UserId } from '@/common/decorators/user-id.decorator';
-import { PaginatedQueryDto } from '@/common/dto/paginated-query.dto';
+import { UpdateOrderDto } from '@/order/dto/request/update-order.dto';
 import { OrderResponseDto } from '@/order/dto/response/order.response.dto';
 import { ApiResponseWithType } from '@/common/decorators/api-response.decorator';
-import { UpdateOrderDto } from '@/order/dto/request/update-order.dto';
+import { OrderPaginatedQueryDto } from '@/order/dto/request/order-paginated-query.dto';
 
 @Controller('order')
 export class OrderController {
@@ -18,7 +18,7 @@ export class OrderController {
   @Get()
   @ApiResponseWithType({ isArray: true }, OrderResponseDto)
   async findAll(
-    @Query() query: PaginatedQueryDto,
+    @Query() query: OrderPaginatedQueryDto,
   ): Promise<HttpPaginatedResponse<OrderResponseDto[]>> {
     const { page, limit } = query;
 
@@ -34,11 +34,11 @@ export class OrderController {
     };
   }
 
-  @Get('/user')
+  @Get('user')
   @ApiResponseWithType({ isArray: true }, OrderResponseDto)
   async findAllByUser(
     @UserId() userId: string,
-    @Query() query: PaginatedQueryDto,
+    @Query() query: OrderPaginatedQueryDto,
   ): Promise<HttpPaginatedResponse<OrderResponseDto[]>> {
     const { page, limit } = query;
 
@@ -54,7 +54,7 @@ export class OrderController {
     };
   }
 
-  @Get('/:id')
+  @Get(':id')
   @ApiResponseWithType({}, OrderResponseDto)
   async findOne(
     @Param('id') id: string,
@@ -68,7 +68,7 @@ export class OrderController {
     };
   }
 
-  @Patch('/:id')
+  @Patch(':id')
   @ApiResponseWithType({}, OrderResponseDto)
   async update(
     @Param('id') id: string,

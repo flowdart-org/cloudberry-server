@@ -57,7 +57,15 @@ export class OrderService {
 
     const orders = await Promise.all(
       orderEntity.map(async (o) => {
-        const user = await this._userService.findById(o.userId);
+        // const user = await this._userService.findById(o.userId);
+        await Promise.resolve();
+        const user = {
+          id: o.userId,
+          name: 'Sample User',
+          email: 'example@gmail.com',
+          phone: '1234567890',
+        };
+        //@ts-expect-error this is temp user // TODO: remove this line when user service is ready
         return new OrderDto(o, user);
       }),
     );
