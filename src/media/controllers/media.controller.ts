@@ -72,4 +72,17 @@ export class MediaController {
       success: true,
     };
   }
+
+  @Get('/upload/hero-image')
+  @Roles(Role.ADMIN)
+  @ApiResponseWithType({}, UploadMediaResponseDto)
+  getHeroImageUploadUrl(): HttpResponse<UploadMediaResponseDto> {
+    const data = this._mediaService.getHeroImageUploadUrl();
+
+    return {
+      data: new UploadMediaResponseDto(data),
+      message: 'Upload URL generated successfully',
+      success: true,
+    };
+  }
 }
