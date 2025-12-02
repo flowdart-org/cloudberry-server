@@ -1,14 +1,16 @@
 import { Inject } from '@nestjs/common';
+import { PrismaClient, User as PrismaUser } from '@prisma/client';
 
 import { User } from '@/user/entities/user.entity';
 import { UserMapper } from '@/user/mappers/user.mapper';
 import { User as UserEntity } from '@/user/entities/user.entity';
-import { PrismaClient, User as PrismaUser } from '@prisma/client';
 import { IUserRepository } from '@/user/repositories/interfaces/user.repository';
 import { UserPaginatedQueryDto } from '@/user/dto/request/user-paginated-query.dto';
 
 export class PrismaUserRepository implements IUserRepository {
-  constructor( private readonly _prisma: PrismaClient) {}
+  constructor(
+    @Inject('PrismaService') private readonly _prisma: PrismaClient,
+  ) {}
 
   async create(data: Partial<PrismaUser>): Promise<User> {
     const doc = await this._prisma.user.create({

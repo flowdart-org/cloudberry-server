@@ -1,63 +1,120 @@
 import { ApiProperty } from '@nestjs/swagger';
 
 export class SalesOverviewItemDto {
-  @ApiProperty()
-  month!: string;
+  @ApiProperty({
+    description: 'Month of the sales data',
+    example: 'January',
+  })
+  month: string;
 
-  @ApiProperty()
-  amount!: number;
+  @ApiProperty({
+    description: 'Total sales amount for the month',
+    example: 10000,
+  })
+  amount: number;
 }
 
 export class TopSellingProductDto {
-  @ApiProperty()
-  productId!: string;
+  @ApiProperty({
+    description: 'Unique identifier for the product',
+    example: 'PROD987654',
+  })
+  productId: string;
 
-  @ApiProperty()
-  name!: string;
+  @ApiProperty({
+    description: 'Name of the product',
+    example: 'Wireless Headphones',
+  })
+  name: string;
 
-  @ApiProperty()
-  sold!: number;
+  @ApiProperty({
+    description: 'Number of units sold',
+    example: 150,
+  })
+  sold: number;
 
-  @ApiProperty()
-  revenue!: number;
+  @ApiProperty({
+    description: 'Total revenue generated from the product',
+    example: 4500,
+  })
+  revenue: number;
 }
 
 export class RecentOrderDto {
-  @ApiProperty()
-  orderId!: string;
+  @ApiProperty({
+    description: 'Unique identifier for the order',
+    example: 'ORD123456',
+  })
+  orderId: string;
 
-  @ApiProperty()
-  customerName!: string;
+  @ApiProperty({
+    description: 'Name of the customer who placed the order',
+    example: 'John Doe',
+  })
+  customerName: string;
 
-  @ApiProperty()
-  total!: number;
+  @ApiProperty({
+    description: 'Total amount for the order',
+    example: 250.75,
+  })
+  total: number;
 
-  @ApiProperty()
-  date!: Date;
+  @ApiProperty({
+    description: 'Date when the order was placed',
+    example: '2024-05-15T10:30:00Z',
+  })
+  date: Date;
 
-  @ApiProperty()
-  status!: string;
+  @ApiProperty({
+    description: 'Current status of the order',
+    example: 'Shipped',
+  })
+  status: string;
 }
 
 export class DashboardAnalyticsResponseDto {
-  @ApiProperty()
-  totalRevenue!: number;
+  @ApiProperty({
+    description: 'Total revenue generated',
+    example: 125000,
+  })
+  totalRevenue: number;
 
-  @ApiProperty()
-  totalOrders!: number;
+  @ApiProperty({
+    description: 'Total number of orders',
+    example: 3500,
+  })
+  totalOrders: number;
 
-  @ApiProperty()
-  totalProducts!: number;
+  @ApiProperty({
+    description: 'Total number of products',
+    example: 150,
+  })
+  totalProducts: number;
 
-  @ApiProperty()
-  totalCustomers!: number;
+  @ApiProperty({
+    description: 'Total number of customers',
+    example: 1200,
+  })
+  totalCustomers: number;
 
   @ApiProperty({ type: [SalesOverviewItemDto] })
-  salesOverview!: SalesOverviewItemDto[];
+  salesOverview: SalesOverviewItemDto[];
 
   @ApiProperty({ type: [TopSellingProductDto] })
-  topSellingProducts!: TopSellingProductDto[];
+  topSellingProducts: TopSellingProductDto[];
 
   @ApiProperty({ type: [RecentOrderDto] })
-  recentOrders!: RecentOrderDto[];
+  recentOrders: RecentOrderDto[];
+
+  static fromData(data: any): DashboardAnalyticsResponseDto {
+    return {
+      totalRevenue: data.totalRevenue,
+      totalOrders: data.totalOrders,
+      totalProducts: data.totalProducts,
+      totalCustomers: data.totalCustomers,
+      salesOverview: data.salesOverview,
+      topSellingProducts: data.topSellingProducts,
+      recentOrders: data.recentOrders,
+    };
+  }
 }

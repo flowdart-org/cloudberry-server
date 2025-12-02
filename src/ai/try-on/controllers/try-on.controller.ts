@@ -2,10 +2,10 @@ import { Controller, Post, Body } from '@nestjs/common';
 
 import { HTTP_RESPONSE } from '@/common/types';
 import { Role } from '@/common/enums/role.enum';
-import { TryOnService } from '@/ai/try-on/try-on.service';
 import { Roles } from '@/common/decorators/roles.decorator';
 import { UserId } from '@/common/decorators/user-id.decorator';
 import { CreateTryOnDto } from '@/ai/try-on/dto/create-try-on.dto';
+import { TryOnService } from '@/ai/try-on/services/try-on.service';
 import { TryOnResponseDto } from '@/ai/try-on/dto/response/try-on.response.dto';
 import { ApiResponseWithType } from '@/common/decorators/api-response.decorator';
 

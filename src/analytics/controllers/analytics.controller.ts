@@ -5,6 +5,7 @@ import { Roles } from '@/common/decorators/roles.decorator';
 import { HttpResponse } from '@/common/dto/http-response.dto';
 import { AnalyticsService } from '@/analytics/services/analytics.service';
 import { ApiResponseWithType } from '@/common/decorators/api-response.decorator';
+import { DashboardAnalyticsResponseDto } from '@/analytics/dto/response/dashboard-analytics-response.dto';
 
 @Controller('analytics')
 export class AnalyticsController {
@@ -12,14 +13,14 @@ export class AnalyticsController {
 
   @Get()
   @Roles(Role.ADMIN)
-  @ApiResponseWithType()
-  async get(): Promise<HttpResponse> {
+  @ApiResponseWithType({}, DashboardAnalyticsResponseDto)
+  async get(): Promise<HttpResponse<DashboardAnalyticsResponseDto>> {
     const data = await this._analyticsService.getDashboardAnalytics();
 
     return {
       success: true,
       message: 'Landing page data fetched successfully',
-      data,
+      data: DashboardAnalyticsResponseDto.fromData(data),
     };
   }
 }

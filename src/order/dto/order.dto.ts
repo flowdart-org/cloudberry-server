@@ -1,5 +1,9 @@
 import { UserDto } from '@/user/dto/user.dto';
-import { Order } from '@/order/entities/order.entity';
+import {
+  Order,
+  OrderStatus,
+  PaymentStatus,
+} from '@/order/entities/order.entity';
 
 export class OrderDto {
   id: string;
@@ -11,9 +15,9 @@ export class OrderDto {
     phone?: string;
   };
 
-  orderStatus: string;
+  orderStatus: OrderStatus;
   paymentMethod?: string | null;
-  paymentStatus: string;
+  paymentStatus: PaymentStatus;
 
   subtotal: number;
   shippingCharge: number;

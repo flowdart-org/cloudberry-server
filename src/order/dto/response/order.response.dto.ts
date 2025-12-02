@@ -1,7 +1,11 @@
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 
 import { OrderDto } from '@/order/dto/order.dto';
-import { OrderItem } from '@/order/entities/order.entity';
+import {
+  OrderItem,
+  OrderStatus,
+  PaymentStatus,
+} from '@/order/entities/order.entity';
 
 export class OrderItemDto implements OrderItem {
   @ApiProperty()
@@ -37,11 +41,17 @@ export class OrderItemDto implements OrderItem {
 }
 
 export class OrderResponseDto {
-  @ApiProperty()
-  id!: string;
+  @ApiProperty({
+    description: 'Unique identifier for the order',
+    example: 'ord_1234567890abcdef',
+  })
+  id: string;
 
-  @ApiProperty()
-  orderNumber!: string;
+  @ApiProperty({
+    description: 'Order number',
+    example: 'ORD-2024-0001',
+  })
+  orderNumber: string;
 
   @ApiProperty({
     type: () => ({
@@ -89,10 +99,10 @@ export class OrderResponseDto {
   paymentMethod?: string | null;
 
   @ApiProperty()
-  paymentStatus!: string;
+  paymentStatus: PaymentStatus;
 
   @ApiProperty()
-  orderStatus!: string;
+  orderStatus: OrderStatus;
 
   @ApiProperty()
   isDeleted!: boolean;

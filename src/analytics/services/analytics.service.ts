@@ -106,19 +106,27 @@ export class AnalyticsService {
       take: 6,
       select: {
         id: true,
+        orderNumber: true,
         total: true,
         placedAt: true,
         orderStatus: true,
-        user: { select: { name: true } },
+        paymentStatus: true,
+        user: { select: { name: true, email: true, phone: true } },
       },
     });
 
     return orders.map((o) => ({
-      orderId: o.id,
-      customerName: o.user?.name || 'Guest',
+      id: o.id,
+      orderNumber: o.orderNumber,
+      customer: {
+        name: o.user?.name,
+        email: o.user?.email,
+        phone: o.user?.phone,
+      },
       total: o.total,
-      date: o.placedAt,
-      status: o.orderStatus,
+      placedAt: o.placedAt,
+      orderStatus: o.orderStatus,
+      paymentStatus: o.paymentStatus,
     }));
   }
 }
