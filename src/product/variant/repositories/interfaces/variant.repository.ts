@@ -22,6 +22,8 @@ export interface VariantRepository {
     data: Partial<Omit<ProductVariant, 'id' | 'createdAt' | 'updatedAt'>>,
   ): Promise<ProductVariant>;
 
+  reduceStock(id: string, quantity: number): Promise<ProductVariant>;
+
   delete(id: string): Promise<void>;
 
   deleteByProductId(productId: string): Promise<void>;

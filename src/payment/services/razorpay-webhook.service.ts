@@ -5,7 +5,7 @@ import {
   PaymentFailedWebhook,
   RazorpayWebhookPayload,
 } from '@/common/types/razorpay';
-import { OrderService } from '@/order/order.service';
+import { OrderService } from '@/order/services/order.service';
 
 @Injectable()
 export class RazorpayWebhookService {

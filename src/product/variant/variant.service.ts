@@ -62,4 +62,8 @@ export class VariantService {
   findById(variantId: string) {
     return this._variantRepository.findById(variantId);
   }
+
+  decreaseStock(variantId: string, quantity: number) {
+    return this._variantRepository.reduceStock(variantId, quantity);
+  }
 }

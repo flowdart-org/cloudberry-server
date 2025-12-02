@@ -4,7 +4,7 @@ import {
   HttpPaginatedResponse,
   HttpResponse,
 } from '@/common/dto/http-response.dto';
-import { OrderService } from '@/order/order.service';
+import { OrderService } from '@/order/services/order.service';
 import { UserId } from '@/common/decorators/user-id.decorator';
 import { UpdateOrderDto } from '@/order/dto/request/update-order.dto';
 import { OrderResponseDto } from '@/order/dto/response/order.response.dto';

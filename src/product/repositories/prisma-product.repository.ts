@@ -10,7 +10,9 @@ import { ProductFeedPaginatedQueryDto } from '@/product/dto/request/product-feed
 
 @Injectable()
 export class PrismaProductRepository implements ProductRepository {
-  constructor(@Inject('PrismaClient') private readonly _prisma: PrismaService) {}
+  constructor(
+    @Inject('PrismaService') private readonly _prisma: PrismaService,
+  ) {}
 
   async create(
     data: Omit<ProductEntity, 'id' | 'variants' | 'createdAt' | 'updatedAt'> &

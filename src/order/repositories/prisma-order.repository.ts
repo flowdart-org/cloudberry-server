@@ -7,7 +7,9 @@ import { IOrderRepository } from '@/order/repositories/interfaces/order.reposito
 
 @Injectable()
 export class PrismaOrderRepository implements IOrderRepository {
-  constructor(@Inject('PrismaClient') private readonly prisma: PrismaService) {}
+  constructor(
+    @Inject('PrismaService') private readonly prisma: PrismaService,
+  ) {}
 
   public async create(order: OrderEntity): Promise<OrderEntity> {
     const data = OrderMapper.toPersistenceCreate(order);

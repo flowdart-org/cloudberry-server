@@ -7,7 +7,7 @@ import { Category as CategoryEntity } from '@/product/category/entities/category
 import { ICategoryRepository } from '@/product/category/repositories/interfaces/category.repository';
 
 export class PrismaCategoryRepository implements ICategoryRepository {
-  constructor(@Inject('PrismaClient') private readonly _prisma: PrismaService) {}
+  constructor( private readonly _prisma: PrismaService) {}
 
   create(
     data: Omit<PrismaCategory, 'id' | 'status' | 'createdAt' | 'updatedAt'>,

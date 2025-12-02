@@ -4,7 +4,9 @@ import { PrismaService } from '@/common/prisma/prisma.service';
 
 @Injectable()
 export class AnalyticsService {
-  constructor(@Inject('PrismaClient') private readonly prisma: PrismaService) {}
+  constructor(
+    @Inject('PrismaService') private readonly prisma: PrismaService,
+  ) {}
 
   async getDashboardAnalytics() {
     const summary = await this.getSummary();
@@ -20,7 +22,7 @@ export class AnalyticsService {
     };
   }
 
-  async getSummary() {
+  private async getSummary() {
     const [revenue, totalOrders, totalProducts, totalCustomers] =
       await Promise.all([
         this.prisma.order.aggregate({ _sum: { total: true } }),
@@ -37,7 +39,7 @@ export class AnalyticsService {
     };
   }
 
-  async getSalesOverview() {
+  private async getSalesOverview() {
     const data = await this.prisma.$queryRaw<
       { month: number; amount: number }[]
     >`
@@ -72,8 +74,7 @@ export class AnalyticsService {
     }));
   }
 
-  async getTopSellingProducts() {
-    // Extract product sales from JSON items using PostgreSQL jsonb functions
+  private async getTopSellingProducts() {
     const rows = await this.prisma.$queryRaw<
       { productId: string; name: string; sold: number; revenue: number }[]
     >`
@@ -98,7 +99,7 @@ export class AnalyticsService {
     }));
   }
 
-  async getRecentOrders() {
+  private async getRecentOrders() {
     const orders = await this.prisma.order.findMany({
       where: { isDeleted: false },
       orderBy: { placedAt: 'desc' },

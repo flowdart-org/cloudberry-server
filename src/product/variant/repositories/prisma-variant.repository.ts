@@ -1,4 +1,4 @@
-import { Injectable, Inject, NotFoundException } from '@nestjs/common';
+import { Inject, Injectable, NotFoundException } from '@nestjs/common';
 
 import { PrismaService } from '@/common/prisma/prisma.service';
 import { VariantMapper } from '@/product/variant/mappers/variant.mapper';
@@ -7,7 +7,9 @@ import { VariantRepository } from '@/product/variant/repositories/interfaces/var
 
 @Injectable()
 export class PrismaVariantRepository implements VariantRepository {
-  constructor(@Inject('PrismaClient') private readonly _prisma: PrismaService) {}
+  constructor(
+    @Inject('PrismaService') private readonly _prisma: PrismaService,
+  ) {}
 
   async create(
     data: Omit<ProductVariant, 'id' | 'status' | 'createdAt' | 'updatedAt'>,
@@ -65,6 +67,15 @@ export class PrismaVariantRepository implements VariantRepository {
       data: VariantMapper.toPersistenceUpdate(data),
     });
     return VariantMapper.toEntity(doc);
+  }
+
+  reduceStock(id: string, quantity: number): Promise<ProductVariant> {
+    return this._prisma.productVariant.update({
+      where: { id },
+      data: {
+        stock: { decrement: quantity },
+      },
+    });
   }
 
   async delete(id: string): Promise<void> {

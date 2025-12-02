@@ -1,13 +1,15 @@
-import { PrismaClient } from '@prisma/client';
 import { Inject, Injectable } from '@nestjs/common';
 
+import { PrismaService } from '@/common/prisma/prisma.service';
 import { LandingPage } from '@/landing-page/entities/landing-page.entity';
 import { LandingPageMapper } from '@/landing-page/mappers/landing-page.mapper';
 import { ILandingPageRepository } from '@/landing-page/repositories/interfaces/landing-page.repository';
 
 @Injectable()
 export class PrismaLandingPageRepository implements ILandingPageRepository {
-  constructor(@Inject('PrismaClient') private readonly _prisma: PrismaClient) {}
+  constructor(
+    @Inject('PrismaService') private readonly _prisma: PrismaService,
+  ) {}
 
   async get(): Promise<LandingPage | null> {
     const doc = await this._prisma.landingPage.findFirst();

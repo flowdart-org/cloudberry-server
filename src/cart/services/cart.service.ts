@@ -2,13 +2,13 @@ import { Injectable, NotFoundException, Inject } from '@nestjs/common';
 
 import { CartItem } from '@prisma/client';
 import { CartWithItems } from '@/common/types/cart';
-import { OrderService } from '@/order/order.service';
 import { OrderItem } from '@/order/entities/order.entity';
 import { UpdateCartDto } from '@/cart/dto/update-cart.dto';
 import { CreateCartDto } from '@/cart/dto/create-cart.dto';
 import { ProductService } from '@/product/product.service';
-import { RazorpayService } from '@/payment/razorpay.service';
+import { OrderService } from '@/order/services/order.service';
 import { VariantService } from '@/product/variant/variant.service';
+import { RazorpayService } from '@/payment/services/razorpay.service';
 import type { CartRepository } from '@/cart/repositories/interfaces/cart.repository';
 import type { CartItemRepository } from '@/cart/repositories/interfaces/cart-item.repository';
 

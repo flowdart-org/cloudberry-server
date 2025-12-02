@@ -102,4 +102,17 @@ export class ProductService {
 
     return this._toProductDto(product);
   }
+
+  async reduceStock(item: {
+    productId: string;
+    variantId: string;
+    quantity: number;
+  }) {
+    const product = await this._productRepository.findById(item.productId);
+    if (!product) return;
+
+    if (item.variantId) {
+      await this._variantsService.decreaseStock(item.variantId, item.quantity);
+    }
+  }
 }

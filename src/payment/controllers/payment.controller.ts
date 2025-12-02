@@ -1,6 +1,6 @@
 import { Controller, Post, Body } from '@nestjs/common';
 
-import { RazorpayService } from '@/payment/razorpay.service';
+import { RazorpayService } from '@/payment/services/razorpay.service';
 import { VarifyPaymentDto } from '@/payment/dto/request/verify-payment.dto';
 
 @Controller('payment')

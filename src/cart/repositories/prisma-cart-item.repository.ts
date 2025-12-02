@@ -1,11 +1,14 @@
 import { Inject, Injectable } from '@nestjs/common';
 
-import { PrismaClient, CartItem } from '@prisma/client';
+import { CartItem } from '@prisma/client';
+import { PrismaService } from '@/common/prisma/prisma.service';
 import { CartItemRepository } from '@/cart/repositories/interfaces/cart-item.repository';
 
 @Injectable()
 export class PrismaCartItemRepository implements CartItemRepository {
-  constructor(@Inject('PrismaClient') private readonly prisma: PrismaClient) {}
+  constructor(
+    @Inject('PrismaService') private readonly prisma: PrismaService,
+  ) {}
 
   async addToCart(
     cartId: string,

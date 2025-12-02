@@ -1,9 +1,9 @@
 import { Module } from '@nestjs/common';
 
 import { OrderModule } from '@/order/order.module';
-import { RazorpayService } from '@/payment/razorpay.service';
-import { PaymentController } from '@/payment/payment.controller';
-import { RazorpayWebhookService } from '@/payment/razorpay-webhook.service';
+import { RazorpayService } from '@/payment/services/razorpay.service';
+import { PaymentController } from '@/payment/controllers/payment.controller';
+import { RazorpayWebhookService } from '@/payment/services/razorpay-webhook.service';
 
 @Module({
   imports: [OrderModule],

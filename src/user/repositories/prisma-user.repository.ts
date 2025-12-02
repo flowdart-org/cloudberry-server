@@ -8,7 +8,7 @@ import { IUserRepository } from '@/user/repositories/interfaces/user.repository'
 import { UserPaginatedQueryDto } from '@/user/dto/request/user-paginated-query.dto';
 
 export class PrismaUserRepository implements IUserRepository {
-  constructor(@Inject('PrismaClient') private readonly _prisma: PrismaClient) {}
+  constructor( private readonly _prisma: PrismaClient) {}
 
   async create(data: Partial<PrismaUser>): Promise<User> {
     const doc = await this._prisma.user.create({

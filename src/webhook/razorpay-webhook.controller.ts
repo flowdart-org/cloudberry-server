@@ -12,8 +12,8 @@ import { ApiExcludeController } from '@nestjs/swagger';
 
 import { Public } from '@/common/decorators/public.decorator';
 import { RawBody } from '@/common/decorators/raw-body.decorator';
-import { RazorpayWebhookService } from '@/payment/razorpay-webhook.service';
 import { RazorpayWebhookPayload } from '@/common/types/razorpay';
+import { RazorpayWebhookService } from '@/payment/services/razorpay-webhook.service';
 
 @Controller('webhook/razorpay')
 @ApiExcludeController()

@@ -1,9 +1,15 @@
 import { v4 as uuidv4 } from 'uuid';
-import { Inject, Injectable, NotFoundException } from '@nestjs/common';
+import {
+  BadRequestException,
+  Inject,
+  Injectable,
+  NotFoundException,
+} from '@nestjs/common';
 
 import { OrderDto } from '@/order/dto/order.dto';
 import { Order } from '@/order/entities/order.entity';
 import { UserService } from '@/user/services/user.service';
+import { ProductService } from '@/product/product.service';
 import { CreateOrderDto } from '@/order/dto/create-order.dto';
 import { UpdateOrderDto } from '@/order/dto/request/update-order.dto';
 import { IOrderRepository } from '@/order/repositories/interfaces/order.repository';
@@ -14,12 +20,40 @@ export class OrderService {
     @Inject('OrderRepository')
     private readonly _orderRepository: IOrderRepository,
     private readonly _userService: UserService,
+    private readonly _productService: ProductService,
   ) {}
 
   public async create(dto: CreateOrderDto): Promise<Order> {
     const id = uuidv4();
     const orderNumber = this.generateOrderNumber();
 
+    for (const item of dto.items) {
+      const product = await this._productService.findById(item.productId);
+
+      if (!product) {
+        throw new BadRequestException(`Product ${item.productId} not found`);
+      }
+
+      let variantStock: number | null = null;
+
+      if (item.variantId) {
+        const variant = product.variants.find((v) => v.id === item.variantId);
+        if (!variant)
+          throw new BadRequestException(`Variant not found for product`);
+
+        variantStock = variant.stock;
+
+        if (variantStock < item.quantity) {
+          throw new BadRequestException(
+            `Not enough stock for variant ${product.name}. Available: ${variantStock}`,
+          );
+        }
+      }
+    }
+
+    // -----------------------------------------
+    // 🛒 2. Build order entity
+    // -----------------------------------------
     const entity = new Order({
       id,
       orderNumber,
@@ -46,7 +80,16 @@ export class OrderService {
       isDeleted: false,
     });
 
-    return this._orderRepository.create(entity);
+    const order = await this._orderRepository.create(entity);
+
+    // -----------------------------------------
+    // 📉 3. Reduce stock after order creation
+    // -----------------------------------------
+    for (const item of dto.items) {
+      await this._productService.reduceStock(item);
+    }
+
+    return order;
   }
 
   public async listAll(
@@ -65,6 +108,7 @@ export class OrderService {
           email: 'example@gmail.com',
           phone: '1234567890',
         };
+
         //@ts-expect-error this is temp user // TODO: remove this line when user service is ready
         return new OrderDto(o, user);
       }),

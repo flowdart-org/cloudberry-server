@@ -1,4 +1,5 @@
 import { Prisma, Order as PrismaOrder } from '@prisma/client';
+
 import { Order, OrderItems } from '@/order/entities/order.entity';
 
 export const OrderMapper = {
@@ -53,7 +54,6 @@ export const OrderMapper = {
   },
 
   toPersistenceCreate(order: Order): Prisma.OrderCreateInput {
-    // Prisma's Json type allows raw JS objects
     const items = order.items as unknown as Prisma.JsonValue;
     const metadata = order.metadata as unknown as Prisma.JsonValue | null;
     const shippingAddressJson =
@@ -61,7 +61,7 @@ export const OrderMapper = {
 
     return {
       orderNumber: order.orderNumber,
-      // @ts-ignore userId is not updatable but included for type consistency
+      // @ts-expect-error userId is not updatable but included for type consistency
       userId: order.userId,
       placedAt: order.placedAt,
       deliveredAt: order.deliveredAt ?? null,
@@ -110,7 +110,7 @@ export const OrderMapper = {
 
     return {
       orderNumber: order.orderNumber,
-      // @ts-ignore userId is not updatable but included for type consistency
+      // @ts-expect-error userId is not updatable but included for type consistency
       userId: order.userId,
       placedAt: order.placedAt,
       deliveredAt: order.deliveredAt ?? undefined,

@@ -6,7 +6,7 @@ import { AddressMapper } from '@/user/mappers/address.mapper';
 import { IAddressRepository } from './interfaces/address.repository';
 
 export class PrismaAddressRepository implements IAddressRepository {
-  constructor(@Inject('PrismaClient') private readonly _prisma: PrismaClient) {}
+  constructor( private readonly _prisma: PrismaClient) {}
 
   async findById(id: string): Promise<Address | null> {
     const doc = await this._prisma.address.findUnique({
