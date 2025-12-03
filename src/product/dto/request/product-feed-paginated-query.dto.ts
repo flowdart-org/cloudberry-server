@@ -10,6 +10,11 @@ export class ProductFeedPaginatedQueryDto extends PaginatedQueryDto {
   @IsString()
   search?: string;
 
+  @ApiProperty({ required: false, example: 'XL' })
+  @IsOptional()
+  @IsString()
+  size?: string;
+
   @ApiProperty({ required: false, example: 10 })
   @IsOptional()
   @Type(() => Number)

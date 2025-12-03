@@ -76,7 +76,7 @@ export class ProductController {
   }
 
   @Get(':id')
-  @Roles(Role.USER, Role.ADMIN)
+  @Public()
   @ApiResponseWithType({}, ProductResponseDto)
   async findOne(
     @Param('id') id: string,

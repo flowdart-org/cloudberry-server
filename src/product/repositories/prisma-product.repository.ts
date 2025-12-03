@@ -56,6 +56,14 @@ export class PrismaProductRepository implements ProductRepository {
       }
     }
 
+    if ('size' in query && query.size) {
+      where.variants = {
+        some: {
+          size: query.size,
+        },
+      };
+    }
+
     const docs = await this._prisma.product.findMany({
       where,
       skip: (page - 1) * limit,
