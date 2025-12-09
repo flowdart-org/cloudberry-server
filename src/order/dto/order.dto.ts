@@ -4,6 +4,7 @@ import {
   OrderStatus,
   PaymentStatus,
 } from '@/order/entities/order.entity';
+import { OrderItemDto } from '@/order/dto/order-item.dto';
 
 export class OrderDto {
   id: string;
@@ -24,37 +25,35 @@ export class OrderDto {
   discount: number;
   total: number;
 
-  items: Order['items'];
+  items: OrderItemDto[];
 
   placedAt: Date;
   updatedAt: Date | null;
   deliveredAt?: Date | null;
   cancelledAt?: Date | null;
 
-  constructor(entity: Order, customer: UserDto) {
-    this.id = entity.id;
-    this.orderNumber = entity.orderNumber;
-    this.customer = {
-      id: customer.id,
-      name: customer.name,
-      email: customer.email,
-      phone: customer.phone,
+  static fromEntity(entity: Order, customer: UserDto, items: OrderItemDto[]) {
+    return {
+      id: entity.id,
+      orderNumber: entity.orderNumber,
+      customer: {
+        id: customer.id,
+        name: customer.name,
+        email: customer.email,
+        phone: customer.phone,
+      },
+      orderStatus: entity.orderStatus,
+      paymentMethod: entity.paymentMethod,
+      paymentStatus: entity.paymentStatus,
+      subtotal: entity.subtotal,
+      shippingCharge: entity.shippingCharge,
+      discount: entity.discount,
+      total: entity.total,
+      items,
+      placedAt: entity.placedAt,
+      updatedAt: entity.updatedAt,
+      deliveredAt: entity.deliveredAt,
+      cancelledAt: entity.cancelledAt,
     };
-
-    this.orderStatus = entity.orderStatus;
-    this.paymentMethod = entity.paymentMethod;
-    this.paymentStatus = entity.paymentStatus;
-
-    this.subtotal = entity.subtotal;
-    this.shippingCharge = entity.shippingCharge;
-    this.discount = entity.discount;
-    this.total = entity.total;
-
-    this.items = entity.items;
-
-    this.placedAt = entity.placedAt;
-    this.updatedAt = entity.updatedAt;
-    this.deliveredAt = entity.deliveredAt;
-    this.cancelledAt = entity.cancelledAt;
   }
 }

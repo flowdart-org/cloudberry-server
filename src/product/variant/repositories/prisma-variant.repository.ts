@@ -13,7 +13,7 @@ export class PrismaVariantRepository implements VariantRepository {
 
   async create(
     data: Omit<ProductVariant, 'id' | 'status' | 'createdAt' | 'updatedAt'>,
-  ): Promise<ProductVariant> {
+  ): Promise<Omit<ProductVariant, 'id'> & { id: string }> {
     const doc = await this._prisma.productVariant.create({
       data: VariantMapper.toPersistenceCreate(data),
     });

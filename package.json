@@ -1,6 +1,6 @@
 {
   "name": "cloudberry-server",
-  "version": "0.0.1",
+  "version": "0.0.0",
   "description": "",
   "author": "",
   "private": true,
@@ -29,7 +29,7 @@
     "@types/cookie-parser": "^1.4.10",
     "@types/morgan": "^1.9.10",
     "axios": "^1.13.1",
-    "body-parser": "^2.2.0",
+    "body-parser": "2.2.1",
     "class-transformer": "^0.5.1",
     "class-validator": "^0.14.2",
     "cookie-parser": "^1.4.7",

@@ -6,4 +6,8 @@ export class CartItem {
   quantity: number;
   createdAt: Date;
   updatedAt: Date;
+
+  constructor(partial: Partial<CartItem>) {
+    Object.assign(this, partial);
+  }
 }

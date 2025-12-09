@@ -1,6 +1,6 @@
 import { ApiProperty } from '@nestjs/swagger';
 
-import { CartWithItems } from '@/common/types/cart';
+import { CartDto } from '@/cart/dto/cart.dto';
 import { ProductDto } from '@/product/dto/product.dto';
 import { ProductVariant } from '@/product/variant/entities/product-variant.entity';
 
@@ -53,46 +53,20 @@ export class CartResponseDto {
       },
     },
   })
-  items: {
+  items: Array<{
     id: string;
     quantity: number;
-    product: Pick<
-      ProductDto,
-      'description' | 'id' | 'name' | 'price' | 'thumbnail' | 'images'
-    > & {
+    product: Pick<ProductDto, 'id' | 'name' | 'price' | 'thumbnail'> & {
       category: Pick<ProductDto['category'], 'id' | 'name'>;
     };
-    variant: Pick<ProductVariant, 'id' | 'size' | 'stock'>;
-  }[];
+    variant: Pick<ProductVariant, 'id' | 'size' | 'stock' | 'isDeleted'>;
+  }>;
 
-  static fromEntity(cart: CartWithItems): CartResponseDto {
-    const dto = new CartResponseDto();
-
-    dto.id = cart.id;
-    dto.count = cart.items.length;
-
-    dto.items = cart.items.map((item) => ({
-      id: item.id,
-      quantity: item.quantity,
-      product: {
-        id: item.product.id,
-        name: item.product.name,
-        description: item.product.description,
-        price: item.product.price,
-        thumbnail: item.product.thumbnail,
-        category: {
-          id: item.product.category.id,
-          name: item.product.category.name,
-        },
-        images: item.product.images,
-      },
-      variant: {
-        id: item.variant.id,
-        size: item.variant.size,
-        stock: item.variant.stock,
-      },
-    }));
-
-    return dto;
+  static fromEntity(cart: CartDto): CartResponseDto {
+    return {
+      id: cart.id,
+      count: cart.items.length,
+      items: cart.items,
+    };
   }
 }

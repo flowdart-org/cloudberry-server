@@ -54,6 +54,7 @@ export class ProductService {
     });
 
     if (dto.variants && dto.variants.length) {
+      console.log('createing product variants', dto.variants[0]);
       await this._variantsService.createOrUpdateMany(
         createdProduct.id,
         dto.variants,

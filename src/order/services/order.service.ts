@@ -8,11 +8,14 @@ import {
 
 import { OrderDto } from '@/order/dto/order.dto';
 import { Order } from '@/order/entities/order.entity';
-import { UserService } from '@/user/services/user.service';
+import { OrderItemDto } from '@/order/dto/order-item.dto';
 import { ProductService } from '@/product/product.service';
+import { UserService } from '@/user/services/user.service';
 import { CreateOrderDto } from '@/order/dto/create-order.dto';
+import { VariantService } from '@/product/variant/variant.service';
 import { UpdateOrderDto } from '@/order/dto/request/update-order.dto';
 import { IOrderRepository } from '@/order/repositories/interfaces/order.repository';
+import { OrderPaginatedQueryDto } from '@/order/dto/request/order-paginated-query.dto';
 
 @Injectable()
 export class OrderService {
@@ -21,9 +24,10 @@ export class OrderService {
     private readonly _orderRepository: IOrderRepository,
     private readonly _userService: UserService,
     private readonly _productService: ProductService,
+    private readonly _variantService: VariantService,
   ) {}
 
-  public async create(dto: CreateOrderDto): Promise<Order> {
+  public async create(dto: CreateOrderDto): Promise<OrderDto> {
     const id = uuidv4();
     const orderNumber = this.generateOrderNumber();
 
@@ -89,30 +93,41 @@ export class OrderService {
       await this._productService.reduceStock(item);
     }
 
-    return order;
+    const user = await this._userService.findById(order.userId);
+
+    const items = await Promise.all(
+      order.items.map(async (i) => {
+        const product = await this._productService.findById(i.productId);
+        const variant = await this._variantService.findById(i.variantId);
+        return OrderItemDto.fromEntity(i, product, variant);
+      }),
+    );
+
+    return OrderDto.fromEntity(order, user, items);
   }
 
   public async listAll(
-    limit = 20,
-    offset = 0,
+    query: OrderPaginatedQueryDto,
   ): Promise<{ orders: OrderDto[]; total: number }> {
-    const orderEntity = await this._orderRepository.findAll(limit, offset);
+    const orderEntity = await this._orderRepository.findAll(query);
 
     const orders = await Promise.all(
       orderEntity.map(async (o) => {
-        // const user = await this._userService.findById(o.userId);
-        await Promise.resolve();
-        const user = {
-          id: o.userId,
-          name: 'Sample User',
-          email: 'example@gmail.com',
-          phone: '1234567890',
-        };
+        const user = await this._userService.findById(o.userId);
 
-        //@ts-expect-error this is temp user // TODO: remove this line when user service is ready
-        return new OrderDto(o, user);
+        const items = await Promise.all(
+          o.items.map(async (i) => {
+            const product = await this._productService.findById(i.productId);
+            const variant = await this._variantService.findById(i.variantId);
+            return OrderItemDto.fromEntity(i, product, variant);
+          }),
+        );
+
+        return OrderDto.fromEntity(o, user, items);
       }),
     );
+
+    console.log(orders);
 
     return {
       orders,
@@ -120,23 +135,20 @@ export class OrderService {
     };
   }
 
-  public async listAllWithCount(
-    limit = 20,
-    offset = 0,
-  ): Promise<{ total: number; data: Order[] }> {
-    const [total, data] = await Promise.all([
-      this._orderRepository.countAll(),
-      this._orderRepository.findAll(limit, offset),
-    ]);
-
-    return { total, data };
-  }
-
   public async findById(id: string): Promise<OrderDto> {
     const order = await this._orderRepository.findById(id);
     if (!order) throw new NotFoundException(`Order ${id} not found`);
     const user = await this._userService.findById(order.userId);
-    return new OrderDto(order, user);
+
+    const items = await Promise.all(
+      order.items.map(async (i) => {
+        const product = await this._productService.findById(i.productId);
+        const variant = await this._variantService.findById(i.variantId);
+        return OrderItemDto.fromEntity(i, product, variant);
+      }),
+    );
+
+    return OrderDto.fromEntity(order, user, items);
   }
 
   public async findByOrderNumber(orderNumber: string): Promise<OrderDto> {
@@ -147,24 +159,36 @@ export class OrderService {
 
     const user = await this._userService.findById(orderEntity.userId);
 
-    return new OrderDto(orderEntity, user);
+    const items = await Promise.all(
+      orderEntity.items.map(async (i) => {
+        const product = await this._productService.findById(i.productId);
+        const variant = await this._variantService.findById(i.variantId);
+        return OrderItemDto.fromEntity(i, product, variant);
+      }),
+    );
+
+    return OrderDto.fromEntity(orderEntity, user, items);
   }
 
   public async listByUser(
     userId: string,
-    limit?: number,
-    offset?: number,
+    query: OrderPaginatedQueryDto,
   ): Promise<{ orders: OrderDto[] }> {
-    const orderEntities = await this._orderRepository.listByUser(
-      userId,
-      limit,
-      offset,
-    );
+    const orderEntities = await this._orderRepository.listByUser(userId, query);
 
     const orders = await Promise.all(
       orderEntities.map(async (o) => {
         const user = await this._userService.findById(o.userId);
-        return new OrderDto(o, user);
+
+        const items = await Promise.all(
+          o.items.map(async (i) => {
+            const product = await this._productService.findById(i.productId);
+            const variant = await this._variantService.findById(i.variantId);
+            return OrderItemDto.fromEntity(i, product, variant);
+          }),
+        );
+
+        return OrderDto.fromEntity(o, user, items);
       }),
     );
 
@@ -213,7 +237,15 @@ export class OrderService {
 
     const user = await this._userService.findById(data.userId);
 
-    return new OrderDto(data, user);
+    const items = await Promise.all(
+      data.items.map(async (i) => {
+        const product = await this._productService.findById(i.productId);
+        const variant = await this._variantService.findById(i.variantId);
+        return OrderItemDto.fromEntity(i, product, variant);
+      }),
+    );
+
+    return OrderDto.fromEntity(data, user, items);
   }
 
   public async updateStatus(
@@ -229,7 +261,16 @@ export class OrderService {
     });
 
     const user = await this._userService.findById(data.userId);
-    return new OrderDto(data, user);
+
+    const items = await Promise.all(
+      data.items.map(async (i) => {
+        const product = await this._productService.findById(i.productId);
+        const variant = await this._variantService.findById(i.variantId);
+        return OrderItemDto.fromEntity(i, product, variant);
+      }),
+    );
+
+    return OrderDto.fromEntity(data, user, items);
   }
 
   // public async cancel(id: string, reason?: string): Promise<Order> {

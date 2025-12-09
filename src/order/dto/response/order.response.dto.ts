@@ -1,44 +1,8 @@
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 
 import { OrderDto } from '@/order/dto/order.dto';
-import {
-  OrderItem,
-  OrderStatus,
-  PaymentStatus,
-} from '@/order/entities/order.entity';
-
-export class OrderItemDto implements OrderItem {
-  @ApiProperty()
-  productId!: string;
-
-  @ApiProperty({
-    example: 'variant_12345',
-  })
-  variantId: string;
-
-  @ApiProperty()
-  name!: string;
-
-  @ApiPropertyOptional({
-    example: 'SKU_12345',
-  })
-  sku?: string;
-
-  @ApiProperty()
-  price!: number;
-
-  @ApiProperty()
-  quantity!: number;
-
-  @ApiProperty()
-  subtotal!: number;
-
-  @ApiPropertyOptional({
-    type: 'object',
-    additionalProperties: true,
-  })
-  metadata?: Record<string, unknown>;
-}
+import { OrderItemDto } from '@/order/dto/order-item.dto';
+import { OrderStatus, PaymentStatus } from '@/order/entities/order.entity';
 
 export class OrderResponseDto {
   @ApiProperty({
@@ -105,38 +69,26 @@ export class OrderResponseDto {
   orderStatus: OrderStatus;
 
   @ApiProperty()
-  isDeleted!: boolean;
+  isDeleted: boolean;
 
   static fromEntity(this: void, orderDto: OrderDto): OrderResponseDto {
-    const dto = new OrderResponseDto();
-    dto.id = orderDto.id;
-    dto.orderNumber = orderDto.orderNumber;
-    dto.customer = orderDto.customer;
-    dto.placedAt = orderDto.placedAt;
-    dto.updatedAt = orderDto.updatedAt;
-    dto.deliveredAt = orderDto.deliveredAt ?? null;
-    dto.cancelledAt = orderDto.cancelledAt ?? null;
-
-    dto.subtotal = orderDto.subtotal;
-    dto.shippingCharge = orderDto.shippingCharge;
-    dto.discount = orderDto.discount;
-    dto.total = orderDto.total;
-
-    dto.items = orderDto.items.map((i) => ({
-      productId: i.productId,
-      variantId: i.variantId,
-      name: i.name,
-      sku: i.sku ?? undefined,
-      price: i.price,
-      quantity: i.quantity,
-      subtotal: i.subtotal,
-      metadata: i.metadata ?? undefined,
-    }));
-
-    dto.paymentMethod = orderDto.paymentMethod ?? null;
-    dto.paymentStatus = orderDto.paymentStatus;
-    dto.orderStatus = orderDto.orderStatus;
-
-    return dto;
+    return {
+      id: orderDto.id,
+      orderNumber: orderDto.orderNumber,
+      customer: orderDto.customer,
+      placedAt: orderDto.placedAt,
+      updatedAt: orderDto.updatedAt,
+      deliveredAt: orderDto.deliveredAt ?? null,
+      cancelledAt: orderDto.cancelledAt ?? null,
+      subtotal: orderDto.subtotal,
+      shippingCharge: orderDto.shippingCharge,
+      discount: orderDto.discount,
+      total: orderDto.total,
+      items: orderDto.items,
+      paymentMethod: orderDto.paymentMethod ?? null,
+      paymentStatus: orderDto.paymentStatus,
+      orderStatus: orderDto.orderStatus,
+      isDeleted: false,
+    };
   }
 }

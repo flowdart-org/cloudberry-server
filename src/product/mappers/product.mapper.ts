@@ -36,7 +36,7 @@ export const ProductMapper = {
       price: entity.price,
       discountPercent: entity.discountPercent,
       categoryId: entity.categoryId,
-      status: entity.status ?? 'inactive',
+      status: entity.status,
     };
   },
 
@@ -62,7 +62,7 @@ export const ProductMapper = {
       discountPercent: entity.discountPercent,
       tryOn: entity.tryOn,
       categoryId: entity.categoryId,
-      status: entity.status ?? 'inactive',
+      status: entity.status,
     };
   },
 };

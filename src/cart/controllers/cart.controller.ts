@@ -1,21 +1,23 @@
 import {
-  Controller,
-  Get,
-  Post,
-  Delete,
-  Param,
   Body,
+  Controller,
+  Delete,
+  Get,
+  Param,
   Patch,
+  Post,
 } from '@nestjs/common';
 
-import { HTTP_RESPONSE } from '@/common/types';
+import { Role } from '@/common/enums/role.enum';
 import { CreateCartDto } from '@/cart/dto/create-cart.dto';
 import { UpdateCartDto } from '@/cart/dto/update-cart.dto';
 import { CartService } from '@/cart/services/cart.service';
-import { CartItem } from '@/cart/entities/cart-item.entity';
+import { Roles } from '@/common/decorators/roles.decorator';
+import { HttpResponse } from '@/common/dto/http-response.dto';
 import { UserId } from '@/common/decorators/user-id.decorator';
 import { CartResponseDto } from '@/cart/dto/response/cart.response.dto';
 import { ApiResponseWithType } from '@/common/decorators/api-response.decorator';
+import { CartItemResponseDto } from '@/cart/dto/response/cart-item.response.dto';
 import { CheckoutCartResponseDto } from '@/cart/dto/response/checkout-cart.response.dto';
 import { CheckoutCartLinkResponseDto } from '@/cart/dto/response/checkout-cart-link.response.dto';
 
@@ -23,26 +25,12 @@ import { CheckoutCartLinkResponseDto } from '@/cart/dto/response/checkout-cart-l
 export class CartController {
   constructor(private readonly _cartService: CartService) {}
 
-  @Post('add')
-  @ApiResponseWithType({}, CartResponseDto)
-  async addToCart(
-    @UserId() userId: string,
-    @Body() dto: CreateCartDto,
-  ): Promise<HTTP_RESPONSE<CartItem>> {
-    const data = await this._cartService.addToCart(userId, dto);
-
-    return {
-      message: 'Item added to cart successfully',
-      success: true,
-      data,
-    };
-  }
-
   @Get()
+  @Roles(Role.USER)
   @ApiResponseWithType({}, CartResponseDto)
   async getUserCart(
     @UserId() userId: string,
-  ): Promise<HTTP_RESPONSE<CartResponseDto>> {
+  ): Promise<HttpResponse<CartResponseDto>> {
     const data = await this._cartService.getUserCart(userId);
 
     return {
@@ -52,20 +40,63 @@ export class CartController {
     };
   }
 
+  @Post('add')
+  @Roles(Role.USER)
+  @ApiResponseWithType({}, CartItemResponseDto)
+  async addToCart(
+    @UserId() userId: string,
+    @Body() dto: CreateCartDto,
+  ): Promise<HttpResponse<CartItemResponseDto>> {
+    const data = await this._cartService.addToCart(userId, dto);
+
+    return {
+      message: 'Item added to cart successfully',
+      success: true,
+      data: CartItemResponseDto.fromDto(data),
+    };
+  }
+
   @Patch(':itemId')
-  updateQuantity(
+  @Roles(Role.USER)
+  @ApiResponseWithType({}, CartItemResponseDto)
+  async updateQuantity(
     @UserId() userId: string,
     @Param('itemId') itemId: string,
     @Body() dto: UpdateCartDto,
-  ) {
-    return this._cartService.updateQuantity(userId, itemId, dto);
+  ): Promise<HttpResponse<CartItemResponseDto>> {
+    console.log('update quantity dto', dto);
+    const data = await this._cartService.updateQuantity(userId, itemId, dto);
+    return {
+      message: 'Cart item quantity updated successfully',
+      success: true,
+      data: CartItemResponseDto.fromDto(data),
+    };
+  }
+
+  @Delete(':itemId')
+  @Roles(Role.USER)
+  @ApiResponseWithType({
+    type: 'boolean',
+  })
+  async removeItem(
+    @UserId() userId: string,
+    @Param('itemId') itemId: string,
+  ): Promise<HttpResponse<boolean>> {
+    const data = await this._cartService.removeItem(userId, itemId);
+
+    return {
+      message: 'Item removed from cart successfully',
+      success: true,
+      data: Boolean(data),
+    };
   }
 
   @Post('checkout')
+  @Roles(Role.USER)
   @ApiResponseWithType({}, CheckoutCartResponseDto)
   async checkout(
     @UserId() userId: string,
-  ): Promise<HTTP_RESPONSE<CheckoutCartResponseDto>> {
+  ): Promise<HttpResponse<CheckoutCartResponseDto>> {
     const data = await this._cartService.checkout(userId);
 
     return {
@@ -76,31 +107,17 @@ export class CartController {
   }
 
   @Post('checkout/link')
+  @Roles(Role.USER)
   @ApiResponseWithType({}, CheckoutCartLinkResponseDto)
   async checkoutLink(
     @UserId() userId: string,
-  ): Promise<HTTP_RESPONSE<CheckoutCartLinkResponseDto>> {
+  ): Promise<HttpResponse<CheckoutCartLinkResponseDto>> {
     const data = await this._cartService.checkoutLink(userId);
 
     return {
       message: 'Cart checkout initiated successfully',
       success: true,
       data: new CheckoutCartLinkResponseDto(data),
-    };
-  }
-
-  @Delete(':itemId')
-  @ApiResponseWithType({}, CartResponseDto)
-  async removeItem(
-    @UserId() userId: string,
-    @Param('itemId') itemId: string,
-  ): Promise<HTTP_RESPONSE<boolean>> {
-    await this._cartService.removeItem(userId, itemId);
-
-    return {
-      message: 'Item removed from cart successfully',
-      success: true,
-      data: true,
     };
   }
 }

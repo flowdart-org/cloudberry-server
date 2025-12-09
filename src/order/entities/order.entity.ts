@@ -13,7 +13,6 @@ export type OrderItem = {
   productId: string;
   variantId: string;
   name: string;
-  sku?: string | null;
   price: number;
   quantity: number;
   subtotal: number;

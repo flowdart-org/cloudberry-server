@@ -22,6 +22,8 @@ export class PrismaProductRepository implements ProductRepository {
 
     if (!persistenceData.categoryId) throw new Error('Category ID is required');
 
+    console.log(persistenceData);
+
     const doc = await this._prisma.product.create({
       data: { ...persistenceData },
     });

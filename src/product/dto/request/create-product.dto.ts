@@ -7,33 +7,10 @@ import {
   ValidateNested,
   IsOptional,
 } from 'class-validator';
-import { ApiProperty } from '@nestjs/swagger';
 import { Type } from 'class-transformer';
+import { ApiProperty } from '@nestjs/swagger';
 
-export class VariantDto {
-  @IsOptional()
-  @IsString({ message: 'ID must be a string' })
-  @ApiProperty({
-    example: 'var123',
-    description: 'ID of the variant',
-    required: false,
-  })
-  id?: string;
-
-  @IsString({ message: 'Size must be a string' })
-  @ApiProperty({
-    example: 'M',
-    description: 'Size of the variant',
-  })
-  size: string;
-
-  @IsNumber({}, { message: 'Stock must be a number' })
-  @ApiProperty({
-    example: 15,
-    description: 'Available stock for the variant',
-  })
-  stock: number;
-}
+import { VariantDto } from '@/product/variant/dto/variant.dto';
 
 export class CreateProductDto {
   @IsString({ message: 'Name must be a string' })

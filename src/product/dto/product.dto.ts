@@ -50,7 +50,11 @@ export class ProductDto {
       (entity.price / 100) * (100 - (entity.discountPercent || 0));
 
     this.images = images;
-    this.variants = variants;
+    this.variants = variants.map((variant) => ({
+      id: variant.id,
+      size: variant.size,
+      stock: variant.stock,
+    }));
     this.createdAt = entity.createdAt;
     this.updatedAt = entity.updatedAt;
     this.status = entity.status;

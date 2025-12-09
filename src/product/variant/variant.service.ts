@@ -1,8 +1,8 @@
 import { Inject, Injectable } from '@nestjs/common';
 
-import { VariantDto } from '@/product/dto/request/create-product.dto';
 import type { VariantRepository } from '@/product/variant/repositories/interfaces/variant.repository';
 import { ProductVariant } from '@/product/variant/entities/product-variant.entity';
+import { VariantDto } from '@/product/variant/dto/variant.dto';
 
 @Injectable()
 export class VariantService {
@@ -59,8 +59,10 @@ export class VariantService {
     return this._variantRepository.findManyByProductId(productId);
   }
 
-  findById(variantId: string) {
-    return this._variantRepository.findById(variantId);
+  async findById(variantId: string): Promise<ProductVariant> {
+    const variant = await this._variantRepository.findById(variantId);
+    if (!variant) throw new Error('Variant not found');
+    return variant;
   }
 
   decreaseStock(variantId: string, quantity: number) {

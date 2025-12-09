@@ -1,9 +1,11 @@
-import { Controller, Get, Patch, Param, Body, Query } from '@nestjs/common';
+import { Body, Controller, Get, Param, Patch, Query } from '@nestjs/common';
 
 import {
   HttpPaginatedResponse,
   HttpResponse,
 } from '@/common/dto/http-response.dto';
+import { Role } from '@/common/enums/role.enum';
+import { Roles } from '@/common/decorators/roles.decorator';
 import { OrderService } from '@/order/services/order.service';
 import { UserId } from '@/common/decorators/user-id.decorator';
 import { UpdateOrderDto } from '@/order/dto/request/update-order.dto';
@@ -16,33 +18,13 @@ export class OrderController {
   constructor(private readonly orderService: OrderService) {}
 
   @Get()
-  @ApiResponseWithType({ isArray: true }, OrderResponseDto)
-  async findAll(
-    @Query() query: OrderPaginatedQueryDto,
-  ): Promise<HttpPaginatedResponse<OrderResponseDto[]>> {
-    const { page, limit } = query;
-
-    const { orders, total } = await this.orderService.listAll(limit, page);
-
-    return {
-      message: 'Orders retrieved successfully',
-      success: true,
-      data: orders.map(OrderResponseDto.fromEntity),
-      limit,
-      page,
-      total,
-    };
-  }
-
-  @Get('user')
+  @Roles(Role.USER)
   @ApiResponseWithType({ isArray: true }, OrderResponseDto)
   async findAllByUser(
     @UserId() userId: string,
     @Query() query: OrderPaginatedQueryDto,
   ): Promise<HttpPaginatedResponse<OrderResponseDto[]>> {
-    const { page, limit } = query;
-
-    const { orders } = await this.orderService.listByUser(userId, limit, page);
+    const { orders } = await this.orderService.listByUser(userId, query);
 
     return {
       message: 'User orders retrieved successfully',
@@ -54,8 +36,29 @@ export class OrderController {
     };
   }
 
+  @Get('admin')
+  @Roles(Role.ADMIN)
+  @ApiResponseWithType({ isArray: true }, OrderResponseDto)
+  async findAll(
+    @Query() query: OrderPaginatedQueryDto,
+  ): Promise<HttpPaginatedResponse<OrderResponseDto[]>> {
+    const { page, limit } = query;
+
+    const { orders, total } = await this.orderService.listAll(query);
+
+    return {
+      message: 'Orders retrieved successfully',
+      success: true,
+      data: orders.map(OrderResponseDto.fromEntity),
+      limit,
+      page,
+      total,
+    };
+  }
+
   @Get(':id')
   @ApiResponseWithType({}, OrderResponseDto)
+  @Roles(Role.USER, Role.ADMIN)
   async findOne(
     @Param('id') id: string,
   ): Promise<HttpResponse<OrderResponseDto>> {
@@ -69,6 +72,7 @@ export class OrderController {
   }
 
   @Patch(':id')
+  @Roles(Role.ADMIN)
   @ApiResponseWithType({}, OrderResponseDto)
   async update(
     @Param('id') id: string,

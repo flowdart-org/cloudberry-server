@@ -1,7 +1,12 @@
-import { Injectable, NotFoundException, Inject } from '@nestjs/common';
+import {
+  Injectable,
+  NotFoundException,
+  Inject,
+  BadRequestException,
+} from '@nestjs/common';
 
-import { CartItem } from '@prisma/client';
-import { CartWithItems } from '@/common/types/cart';
+import { CartDto } from '@/cart/dto/cart.dto';
+import { CartItemDto } from '@/cart/dto/cart-item.dto';
 import { OrderItem } from '@/order/entities/order.entity';
 import { UpdateCartDto } from '@/cart/dto/update-cart.dto';
 import { CreateCartDto } from '@/cart/dto/create-cart.dto';
@@ -28,7 +33,7 @@ export class CartService {
     return this._cartRepository.createCart(userId);
   }
 
-  async addToCart(userId: string, dto: CreateCartDto) {
+  async addToCart(userId: string, dto: CreateCartDto): Promise<CartItemDto> {
     const { variantId, quantity } = dto;
 
     const variant = await this._variantService.findById(variantId);
@@ -47,20 +52,24 @@ export class CartService {
       variantId,
     );
 
-    if (existingItem) {
-      return this._cartItemRepository.updateQuantity(existingItem.id, {
-        quantity: quantity,
-      });
-    }
+    const cartItem = existingItem
+      ? await this._cartItemRepository.updateQuantity(existingItem.id, {
+          quantity: quantity,
+        })
+      : await this._cartItemRepository.addToCart(cart.id, {
+          productId: variant.productId,
+          variantId,
+          quantity,
+        });
 
-    return this._cartItemRepository.addToCart(cart.id, {
-      productId: variant.productId,
-      variantId,
-      quantity,
-    });
+    return CartItemDto.fromEntity(
+      cartItem,
+      await this._productService.findById(cartItem.productId),
+      await this._variantService.findById(cartItem.variantId),
+    );
   }
 
-  async getUserCart(userId: string): Promise<CartWithItems> {
+  async getUserCart(userId: string): Promise<CartDto> {
     let cart = await this._cartRepository.findByUserId(userId);
 
     if (!cart) {
@@ -85,14 +94,14 @@ export class CartService {
       }),
     );
 
-    return { ...cart, items: cartItems };
+    return CartDto.fromEntity(cart, cartItems);
   }
 
   async updateQuantity(
     userId: string,
     itemId: string,
     dto: UpdateCartDto,
-  ): Promise<CartItem> {
+  ): Promise<CartItemDto> {
     const item = await this._cartItemRepository.findItemById(itemId);
     if (!item) throw new NotFoundException('Cart item not found');
 
@@ -100,12 +109,18 @@ export class CartService {
 
     if (quantity <= 0) return this.removeItem(userId, itemId);
 
-    return this._cartItemRepository.updateQuantity(itemId, {
+    const cartItem = await this._cartItemRepository.updateQuantity(itemId, {
       quantity,
     });
+
+    return CartItemDto.fromEntity(
+      cartItem,
+      await this._productService.findById(cartItem.productId),
+      await this._variantService.findById(cartItem.variantId),
+    );
   }
 
-  async removeItem(userId: string, itemId: string) {
+  async removeItem(userId: string, itemId: string): Promise<CartItemDto> {
     const cart = await this._cartRepository.findByUserId(userId);
 
     if (!cart) throw new NotFoundException('Cart not found');
@@ -121,32 +136,19 @@ export class CartService {
 
     if (!item) throw new NotFoundException('Item not found in this cart');
 
-    return this._cartItemRepository.removeItem(itemId);
-  }
+    const cartItem = await this._cartItemRepository.removeItem(itemId);
 
-  // async checkout(userId: string): Promise<CheckoutCartResponseDto> {
-  //   const cart = await this._cartRepository.findByUserId(userId);
-  //
-  //   if (!cart) throw new NotFoundException('Cart not found');
-  //
-  //   let amount = 0;
-  //
-  //   for (const item of cart.items) {
-  //     const product = await this._productService.findById(item.productId);
-  //
-  //     if (!product) {
-  //       throw new NotFoundException('Product not found');
-  //     }
-  //     amount += product.price * item.quantity;
-  //   }
-  //
-  //   return new CheckoutCartResponseDto(
-  //     await this._paymentService.createOrder(userId, amount, 'INR'),
-  //   );
-  // }
+    return CartItemDto.fromEntity(
+      cartItem,
+      await this._productService.findById(cartItem.productId),
+      await this._variantService.findById(cartItem.variantId),
+    );
+  }
 
   async checkout(userId: string) {
     const cart = await this._cartRepository.findByUserId(userId);
+
+    console.log(cart);
 
     if (!cart) throw new NotFoundException('Cart not found');
 
@@ -164,7 +166,7 @@ export class CartService {
       if (!product) throw new NotFoundException('Product not found');
 
       if (variant.stock < item.quantity) {
-        throw new Error(
+        throw new BadRequestException(
           `Insufficient stock for ${product.name} - ${product.name}. Available: ${variant.stock}`,
         );
       }
