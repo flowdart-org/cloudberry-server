@@ -7,7 +7,7 @@ on:
 
 env:
   ACR_NAME: cloudberry
-  IMAGE_NAME: cloudberry-api
+  IMAGE_NAME: cloudberry-api-service
   TAG: ${{ github.sha }}
 
 jobs:
