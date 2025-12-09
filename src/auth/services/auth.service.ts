@@ -29,19 +29,19 @@ export class AuthService {
 
     if (isEmail(identifier)) {
       const { otp } = await this._otpService.generateOTP('LOGIN', identifier);
-      // await this._emailService.sendEmail(
-      //   identifier,
-      //   'Your Login OTP',
-      //   `Welcome to Cloudberry! Your OTP is ${otp}. Do not share it with anyone.`,
-      // );
+      await this._emailService.sendEmail(
+        identifier,
+        'Your Login OTP',
+        `Welcome to Cloudberry! Your OTP is ${otp}. Do not share it with anyone.`,
+      );
 
       console.log('OTP sent to email:', identifier, '=>', otp);
     } else if (isPhone(identifier)) {
       const { otp } = await this._otpService.generateOTP('LOGIN', identifier);
-      // await this._smsService.sendSMS(
-      //   identifier,
-      //   `Welcome to Cloudberry! Your OTP is ${otp}. Do not share it with anyone.`,
-      // );
+      await this._smsService.sendSMS(
+        identifier,
+        `Welcome to Cloudberry! Your OTP is ${otp}. Do not share it with anyone.`,
+      );
 
       console.log('OTP sent to phone:', identifier, '=>', otp);
     } else {

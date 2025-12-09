@@ -14,10 +14,10 @@ import { OTPEntry, OTPPurpose } from '@/otp/otp.interface';
 
 @Injectable()
 export class OtpService {
-  private readonly _production: boolean = true;
+  private readonly _isProd: boolean = true;
   constructor(private readonly redisClient: RedisClientType) {
     const configService = new ConfigService();
-    this._production = configService.get<string>('NODE_ENV') === 'production';
+    this._isProd = configService.get<string>('NODE_ENV') === 'production';
   }
 
   private generateNumericOTP(length = 4): string {
@@ -70,7 +70,7 @@ export class OtpService {
       .exec();
 
     // 🔹 Generate OTP
-    const otp = this._production
+    const otp = this._isProd
       ? this.generateNumericOTP(OTP_LENGTH)
       : DEFAULT_DEV_OTP;
     const otpHash = this.hashOTP(otp);
