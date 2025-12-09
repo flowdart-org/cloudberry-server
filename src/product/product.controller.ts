@@ -1,13 +1,27 @@
-import { Controller, Get, Post, Body, Patch, Param } from '@nestjs/common';
+import {
+  Controller,
+  Get,
+  Post,
+  Body,
+  Patch,
+  Param,
+  Query,
+} from '@nestjs/common';
 
 import { Role } from '@/common/enums/role.enum';
-import type { HTTP_RESPONSE } from '@/common/types';
 import { ProductService } from '@/product/product.service';
 import { Roles } from '@/common/decorators/roles.decorator';
+import { Public } from '@/common/decorators/public.decorator';
+import {
+  HttpPaginatedResponse,
+  HttpResponse,
+} from '@/common/dto/http-response.dto';
 import { CreateProductDto } from '@/product/dto/request/create-product.dto';
 import { UpdateProductDto } from '@/product/dto/request/update-product.dto';
-import { ProductResponseDto } from '@/product/dto/response/product-response.dto';
 import { ApiResponseWithType } from '@/common/decorators/api-response.decorator';
+import { ProductResponseDto } from '@/product/dto/response/product-response.dto';
+import { ProductPaginatedQueryDto } from '@/product/dto/request/product-paginated-query.dto';
+import { ProductFeedPaginatedQueryDto } from '@/product/dto/request/product-feed-paginated-query.dto';
 
 @Controller('product')
 export class ProductController {
@@ -16,41 +30,79 @@ export class ProductController {
   @Post()
   @Roles(Role.ADMIN)
   @ApiResponseWithType({}, ProductResponseDto)
-  create(@Body() createProductDto: CreateProductDto) {
-    return this.productService.create(createProductDto);
+  async create(
+    @Body() createProductDto: CreateProductDto,
+  ): Promise<HttpResponse<ProductResponseDto>> {
+    const data = await this.productService.create(createProductDto);
+
+    return {
+      success: true,
+      message: 'Product created successfully',
+      data: ProductResponseDto.fromDto(data),
+    };
   }
 
   @Get('feed')
-  @Roles(Role.USER)
+  @Public()
   @ApiResponseWithType({ isArray: true }, ProductResponseDto)
-  findFeed() {
-    return this.productService.findAll();
+  async findFeed(
+    @Query() query: ProductFeedPaginatedQueryDto,
+  ): Promise<HttpResponse<ProductResponseDto[]>> {
+    const data = await this.productService.findFeed(query);
+
+    return {
+      success: true,
+      message: 'Products fetched successfully',
+      data: data.map(ProductResponseDto.fromDto),
+    };
   }
 
   @Get()
   @Roles(Role.ADMIN)
   @ApiResponseWithType({ isArray: true }, ProductResponseDto)
-  async findAll(): Promise<HTTP_RESPONSE<ProductResponseDto[]>> {
-    const data = await this.productService.findAll();
+  async find(
+    @Query() query: ProductPaginatedQueryDto,
+  ): Promise<HttpPaginatedResponse<ProductResponseDto[]>> {
+    const products = await this.productService.find(query);
 
     return {
       success: true,
       message: 'Products fetched successfully',
-      data,
+      data: products.map(ProductResponseDto.fromDto),
+      total: 20,
+      page: query.page,
+      limit: query.limit,
     };
   }
 
   @Get(':id')
-  @Roles(Role.USER, Role.ADMIN)
+  @Public()
   @ApiResponseWithType({}, ProductResponseDto)
-  findOne(@Param('id') id: string) {
-    return this.productService.findOne(id);
+  async findOne(
+    @Param('id') id: string,
+  ): Promise<HttpResponse<ProductResponseDto>> {
+    const data = await this.productService.findById(id);
+
+    return {
+      message: 'Product fetched successfully',
+      success: true,
+      data: ProductResponseDto.fromDto(data),
+    };
   }
 
   @Patch(':id')
   @Roles(Role.ADMIN)
   @ApiResponseWithType({}, ProductResponseDto)
-  update(@Param('id') id: string, @Body() updateProductDto: UpdateProductDto) {
-    return this.productService.update(id, updateProductDto);
+  async update(
+    @Param('id') id: string,
+    @Body() updateProductDto: UpdateProductDto,
+  ): Promise<HttpResponse<ProductResponseDto>> {
+    const data = await this.productService.update(id, updateProductDto);
+
+    return {
+      success: true,
+      message: 'Product updated successfully',
+      data: ProductResponseDto.fromDto(data),
+    };
   }
 }

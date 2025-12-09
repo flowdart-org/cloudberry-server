@@ -7,24 +7,10 @@ import {
   ValidateNested,
   IsOptional,
 } from 'class-validator';
-import { ApiProperty } from '@nestjs/swagger';
 import { Type } from 'class-transformer';
+import { ApiProperty } from '@nestjs/swagger';
 
-class VariantDto {
-  @IsString({ message: 'Size must be a string' })
-  @ApiProperty({
-    example: 'M',
-    description: 'Size of the variant',
-  })
-  size: string;
-
-  @IsNumber({}, { message: 'Stock must be a number' })
-  @ApiProperty({
-    example: 15,
-    description: 'Available stock for the variant',
-  })
-  stock: number;
-}
+import { VariantDto } from '@/product/variant/dto/variant.dto';
 
 export class CreateProductDto {
   @IsString({ message: 'Name must be a string' })
@@ -48,6 +34,13 @@ export class CreateProductDto {
   })
   price: number;
 
+  @IsNumber({}, { message: 'Discount percent must be a number' })
+  @ApiProperty({
+    example: 20,
+    description: 'Discount percentage of the product',
+  })
+  discountPercent: number;
+
   @ValidateNested({ each: true })
   @Type(() => VariantDto)
   @IsArray({ message: 'Variants must be an array' })
@@ -63,13 +56,6 @@ export class CreateProductDto {
   })
   variants: VariantDto[];
 
-  @IsNumber({}, { message: 'Discount percent must be a number' })
-  @ApiProperty({
-    example: 20,
-    description: 'Discount percentage of the product',
-  })
-  discountPercent: number;
-
   @IsString({ message: 'Category ID must be a number' })
   @ApiProperty({
     example: 'cat134',
@@ -77,13 +63,14 @@ export class CreateProductDto {
   })
   categoryId: string;
 
-  @IsEnum(['active', 'inactive'], {
-    message: 'Status must be either active or inactive',
-  })
   @ApiProperty({
     example: 'active',
     enum: ['active', 'inactive'],
     description: 'Status of the product',
+  })
+  @IsOptional()
+  @IsEnum(['active', 'inactive'], {
+    message: 'Status must be either active or inactive',
   })
   status: 'active' | 'inactive';
 

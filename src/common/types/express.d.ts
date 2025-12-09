@@ -3,7 +3,10 @@ import { JWTPayload } from '@/common/types/index';
 declare global {
   namespace Express {
     interface Request {
-      user?: JWTPayload;
+      user: {
+        id: string;
+        role: JWTPayload['role'];
+      };
     }
   }
 }

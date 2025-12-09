@@ -1,19 +1,16 @@
-import { ConfigService } from '@nestjs/config';
-import { NestFactory } from '@nestjs/core';
 import { Server } from 'node:http';
+import { ConfigService } from '@nestjs/config';
+
 import { setupApp } from '@/common/config/app.config';
-import { AppModule } from './app.module';
-import { logger, LoggerInstance } from '@/common/logger/winston-logger';
+import { logger } from '@/common/logger/winston-logger';
 
 async function bootstrap() {
-  const app = await NestFactory.create(AppModule, {
-    logger: LoggerInstance,
-  });
-
-  setupApp(app);
+  const app = await setupApp();
 
   const configService = app.get(ConfigService);
+
   const port = configService.getOrThrow<number>('PORT');
+
   await app.listen(port).then((value: Server) => {
     const serverAddress = JSON.parse(JSON.stringify(value.address())) as {
       port: number;

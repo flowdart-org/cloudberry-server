@@ -6,18 +6,26 @@ import {
   getSchemaPath,
 } from '@nestjs/swagger';
 
-import { HttpResponse } from '@/common/dto/http-response.dto';
+import {
+  HttpPaginatedResponse,
+  HttpResponse,
+} from '@/common/dto/http-response.dto';
 
 export const ApiResponseWithType = <TModel extends Type>(
-  options: ApiResponseOptions & { isArray?: boolean } = {},
+  options: ApiResponseOptions & {
+    isArray?: boolean;
+    pagination?: boolean;
+  } = {},
   model?: TModel,
 ) => {
-  const { isArray = false, ...rest } = options;
+  const { isArray = false, pagination = false, ...rest } = options;
 
   const decorators: Array<
     ClassDecorator | MethodDecorator | PropertyDecorator
   > = [
-    model ? ApiExtraModels(HttpResponse, model) : ApiExtraModels(HttpResponse),
+    model
+      ? ApiExtraModels(pagination ? HttpPaginatedResponse : HttpResponse, model)
+      : ApiExtraModels(pagination ? HttpPaginatedResponse : HttpResponse),
     ApiOkResponse({
       ...rest,
       schema: {

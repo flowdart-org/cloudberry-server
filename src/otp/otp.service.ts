@@ -1,17 +1,24 @@
 import { Injectable, BadRequestException } from '@nestjs/common';
-import * as crypto from 'crypto';
+import { ConfigService } from '@nestjs/config';
 import type { RedisClientType } from 'redis';
+import crypto from 'crypto';
 
 import {
   OTP_TTL_SECONDS,
   OTP_MAX_ATTEMPTS,
   OTP_DAILY_LIMIT,
-} from './otp.constants';
-import { OTPEntry, OTPPurpose } from './otp.interface';
+  OTP_LENGTH,
+  DEFAULT_DEV_OTP,
+} from '@/otp/otp.constants';
+import { OTPEntry, OTPPurpose } from '@/otp/otp.interface';
 
 @Injectable()
 export class OtpService {
-  constructor(private readonly redisClient: RedisClientType) {}
+  private readonly _production: boolean = true;
+  constructor(private readonly redisClient: RedisClientType) {
+    const configService = new ConfigService();
+    this._production = configService.get<string>('NODE_ENV') === 'production';
+  }
 
   private generateNumericOTP(length = 4): string {
     return Array.from({ length }, () => crypto.randomInt(0, 10)).join('');
@@ -63,7 +70,9 @@ export class OtpService {
       .exec();
 
     // 🔹 Generate OTP
-    const otp = this.generateNumericOTP();
+    const otp = this._production
+      ? this.generateNumericOTP(OTP_LENGTH)
+      : DEFAULT_DEV_OTP;
     const otpHash = this.hashOTP(otp);
 
     const entry: OTPEntry = {

@@ -1,13 +1,37 @@
 import { Admin as PrismaAdmin } from '@prisma/client';
 
+import { AdminMapper } from '@/admin/mappers/admin.mapper';
+import { PrismaService } from '@/common/prisma/prisma.service';
 import { Admin as AdminEntity } from '@/admin/entities/admin.entity';
 import { IAdminRepository } from '@/admin/repositories/interfaces/admin.repository';
-import { AdminMapper } from '@/admin/mappers/admin.mapper';
 import { Inject } from '@nestjs/common';
-import { PrismaClient } from '@/common/prisma/prisma-client';
 
 export class PrismaAdminRepository implements IAdminRepository {
-  constructor(@Inject('PrismaClient') private readonly prisma: PrismaClient) {}
+  constructor(@Inject('PrismaService') private readonly prisma: PrismaService) {
+    (async () => {
+      const admin = await this.prisma.admin.findUnique({
+        where: {
+          email: 'admin@gmail.com',
+        },
+      });
+
+      if (!admin) {
+        await this.prisma.admin.create({
+          data: {
+            name: 'Admin',
+            email: 'admin@gmail.com',
+            password: 'password',
+          },
+        });
+
+        console.log(
+          'admin has created',
+          '\n',
+          await this.prisma.admin.findMany(),
+        );
+      }
+    })();
+  }
 
   create(
     data: Omit<PrismaAdmin, 'id' | 'createdAt' | 'updatedAt'>,

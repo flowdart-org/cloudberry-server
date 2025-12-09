@@ -6,9 +6,9 @@ import {
   Res,
   UnauthorizedException,
 } from '@nestjs/common';
-import { ApiOperation, ApiResponse } from '@nestjs/swagger';
-import type { HTTP_RESPONSE } from '@/common/types';
 import type { Request, Response } from 'express';
+import type { HTTP_RESPONSE } from '@/common/types';
+import { ApiOperation, ApiResponse } from '@nestjs/swagger';
 
 import {
   clearAuthCookies,
@@ -73,7 +73,10 @@ export class AuthController {
 
     setAuthCookies(res, { accessToken, refreshToken });
 
-    return { success: true, message: 'Admin logged in successfully' };
+    return {
+      success: true,
+      message: 'Admin logged in successfully',
+    };
   }
 
   @Public()
@@ -97,7 +100,10 @@ export class AuthController {
       refreshToken: newRefreshToken,
     });
 
-    return { success: true, message: 'Tokens refreshed successfully' };
+    return {
+      success: true,
+      message: 'Tokens refreshed successfully',
+    };
   }
 
   @Post('logout')

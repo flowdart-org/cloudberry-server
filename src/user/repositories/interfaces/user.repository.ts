@@ -1,22 +1,17 @@
-import { User as UserEntity } from '@/user/entities/user.entity';
-import { User as PrismaUser } from '@/user/entities/user.entity';
-
-export type CreateUserInput =
-  | { email: string; phone?: undefined }
-  | { phone: string; email?: undefined };
+import { User } from '@/user/entities/user.entity';
+import { UserPaginatedQueryDto } from '@/user/dto/request/user-paginated-query.dto';
 
 export interface IUserRepository {
   create(data: {
     email: string | undefined;
     phone: string | undefined;
-  }): Promise<UserEntity>;
-  findById(id: string): Promise<UserEntity | null>;
-  findByEmail(email: string): Promise<UserEntity | null>;
-  findByPhone(phone: string): Promise<UserEntity | null>;
-  findAll(): Promise<UserEntity[]>;
+  }): Promise<User>;
+  findById(id: string): Promise<User | null>;
+  findByEmail(email: string): Promise<User | null>;
+  findByPhone(phone: string): Promise<User | null>;
+  find(query: UserPaginatedQueryDto): Promise<User[]>;
   update(
     id: string,
-    data: Partial<Omit<PrismaUser, 'id' | 'updatedAt' | 'createdAt'>>,
-  ): Promise<UserEntity | null>;
-  delete(id: string): Promise<void>;
+    data: Partial<Omit<User, 'id' | 'updatedAt' | 'createdAt'>>,
+  ): Promise<User | null>;
 }

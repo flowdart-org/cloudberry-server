@@ -1,36 +1,34 @@
-import { Admin } from '@/admin/entities/admin.entity';
 import { ApiProperty } from '@nestjs/swagger';
+
+import { Role } from '@/common/enums/role.enum';
+import { Admin } from '@/admin/entities/admin.entity';
 
 export class AdminResponseDto {
   @ApiProperty({ example: '1', description: 'Unique identifier for the admin' })
-  public id: string;
+  id: string;
 
   @ApiProperty({
     example: 'admin@gmail.com',
     description: 'Email address of the admin',
   })
-  public email: string;
+  email: string;
 
   @ApiProperty({ example: 'Admin Name', description: 'Name of the admin' })
-  public name: string;
+  name: string;
 
   @ApiProperty({
-    example: '2024-01-01T00:00:00.000Z',
-    description: 'Timestamp when the admin was last updated',
+    example: Role.ADMIN,
+    enum: Role,
+    description: 'Role of the admin',
   })
-  public updatedAt: Date;
+  role: Role;
 
-  @ApiProperty({
-    example: '2023-01-01T00:00:00.000Z',
-    description: 'Timestamp when the admin was created',
-  })
-  public createdAt: Date;
-
-  constructor(entity: Admin) {
-    this.id = entity.id;
-    this.email = entity.email;
-    this.name = entity.name;
-    this.updatedAt = entity.updatedAt;
-    this.createdAt = entity.createdAt;
+  static fromEntity(entity: Admin): AdminResponseDto {
+    const dto = new AdminResponseDto();
+    dto.id = entity.id;
+    dto.email = entity.email;
+    dto.name = entity.name;
+    dto.role = Role.ADMIN;
+    return dto;
   }
 }

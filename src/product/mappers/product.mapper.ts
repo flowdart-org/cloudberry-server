@@ -1,51 +1,68 @@
-import {
-  Product as PrismaProduct,
-  Category as PrismaCategory,
-  Prisma,
-} from '@prisma/client';
+import { Product as PrismaProduct, Prisma } from '@prisma/client';
 import { Product } from '@/product/entities/product.entity';
 
 export const ProductMapper = {
-  toEntity(
-    this: void,
-    doc: PrismaProduct & { category: PrismaCategory },
-  ): Product {
+  toEntity(this: void, doc: PrismaProduct): Product {
     return new Product(
       doc.id,
       doc.name,
       doc.description,
+      doc.categoryId,
       doc.price,
       doc.discountPercent,
-      doc.category,
-      (doc.variants ?? []) as { size: string; stock: number }[],
+      doc.tryOn,
       doc.status,
       doc.createdAt,
       doc.updatedAt,
     );
   },
 
-  toPersistence(
+  toPersistenceCreate(
     entity: Omit<
       Product,
       | 'id'
+      | 'variants'
       | 'createdAt'
       | 'discountPrice'
       | 'discountPercentage'
-      | 'variants'
       | 'status'
       | 'updatedAt'
-    > & {
-      variants: Prisma.JsonArray;
-    } & Partial<Pick<Product, 'discountPercentage' | 'status'>>,
-  ): Omit<PrismaProduct, 'id' | 'createdAt' | 'updatedAt'> {
+    > &
+      Pick<Product, 'discountPercent' | 'status'>,
+  ): Prisma.ProductUncheckedCreateInput {
     return {
       name: entity.name,
       description: entity.description,
       price: entity.price,
-      discountPercent: entity.discountPercentage || 0,
-      categoryId: entity.category.id,
-      variants: entity.variants,
-      status: entity.status ?? 'inactive',
+      discountPercent: entity.discountPercent,
+      categoryId: entity.categoryId,
+      status: entity.status,
+    };
+  },
+
+  toPersistenceUpdate(
+    entity: Partial<
+      Omit<
+        Product,
+        | 'id'
+        | 'createdAt'
+        | 'discountPrice'
+        | 'discountPercentage'
+        | 'variants'
+        | 'status'
+        | 'updatedAt'
+      > &
+        Pick<Product, 'discountPercent' | 'status'>
+    >,
+  ): Prisma.ProductUncheckedUpdateInput {
+    return {
+      name: entity.name,
+      description: entity.description,
+      price: entity.price,
+      discountPercent: entity.discountPercent,
+      tryOn: entity.tryOn,
+      categoryId: entity.categoryId,
+      status: entity.status,
     };
   },
 };

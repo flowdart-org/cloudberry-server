@@ -2,7 +2,13 @@ export interface HTTP_RESPONSE<T = any> {
   message: string;
   success: boolean;
   data?: T;
-  token?: string;
+  accessToken?: string;
+}
+
+export interface HTTP_PAGINATED_RESPONSE {
+  total?: number;
+  limit?: number;
+  page?: number;
 }
 
 export interface User {
@@ -15,5 +21,10 @@ export interface User {
 
 export interface JWTPayload {
   sub: string;
+  role: 'user' | 'admin';
+}
+
+export interface RequestUser {
+  id: string;
   role: 'user' | 'admin';
 }

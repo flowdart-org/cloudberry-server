@@ -1,0 +1,2 @@
+-- AlterTable
+ALTER TABLE "User" ADD COLUMN     "tryOnLimit" INTEGER NOT NULL DEFAULT 3;

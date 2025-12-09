@@ -1,12 +1,13 @@
-import { Injectable } from '@nestjs/common';
-import { ConfigService } from '@nestjs/config';
 import {
   BlobServiceClient,
   StorageSharedKeyCredential,
   BlobSASPermissions,
   generateBlobSASQueryParameters,
   SASProtocol,
+  ContainerClient,
 } from '@azure/storage-blob';
+import { Injectable } from '@nestjs/common';
+import { ConfigService } from '@nestjs/config';
 
 @Injectable()
 export class AzureBlobService {
@@ -16,6 +17,7 @@ export class AzureBlobService {
 
   private readonly sharedKeyCredential: StorageSharedKeyCredential;
   private readonly blobServiceClient: BlobServiceClient;
+  private readonly containerClient: ContainerClient;
 
   constructor() {
     const configService = new ConfigService();
@@ -36,11 +38,15 @@ export class AzureBlobService {
       `https://${this.accountName}.blob.core.windows.net`,
       this.sharedKeyCredential,
     );
+
+    this.containerClient = this.blobServiceClient.getContainerClient(
+      this.containerName,
+    );
   }
 
   generateUploadUrl(blobName: string): string {
     const expiresOn = new Date(Date.now() + 15 * 60 * 1000);
-    const permissions = BlobSASPermissions.parse('cw');
+    const permissions = BlobSASPermissions.parse('w');
 
     const sasToken = generateBlobSASQueryParameters(
       {
@@ -56,7 +62,7 @@ export class AzureBlobService {
   }
 
   generateReadUrl(blobName: string): string {
-    const expiresOn = new Date(Date.now() + 15 * 60 * 1000);
+    const expiresOn = new Date(Date.now() + 24 * 60 * 60 * 1000);
     const permissions = BlobSASPermissions.parse('r');
 
     const sasToken = generateBlobSASQueryParameters(
@@ -71,5 +77,30 @@ export class AzureBlobService {
     ).toString();
 
     return `https://${this.accountName}.blob.core.windows.net/${this.containerName}/${blobName}?${sasToken}`;
+  }
+
+  async listBlobs(prefix: string) {
+    const containerClient = this.blobServiceClient.getContainerClient(
+      this.containerName,
+    );
+    const blobs: string[] = [];
+    for await (const blob of containerClient.listBlobsFlat({ prefix })) {
+      blobs.push(blob.name);
+    }
+    return blobs;
+  }
+
+  async uploadBuffer(blobName: string, buffer: Buffer, mimeType: string) {
+    const blockBlob = this.containerClient.getBlockBlobClient(blobName);
+
+    await blockBlob.uploadData(buffer, {
+      blobHTTPHeaders: { blobContentType: mimeType },
+    });
+
+    return blockBlob.url;
+  }
+
+  async blobExists(blobName: string): Promise<boolean> {
+    return this.containerClient.getBlobClient(blobName).exists();
   }
 }

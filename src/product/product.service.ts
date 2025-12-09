@@ -1,50 +1,119 @@
 import { BadRequestException, Inject, Injectable } from '@nestjs/common';
 
+import { ProductDto } from '@/product/dto/product.dto';
+import { Product } from '@/product/entities/product.entity';
+import { MediaService } from '@/media/services/media.service';
+import { VariantService } from '@/product/variant/variant.service';
 import { CategoryService } from '@/product/category/category.service';
 import { CreateProductDto } from '@/product/dto/request/create-product.dto';
 import { UpdateProductDto } from '@/product/dto/request/update-product.dto';
-import { ProductResponseDto } from '@/product/dto/response/product-response.dto';
-import type { ProductRepository } from '@/product/repositories/interfaces/product.repository';
+import { ProductRepository } from '@/product/repositories/interfaces/product.repository';
+import { ProductPaginatedQueryDto } from '@/product/dto/request/product-paginated-query.dto';
+import { ProductFeedPaginatedQueryDto } from '@/product/dto/request/product-feed-paginated-query.dto';
 
 @Injectable()
 export class ProductService {
   constructor(
+    private readonly _mediaService: MediaService,
+    private readonly _variantsService: VariantService,
+    private readonly _categoryService: CategoryService,
     @Inject('ProductRepository')
     private readonly _productRepository: ProductRepository,
-    private readonly _categoryService: CategoryService,
   ) {}
 
-  async create(dto: CreateProductDto) {
+  private _toProductDto = async (product: Product): Promise<ProductDto> => {
+    const category = await this._categoryService.findOne(product.categoryId);
+    const variants = await this._variantsService.findByProductId(product.id);
+    const images = (
+      await this._mediaService.getProductReadUrls(product.id)
+    ).map((i) => i.readUrl);
+    const thumbnail = this._mediaService.getProductThumbnailReadUrl(
+      product.id,
+    ).readUrl;
+    return new ProductDto(product, category, variants, images, thumbnail);
+  };
+
+  private _toProductsDto = async (
+    products: Product[],
+  ): Promise<ProductDto[]> => {
+    return Promise.all(
+      products.map(async (p) => {
+        return await this._toProductDto(p);
+      }),
+    );
+  };
+
+  async create(dto: CreateProductDto): Promise<ProductDto> {
     const category = await this._categoryService.findOne(dto.categoryId);
     if (!category) throw new BadRequestException('Category not found');
 
-    return this._productRepository.create({
+    const createdProduct = await this._productRepository.create({
       ...dto,
-      category,
-      discountPercentage: dto.discountPercent || 0,
+      categoryId: category.id,
+      discountPercent: dto.discountPercent || 0,
     });
+
+    if (dto.variants && dto.variants.length) {
+      console.log('createing product variants', dto.variants[0]);
+      await this._variantsService.createOrUpdateMany(
+        createdProduct.id,
+        dto.variants,
+      );
+    }
+
+    const doc = await this._productRepository.findById(createdProduct.id);
+
+    if (!doc) throw new BadRequestException('Error creating product');
+
+    return new ProductDto(doc, category, []);
   }
 
-  async findAll() {
-    const docs = await this._productRepository.findAll();
-    return docs.length
-      ? Promise.all(
-          docs.map(async (p) => {
-            const category = await this._categoryService.findOne(p.category.id);
-            return new ProductResponseDto(p, category, []);
-          }),
-        )
-      : [];
+  async find(query: ProductPaginatedQueryDto): Promise<ProductDto[]> {
+    const docs = await this._productRepository.find(query);
+
+    return docs.length ? this._toProductsDto(docs) : [];
   }
 
-  findOne(id: string) {
-    return `This action returns a #${id} product`;
+  async findFeed(query: ProductFeedPaginatedQueryDto): Promise<ProductDto[]> {
+    const docs = await this._productRepository.find({
+      ...query,
+      status: 'active',
+    });
+
+    return docs.length ? this._toProductsDto(docs) : [];
   }
 
-  update(id: string, dto: UpdateProductDto) {
-    // return this._productRepository.update(id, {
-    //   ...dto,
-    //   variants: dto.variants ? dto.variants : [],
-    // });
+  async findById(id: string): Promise<ProductDto> {
+    const doc = await this._productRepository.findById(id);
+
+    if (!doc) throw new BadRequestException('Product not found');
+
+    return this._toProductDto(doc);
+  }
+
+  async update(id: string, dto: UpdateProductDto): Promise<ProductDto> {
+    const doc = await this._productRepository.update(id, dto);
+
+    if (dto.variants && dto.variants.length)
+      await this._variantsService.createOrUpdateMany(id, dto.variants);
+
+    const product = await this._productRepository.findById(doc.id);
+
+    if (!product) throw new BadRequestException('Product not found');
+
+    return this._toProductDto(product);
+  }
+
+  async reduceStock(item: {
+    productId: string;
+    variantId: string;
+    quantity: number;
+  }) {
+    const product = await this._productRepository.findById(item.productId);
+    if (!product) return;
+
+    if (item.variantId) {
+      await this._variantsService.decreaseStock(item.variantId, item.quantity);
+    }
   }
 }

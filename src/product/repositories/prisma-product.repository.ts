@@ -1,67 +1,95 @@
 import { Inject, Injectable } from '@nestjs/common';
-import {
-  Prisma,
-  Product as PrismaProduct,
-  Category as PrismaCategory,
-} from '@prisma/client';
 
-import { PrismaClient } from '@/common/prisma/prisma-client';
+import { PrismaService } from '@/common/prisma/prisma.service';
 import { ProductMapper } from '@/product/mappers/product.mapper';
+import { Prisma, Product as PrismaProduct } from '@prisma/client';
 import { Product as ProductEntity } from '@/product/entities/product.entity';
 import { ProductRepository } from '@/product/repositories/interfaces/product.repository';
+import { ProductPaginatedQueryDto } from '@/product/dto/request/product-paginated-query.dto';
+import { ProductFeedPaginatedQueryDto } from '@/product/dto/request/product-feed-paginated-query.dto';
 
 @Injectable()
 export class PrismaProductRepository implements ProductRepository {
-  constructor(@Inject('PrismaClient') private readonly _prisma: PrismaClient) {}
-
-  private readonly _include = {
-    category: true,
-  } satisfies Prisma.ProductInclude;
+  constructor(
+    @Inject('PrismaService') private readonly _prisma: PrismaService,
+  ) {}
 
   async create(
-    data: Omit<ProductEntity, 'id' | 'status' | 'createdAt' | 'updatedAt'> & {
-      category: PrismaCategory;
-    } & Partial<Pick<PrismaProduct, 'status'>>,
+    data: Omit<ProductEntity, 'id' | 'variants' | 'createdAt' | 'updatedAt'> &
+      Partial<Pick<PrismaProduct, 'status'>>,
   ): Promise<ProductEntity> {
-    if (typeof data.variants !== 'object' || !Array.isArray(data.variants)) {
-      throw new Error('Variants must be an array or a single object');
-    }
-    const doc = (await this._prisma.product.create({
-      data: {
-        ...ProductMapper.toPersistence({ ...data, variants: data.variants }),
-        variants: data.variants,
-      },
-      include: this._include,
-    })) as PrismaProduct & { category: PrismaCategory };
+    const persistenceData = ProductMapper.toPersistenceCreate(data);
+
+    if (!persistenceData.categoryId) throw new Error('Category ID is required');
+
+    console.log(persistenceData);
+
+    const doc = await this._prisma.product.create({
+      data: { ...persistenceData },
+    });
+
     return ProductMapper.toEntity(doc);
   }
 
-  async findAll(): Promise<ProductEntity[]> {
+  async find(
+    query: ProductPaginatedQueryDto | ProductFeedPaginatedQueryDto,
+  ): Promise<ProductEntity[]> {
+    const { page = 1, limit = 10, search } = query;
+
+    const where: Prisma.ProductWhereInput = {};
+
+    if (search) {
+      where.name = { contains: search, mode: 'insensitive' };
+    }
+
+    if ('status' in query && query.status) {
+      where.status = query.status;
+    }
+
+    if ('minPrice' in query || 'maxPrice' in query || 'categories' in query) {
+      if (query.minPrice !== undefined || query.maxPrice !== undefined) {
+        where.price = {};
+        if (query.minPrice !== undefined) where.price.gte = query.minPrice;
+        if (query.maxPrice !== undefined) where.price.lte = query.maxPrice;
+      }
+
+      if (query.categories?.length) {
+        where.categoryId = { in: query.categories };
+      }
+    }
+
+    if ('size' in query && query.size) {
+      where.variants = {
+        some: {
+          size: query.size,
+        },
+      };
+    }
+
     const docs = await this._prisma.product.findMany({
-      include: this._include,
+      where,
+      skip: (page - 1) * limit,
+      take: limit,
+      orderBy: { createdAt: 'desc' },
     });
+
     return docs.map(ProductMapper.toEntity);
   }
 
   async findById(id: string): Promise<ProductEntity | null> {
     const doc = await this._prisma.product.findUnique({
       where: { id },
-      include: this._include,
     });
     return doc ? ProductMapper.toEntity(doc) : null;
   }
 
   async update(
     id: string,
-    data: Omit<ProductEntity, 'id' | 'createdAt' | 'updatedAt'>,
+    data: Partial<Omit<ProductEntity, 'id' | 'createdAt' | 'updatedAt'>>,
   ): Promise<ProductEntity> {
     const doc = await this._prisma.product.update({
       where: { id },
-      data: {
-        ...ProductMapper.toPersistence(data),
-        variants: data.variants,
-      },
-      include: this._include,
+      data: ProductMapper.toPersistenceUpdate(data),
     });
     return ProductMapper.toEntity(doc);
   }

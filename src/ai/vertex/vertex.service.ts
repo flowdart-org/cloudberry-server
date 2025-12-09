@@ -23,7 +23,7 @@ export class VertexService {
   private readonly REGION: string;
   private readonly MODEL_ID: string;
   private readonly API_KEY: string;
-  private readonly KEY_PATH: string = 'keys/gcp-key.json';
+  private readonly KeyJson: string | null = null;
 
   constructor() {
     const configService = new ConfigService();
@@ -31,12 +31,17 @@ export class VertexService {
     this.PROJECT_ID = configService.getOrThrow<string>('GCP_PROJECT_ID');
     this.MODEL_ID = configService.getOrThrow<string>('GCP_VERTEX_MODEL_ID');
     this.API_KEY = configService.getOrThrow<string>('GCP_API_KEY');
+    this.KeyJson = configService.getOrThrow<string>('GCP_SERVICE_ACCOUNT_JSON');
   }
 
   private async _getAccessToken(): Promise<string> {
+    if (!this.KeyJson) {
+      throw new Error('Service account key JSON is not provided.');
+    }
+
     const auth = new GoogleAuth({
       clientOptions: {
-        keyFile: this.KEY_PATH,
+        keyFile: this.KeyJson,
         apiKey: this.API_KEY,
       },
       scopes: ['https://www.googleapis.com/auth/cloud-platform'],

@@ -11,7 +11,7 @@ services:
     logging:
       driver: 'none'
     volumes:
-      - db-data:/var/lib/postgresql/data
+      - db-data:/var/lib/postgresql
 
   redis:
     container_name: redis
@@ -34,8 +34,6 @@ services:
     volumes:
       - ./:/app/
       - /app/node_modules
-      - ./.env:/app/.env
-      - ./node_modules/@prisma/client:/app/node_modules/@prisma/client
     environment:
       NODE_ENV: development
       PORT: 4000
@@ -45,12 +43,21 @@ services:
       - ./.env
     ports:
       - "4000:4000"
+
+  cloudflared:
+    image: cloudflare/cloudflared:latest
+    container_name: cloudflared
+    restart: unless-stopped
+    logging:
+      driver: 'none'
+    volumes:
+      - ./cloudflared:/etc/cloudflared
+    command: tunnel run
     depends_on:
-      - db
-      - redis
+      - server
 
 volumes:
   db-data:
-    name: zen-fashion-studio_db-data
+    name: cloudberry_db-data
   redis-data:
-    name: zen-fashion-studio_redis-data
+    name: cloudberry_redis-data
