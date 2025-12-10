@@ -1,6 +1,6 @@
+import Joi from 'joi';
 import { Global, Module } from '@nestjs/common';
 import { ConfigModule as NestConfigModule } from '@nestjs/config';
-import Joi from 'joi';
 
 @Global()
 @Module({
@@ -20,7 +20,8 @@ import Joi from 'joi';
         GCP_VERTEX_MODEL_ID: Joi.string().default(
           'virtual-try-on-preview-08-04',
         ),
-        GCP_API_KEY: Joi.string().required(),
+        GCP_CLIENT_EMAIL: Joi.string().required(),
+        GCP_PRIVATE_KEY: Joi.string().required(),
         JWT_ACCESS_SECRET: Joi.string().required(),
         JWT_REFRESH_SECRET: Joi.string().required(),
         JWT_EXPIRATION_TIME: Joi.string().default('3600s'),
