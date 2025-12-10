@@ -31,7 +31,9 @@ export class VertexService {
     this.REGION = configService.getOrThrow<string>('GCP_REGION');
     this.PROJECT_ID = configService.getOrThrow<string>('GCP_PROJECT_ID');
     this.MODEL_ID = configService.getOrThrow<string>('GCP_VERTEX_MODEL_ID');
-    this.PRIVATE_KEY = configService.getOrThrow<string>('GCP_PRIVATE_KEY');
+    this.PRIVATE_KEY = configService
+      .getOrThrow<string>('GCP_PRIVATE_KEY')
+      .replace(/\\n/g, '\n');
     this.CLIENT_EMAIL = configService.getOrThrow<string>('GCP_CLIENT_EMAIL');
   }
 
