@@ -127,8 +127,6 @@ export class OrderService {
       }),
     );
 
-    console.log(orders);
-
     return {
       orders,
       total: await this._orderRepository.countAll(),
@@ -282,10 +280,6 @@ export class OrderService {
   //   });
   //   return this._orderRepository.update(cancelled);
   // }
-
-  public async softDelete(id: string): Promise<void> {
-    await this._orderRepository.softDelete(id);
-  }
 
   private generateOrderNumber(): string {
     // simple order number generator — change to your format if needed

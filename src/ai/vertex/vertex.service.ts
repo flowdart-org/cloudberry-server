@@ -22,37 +22,38 @@ export class VertexService {
   private readonly PROJECT_ID: string;
   private readonly REGION: string;
   private readonly MODEL_ID: string;
-  private readonly API_KEY: string;
-  private readonly KeyJson: string | null = null;
+  private readonly PRIVATE_KEY: string;
+  private readonly CLIENT_EMAIL: string;
 
   constructor() {
     const configService = new ConfigService();
+
     this.REGION = configService.getOrThrow<string>('GCP_REGION');
     this.PROJECT_ID = configService.getOrThrow<string>('GCP_PROJECT_ID');
     this.MODEL_ID = configService.getOrThrow<string>('GCP_VERTEX_MODEL_ID');
-    this.API_KEY = configService.getOrThrow<string>('GCP_API_KEY');
-    this.KeyJson = configService.getOrThrow<string>('GCP_SERVICE_ACCOUNT_JSON');
+    this.PRIVATE_KEY = configService.getOrThrow<string>('GCP_PRIVATE_KEY');
+    this.CLIENT_EMAIL = configService.getOrThrow<string>('GCP_CLIENT_EMAIL');
   }
 
   private async _getAccessToken(): Promise<string> {
-    if (!this.KeyJson) {
-      throw new Error('Service account key JSON is not provided.');
-    }
-
     const auth = new GoogleAuth({
-      clientOptions: {
-        keyFile: this.KeyJson,
-        apiKey: this.API_KEY,
+      credentials: {
+        client_email: this.CLIENT_EMAIL,
+        private_key: this.PRIVATE_KEY,
       },
       scopes: ['https://www.googleapis.com/auth/cloud-platform'],
     });
     const client = await auth.getClient();
     const { token } = await client.getAccessToken();
-    return token!;
+
+    if (!token)
+      throw new Error('Failed to obtain access token for Google Cloud.');
+
+    return token;
   }
 
   async virtualTryOn(payload: TryOnRequest): Promise<TryOnResponse> {
-    const url = `https://us-central1-aiplatform.googleapis.com/v1/projects/${this.PROJECT_ID}/locations/${this.REGION}/publishers/google/models/virtual-try-on-preview-08-04:predict`;
+    const url = `https://us-central1-aiplatform.googleapis.com/v1/projects/${this.PROJECT_ID}/locations/${this.REGION}/publishers/google/models/${this.MODEL_ID}:predict`;
 
     const payloadWrapper = {
       instances: [
@@ -73,6 +74,8 @@ export class VertexService {
       ],
       parameters: {
         sampleCount: 1,
+        personGeneration: 'allow_all',
+        safetySetting: 'block_medium_and_above',
       },
     };
 

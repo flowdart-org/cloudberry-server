@@ -61,7 +61,7 @@ export const OrderMapper = {
 
     return {
       orderNumber: order.orderNumber,
-      // @ts-expect-error userId is not updatable but included for type consistency
+      // @ts-expect-error userId is required for creation but included for type consistency
       userId: order.userId,
       placedAt: order.placedAt,
       deliveredAt: order.deliveredAt ?? null,

@@ -12,7 +12,7 @@ export class OrderPaginatedQueryDto extends PaginatedQueryDto {
   @ApiProperty({ required: false, example: 'pending' })
   @IsOptional()
   @IsString()
-  @IsEnum(['pending', 'paid', 'shipped', 'delivered', 'canceled'], {
+  @IsEnum(['pending', 'paid', 'shipping', 'delivered', 'canceled'], {
     message:
       'orderStatus must be one of the following values: pending, paid, shipped, delivered, canceled',
   })

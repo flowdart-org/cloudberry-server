@@ -6,7 +6,6 @@ import {
 } from '@nestjs/common';
 
 import { UserDto } from '@/user/dto/user.dto';
-import { User } from '@/user/entities/user.entity';
 import { MediaService } from '@/media/services/media.service';
 import { UpdateUserDto } from '@/user/dto/request/update-user.dto';
 import { CreateUserDto } from '@/user/dto/request/create-user.dto';
@@ -21,17 +20,19 @@ export class UserService {
     @Inject('UserRepository') private readonly _userRepository: IUserRepository,
   ) {}
 
-  async create(createUserDto: CreateUserDto): Promise<User> {
+  async create(createUserDto: CreateUserDto): Promise<UserDto> {
     const { email, phone } = createUserDto;
 
     if (!email && !phone) {
       throw new Error('Either email or phone is required');
     }
 
-    return this._userRepository.create({
+    const user = await this._userRepository.create({
       email,
       phone,
     });
+
+    return new UserDto(user);
   }
 
   async find(query: UserPaginatedQueryDto): Promise<UserDto[]> {
@@ -49,12 +50,16 @@ export class UserService {
     return new UserDto(user, tryOnImage);
   }
 
-  findByEmail(email: string): Promise<User | null> {
-    return this._userRepository.findByEmail(email);
+  async findByEmail(email: string): Promise<UserDto | null> {
+    const user = await this._userRepository.findByEmail(email);
+    if (!user) return null;
+    return new UserDto(user);
   }
 
-  findByPhone(phone: string): Promise<User | null> {
-    return this._userRepository.findByPhone(phone);
+  async findByPhone(phone: string): Promise<UserDto | null> {
+    const user = await this._userRepository.findByPhone(phone);
+    if (!user) return null;
+    return new UserDto(user);
   }
 
   async update(id: string, dto: UpdateUserDto): Promise<UserDto> {
@@ -63,7 +68,9 @@ export class UserService {
     if (!doc)
       throw new BadRequestException('User update failed. User not found');
 
-    return new UserDto(doc);
+    const tryOnImage = await this._mediaService.getUserTryOnReadUrl(id);
+
+    return new UserDto(doc, tryOnImage);
   }
 
   async updateStatus(id: string, dto: UpdateStatusUserDto): Promise<UserDto> {
@@ -81,17 +88,23 @@ export class UserService {
 
   async getTryOnLimit(id: string): Promise<number> {
     const user = await this._userRepository.findById(id);
+
     if (!user) throw new BadRequestException('User not found');
-    return user.tryOnLimit || 0;
+
+    return user.tryOnLimit;
   }
 
   async consumeTryOnLimit(id: string): Promise<boolean> {
     const user = await this._userRepository.findById(id);
+
     if (!user) throw new BadRequestException('User not found');
-    if (user.tryOnLimit < 0) return false;
+
+    if (user.tryOnLimit < 1) return false;
+
     await this._userRepository.update(id, {
       tryOnLimit: user.tryOnLimit - 1,
     });
+
     return true;
   }
 }

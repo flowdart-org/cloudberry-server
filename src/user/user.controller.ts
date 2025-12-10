@@ -4,18 +4,13 @@ import {
   Body,
   Patch,
   Param,
-  Req,
-  UnauthorizedException,
   Query,
   Post,
 } from '@nestjs/common';
-import type { Request } from 'express';
 
 import { Role } from '@/common/enums/role.enum';
-import type { RequestUser } from '@/common/types';
 import { UserService } from '@/user/services/user.service';
 import { Roles } from '@/common/decorators/roles.decorator';
-import { ReqUser } from '@/common/decorators/user.decorator';
 import { HttpResponse } from '@/common/dto/http-response.dto';
 import { UserId } from '@/common/decorators/user-id.decorator';
 import { AddressService } from '@/user/services/address.service';
@@ -82,16 +77,9 @@ export class UserController {
   @Roles(Role.USER)
   @ApiResponseWithType({}, UserResponseDto)
   async update(
-    @Req() req: Request,
-    @ReqUser() user: RequestUser,
+    @UserId() userId: string,
     @Body() dto: UpdateUserDto,
   ): Promise<HttpResponse<UserResponseDto>> {
-    const userId = req.user['id'];
-
-    console.log('userUpdate', dto, userId, user);
-
-    if (!userId) throw new UnauthorizedException('User not authenticated');
-
     const data = await this._userService.update(userId, dto);
 
     return {

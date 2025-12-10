@@ -1,3 +1,4 @@
+import { Prisma } from '@prisma/client';
 import { Inject, Injectable } from '@nestjs/common';
 
 import { OrderMapper } from '@/order/mappers/order.mapper';
@@ -13,17 +14,60 @@ export class PrismaOrderRepository implements IOrderRepository {
 
   public async create(order: OrderEntity): Promise<OrderEntity> {
     const data = OrderMapper.toPersistenceCreate(order);
+
     const created = await this._prisma.order.create({ data });
+
     return OrderMapper.toEntity(created);
   }
 
   public async findAll(query: {
     limit: number;
     page: number;
+    paymentStatus?: 'pending' | 'paid' | 'failed' | 'refunded';
+    orderStatus?:
+      | 'pending'
+      | 'processing'
+      | 'shipping'
+      | 'delivered'
+      | 'canceled'
+      | 'return_requested'
+      | 'return_approved'
+      | 'return_rejected'
+      | 'returned';
+    search?: string;
+    startDate?: string;
+    endDate?: string;
   }): Promise<Order[]> {
-    const { limit, page } = query;
+    const { limit, page, orderStatus, paymentStatus } = query;
+
+    const where: Prisma.OrderWhereInput = {
+      isDeleted: false,
+      orderStatus: orderStatus || undefined,
+      paymentStatus: paymentStatus || undefined,
+      AND: [
+        query.startDate && query.endDate
+          ? {
+              placedAt: {
+                gte: new Date(query.startDate),
+                lte: new Date(query.endDate),
+              },
+            }
+          : {},
+        query.search
+          ? {
+              user: {
+                OR: [
+                  { email: { contains: query.search, mode: 'insensitive' } },
+                  { phone: { contains: query.search, mode: 'insensitive' } },
+                ],
+              },
+            }
+          : {},
+      ],
+    };
 
     const rows = await this._prisma.order.findMany({
+      where,
       orderBy: { placedAt: 'desc' },
       take: limit,
       skip: (page - 1) * limit,
@@ -54,10 +98,12 @@ export class PrismaOrderRepository implements IOrderRepository {
 
   public async update(id: string, order: OrderEntity): Promise<OrderEntity> {
     const data = OrderMapper.toPersistenceUpdate(order);
+
     const updated = await this._prisma.order.update({
       where: { id },
       data,
     });
+
     return OrderMapper.toEntity(updated);
   }
 

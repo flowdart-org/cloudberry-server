@@ -20,6 +20,7 @@ export class PrismaUserRepository implements IUserRepository {
         phone: data.phone,
         dob: data.dob,
         password: data.password,
+        tryOnLimit: 3,
       },
       include: {
         addresses: true,
