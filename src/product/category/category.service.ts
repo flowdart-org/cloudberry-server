@@ -32,7 +32,7 @@ export class CategoryService {
     limit: number;
     totalPages: number;
   }> {
-    const { page = 1, limit = 10, search, status } = query;
+    const { search, status, limit, page } = query;
 
     const skip = (page - 1) * limit;
 

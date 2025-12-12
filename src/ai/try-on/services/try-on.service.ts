@@ -1,10 +1,14 @@
 import axios from 'axios';
 import { BadRequestException, Injectable } from '@nestjs/common';
 
-import { ProductService } from '@/product/product.service';
 import { UserService } from '@/user/services/user.service';
 import { CreateTryOnDto } from '@/ai/try-on/dto/create-try-on.dto';
-import { TryOnRequest, VertexService } from '@/ai/vertex/vertex.service';
+import { ProductService } from '@/product/services/product.service';
+import {
+  TryOnRequest,
+  TryOnResponse,
+  VertexService,
+} from '@/ai/vertex/vertex.service';
 import { TryOnMediaService } from '@/media/services/tryon-upload.service';
 
 @Injectable()
@@ -56,19 +60,28 @@ export class TryOnService {
       productImages: productImagesBase64.map((base64) => ({ base64 })),
     };
 
-    const data = await this._vertexService.virtualTryOn(req);
+    let data: TryOnResponse;
+    try {
+      data = await this._vertexService.virtualTryOn(req);
 
-    const result = await Promise.all(
-      data.predictions.map(async (prediction) =>
-        this._tryOnMediaService.uploadTryOnResultBase64(
-          userId,
-          product.id,
-          prediction.bytesBase64Encoded,
+      console.log(data);
+
+      const result = await Promise.all(
+        data.predictions.map(async (prediction) =>
+          this._tryOnMediaService.uploadTryOnResultBase64(
+            userId,
+            product.id,
+            prediction.bytesBase64Encoded,
+          ),
         ),
-      ),
-    );
+      );
 
-    console.log('Virtual Try-On Response:', result);
-    return result;
+      console.log('Virtual Try-On Response:', result);
+
+      return result;
+    } catch (error) {
+      console.error('Error during Virtual Try-On:', error);
+      throw new BadRequestException('Failed to generate Try-On images');
+    }
   }
 }

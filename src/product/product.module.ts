@@ -1,10 +1,10 @@
 import { Module } from '@nestjs/common';
 
 import { MediaModule } from '@/media/media.module';
-import { ProductService } from '@/product/product.service';
 import { VariantModule } from '@/product/variant/variant.module';
-import { ProductController } from '@/product/product.controller';
 import { CategoryModule } from '@/product/category/category.module';
+import { ProductService } from '@/product/services/product.service';
+import { ProductController } from '@/product/controllers/product.controller';
 import { PrismaProductRepository } from '@/product/repositories/prisma-product.repository';
 
 @Module({

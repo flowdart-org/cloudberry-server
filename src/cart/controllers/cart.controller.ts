@@ -31,7 +31,7 @@ export class CartController {
   async getUserCart(
     @UserId() userId: string,
   ): Promise<HttpResponse<CartResponseDto>> {
-    const data = await this._cartService.getUserCart(userId);
+    const data = await this._cartService.findByUserId(userId);
 
     return {
       message: 'Cart retrieved successfully',

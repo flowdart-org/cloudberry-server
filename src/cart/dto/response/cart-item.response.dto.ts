@@ -1,8 +1,18 @@
-import { ApiProperty } from '@nestjs/swagger';
+import { ApiProperty, PickType } from '@nestjs/swagger';
 
-import { ProductDto } from '@/product/dto/product.dto';
 import { CartItemDto } from '@/cart/dto/cart-item.dto';
-import { ProductVariant } from '@/product/variant/entities/product-variant.entity';
+import { ProductResponseDto } from '@/product/dto/response/product-response.dto';
+import { ProductVariantResponseDto } from '@/product/variant/dto/response/product-variant.response.dto';
+
+class ProductResponsePickDto extends PickType(ProductResponseDto, [
+  'id',
+  'name',
+  'price',
+  'thumbnail',
+  'discountPrice',
+  'discountPercent',
+  'category',
+]) {}
 
 export class CartItemResponseDto {
   @ApiProperty({
@@ -19,40 +29,15 @@ export class CartItemResponseDto {
 
   @ApiProperty({
     description: 'Details of the product in the cart item',
-    type: 'object',
-    properties: {
-      id: { type: 'string', example: 'prod_1234567890' },
-      name: { type: 'string', example: 'Sample Product' },
-      description: { type: 'string', example: 'This is a sample product.' },
-      price: { type: 'number', example: 29.99 },
-      thumbnail: { type: 'string', example: 'https://example.com/image.jpg' },
-      category: {
-        type: 'object',
-        properties: {
-          id: { type: 'string', example: 'cat_1234567890' },
-          name: { type: 'string', example: 'Sample Category' },
-        },
-      },
-      images: {
-        type: 'array',
-        items: { type: 'string', example: 'https://example.com/image1.jpg' },
-      },
-    },
+    type: ProductResponsePickDto,
   })
-  product: Pick<ProductDto, 'id' | 'name' | 'price' | 'thumbnail'> & {
-    category: Pick<ProductDto['category'], 'id' | 'name'>;
-  };
+  product: ProductResponsePickDto;
 
   @ApiProperty({
     description: 'Details of the product variant in the cart item',
-    type: 'object',
-    properties: {
-      id: { type: 'string', example: 'var_1234567890' },
-      size: { type: 'string', example: 'M' },
-      stock: { type: 'number', example: 10 },
-    },
+    type: ProductVariantResponseDto,
   })
-  variant: Pick<ProductVariant, 'id' | 'size' | 'stock' | 'isDeleted'>;
+  variant: ProductVariantResponseDto;
 
   static fromDto(item: CartItemDto): CartItemResponseDto {
     return {

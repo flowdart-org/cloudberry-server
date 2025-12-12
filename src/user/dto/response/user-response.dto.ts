@@ -10,57 +10,51 @@ export class UserResponseDto {
   })
   public id: string;
 
-  @ApiProperty({
+  @ApiPropertyOptional({
     example: 'John Doe',
     description: 'Full name of the user',
   })
-  @ApiPropertyOptional()
   public name?: string;
 
-  @ApiProperty({
+  @ApiPropertyOptional({
     example: 'user@gmail.com',
     description: 'Email address of the user',
   })
-  @ApiPropertyOptional()
   public email?: string;
 
-  @ApiProperty({
+  @ApiPropertyOptional({
     example: '+1234567890',
     description: 'Phone number of the user',
   })
-  @ApiPropertyOptional()
   public phone?: string;
 
-  @ApiProperty({
+  @ApiPropertyOptional({
     example: '1990-01-01T00:00:00.000Z',
     description: 'Date of birth of the user',
   })
-  @ApiPropertyOptional()
   public dob?: Date;
 
-  @ApiProperty({
+  @ApiPropertyOptional({
     example: 'male',
     description: 'Gender of the user',
   })
-  @ApiPropertyOptional()
   public gender?: 'male' | 'female' | 'other';
 
   @ApiProperty({
     example: 'https://example.com/try-on-image.jpg',
     description: 'URL of the user try-on image',
+    nullable: true,
   })
-  @ApiPropertyOptional()
   public tryOnImage: string | null;
 
   @ApiProperty({
     example: 'https://example.com/try-on-image.jpg',
     description: 'URL of the user try-on image',
   })
-  @ApiPropertyOptional()
   public tryOnLimit: number;
 
   @ApiProperty({
-    type: () => AddressResponseDto,
+    type: AddressResponseDto,
     isArray: true,
     description: 'List of user addresses',
   })

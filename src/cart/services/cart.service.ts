@@ -6,13 +6,15 @@ import {
 } from '@nestjs/common';
 
 import { CartDto } from '@/cart/dto/cart.dto';
+import { OrderDto } from '@/order/dto/order.dto';
+import { Cart } from '@/cart/entities/cart.entity';
 import { CartItemDto } from '@/cart/dto/cart-item.dto';
 import { OrderItem } from '@/order/entities/order.entity';
 import { UpdateCartDto } from '@/cart/dto/update-cart.dto';
 import { CreateCartDto } from '@/cart/dto/create-cart.dto';
-import { ProductService } from '@/product/product.service';
 import { OrderService } from '@/order/services/order.service';
 import { VariantService } from '@/product/variant/variant.service';
+import { ProductService } from '@/product/services/product.service';
 import { RazorpayService } from '@/payment/services/razorpay.service';
 import type { CartRepository } from '@/cart/repositories/interfaces/cart.repository';
 import type { CartItemRepository } from '@/cart/repositories/interfaces/cart-item.repository';
@@ -33,6 +35,7 @@ export class CartService {
     return this._cartRepository.createCart(userId);
   }
 
+  // TODO validate stock before adding to cart
   async addToCart(userId: string, dto: CreateCartDto): Promise<CartItemDto> {
     const { variantId, quantity } = dto;
 
@@ -69,7 +72,7 @@ export class CartService {
     );
   }
 
-  async getUserCart(userId: string): Promise<CartDto> {
+  async findByUserId(userId: string): Promise<CartDto> {
     let cart = await this._cartRepository.findByUserId(userId);
 
     if (!cart) {
@@ -102,12 +105,23 @@ export class CartService {
     itemId: string,
     dto: UpdateCartDto,
   ): Promise<CartItemDto> {
-    const item = await this._cartItemRepository.findItemById(itemId);
-    if (!item) throw new NotFoundException('Cart item not found');
-
     const { quantity } = dto;
 
+    const item = await this._cartItemRepository.findItemById(itemId);
+
+    if (!item) throw new NotFoundException('Cart item not found');
+
     if (quantity <= 0) return this.removeItem(userId, itemId);
+
+    const variant = await this._variantService.findById(item.variantId);
+
+    if (!variant) throw new NotFoundException('Variant not found');
+
+    if (quantity > variant.stock) {
+      throw new BadRequestException(
+        `Insufficient stock for the product. Available stock: ${variant.stock}`,
+      );
+    }
 
     const cartItem = await this._cartItemRepository.updateQuantity(itemId, {
       quantity,
@@ -145,33 +159,32 @@ export class CartService {
     );
   }
 
-  async checkout(userId: string) {
-    const cart = await this._cartRepository.findByUserId(userId);
+  async clearCart(cartId: string) {
+    await this._cartItemRepository.clearCart(cartId);
+    return { message: 'Cart cleared successfully' };
+  }
 
-    console.log(cart);
-
-    if (!cart) throw new NotFoundException('Cart not found');
-
+  private async _buildItemsAndAmount(
+    cart: Cart,
+  ): Promise<{ amount: number; items: OrderItem[] }> {
     let amount = 0;
-
     const items: OrderItem[] = [];
 
     for (const item of cart.items) {
       const variant = await this._variantService.findById(item.variantId);
-
       if (!variant) throw new NotFoundException('Variant not found');
 
       const product = await this._productService.findById(variant.productId);
-
       if (!product) throw new NotFoundException('Product not found');
 
       if (variant.stock < item.quantity) {
         throw new BadRequestException(
-          `Insufficient stock for ${product.name} - ${product.name}. Available: ${variant.stock}`,
+          `Insufficient stock for ${product.name}. Available: ${variant.stock}`,
         );
       }
 
-      const lineTotal = product.price * item.quantity;
+      const unitPrice = product.discountPrice;
+      const lineTotal = unitPrice * item.quantity;
       amount += lineTotal;
 
       items.push({
@@ -184,77 +197,44 @@ export class CartService {
       });
     }
 
+    return { amount, items };
+  }
+
+  private async _processCheckout(userId: string): Promise<OrderDto> {
+    const cart = await this._cartRepository.findByUserId(userId);
+
+    if (!cart) throw new NotFoundException('Cart not found');
+
+    const { amount, items } = await this._buildItemsAndAmount(cart);
+
     const order = await this._orderService.create({
       userId,
       subtotal: amount,
       total: amount,
       items,
       metadata: { cartId: cart.id },
-      paymentStatus: 'pending',
-      orderStatus: 'pending',
     });
 
-    return this._paymentService.createOrder(userId, amount, 'INR', {
+    await this.clearCart(cart.id);
+
+    return order;
+  }
+
+  async checkout(userId: string) {
+    const order = await this._processCheckout(userId);
+
+    return this._paymentService.createOrder(userId, order.total, 'INR', {
       orderId: order.id,
       orderNumber: order.orderNumber,
     });
   }
 
   async checkoutLink(userId: string) {
-    const cart = await this._cartRepository.findByUserId(userId);
+    const order = await this._processCheckout(userId);
 
-    if (!cart) throw new NotFoundException('Cart not found');
-
-    let amount = 0;
-
-    const items: OrderItem[] = [];
-
-    for (const item of cart.items) {
-      const variant = await this._variantService.findById(item.variantId);
-
-      if (!variant) throw new NotFoundException('Variant not found');
-
-      const product = await this._productService.findById(variant.productId);
-
-      if (!product) throw new NotFoundException('Product not found');
-
-      if (variant.stock < item.quantity) {
-        throw new Error(
-          `Insufficient stock for ${product.name} - ${product.name}. Available: ${variant.stock}`,
-        );
-      }
-
-      const lineTotal = product.price * item.quantity;
-      amount += lineTotal;
-
-      items.push({
-        productId: product.id,
-        variantId: variant.id,
-        name: product.name,
-        price: product.price,
-        quantity: item.quantity,
-        subtotal: lineTotal,
-      });
-    }
-
-    const order = await this._orderService.create({
-      userId,
-      subtotal: amount,
-      total: amount,
-      items,
-      metadata: { cartId: cart.id },
-      paymentStatus: 'pending',
-      orderStatus: 'pending',
-    });
-
-    return this._paymentService.createPaymentLink(userId, amount, 'INR', {
+    return this._paymentService.createPaymentLink(userId, order.total, 'INR', {
       orderId: order.id,
       orderNumber: order.orderNumber,
     });
-  }
-
-  async clearCart(userId: string) {
-    await this._cartItemRepository.clearCart(userId);
-    return { message: 'Cart cleared successfully' };
   }
 }

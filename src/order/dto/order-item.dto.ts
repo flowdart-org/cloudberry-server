@@ -18,7 +18,6 @@ export class OrderItemDto {
     | 'category'
     | 'discountPrice'
     | 'discountPercent'
-    | 'status'
   >;
 
   @ApiProperty({
@@ -48,7 +47,6 @@ export class OrderItemDto {
         category: product.category,
         discountPrice: product.discountPrice,
         discountPercent: product.discountPercent,
-        status: product.status,
       },
       variant: variant,
       quantity: entity.quantity,

@@ -16,11 +16,11 @@ export interface CartItemRepository {
     },
   ): Promise<CartItem>;
   removeItem(itemId: string): Promise<CartItem>;
-  clearCart(userId: string): Promise<void>;
   findItemById(itemId: string): Promise<CartItem | null>;
   findExistingItem(
     userId: string,
     productId: string,
     variantId?: string,
   ): Promise<CartItem | null>;
+  clearCart(cartId: string): Promise<void>;
 }

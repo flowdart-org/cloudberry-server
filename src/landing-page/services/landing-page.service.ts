@@ -1,7 +1,7 @@
 import { Inject, Injectable } from '@nestjs/common';
 
-import { ProductService } from '@/product/product.service';
 import { MediaService } from '@/media/services/media.service';
+import { ProductService } from '@/product/services/product.service';
 import { LandingPageDto } from '@/landing-page/dto/landing-page.dto';
 import { CategoryService } from '@/product/category/category.service';
 import { UpdateLandingPageDto } from '@/landing-page/dto/request/update-landing-page.dto';
@@ -23,7 +23,6 @@ export class LandingPageService {
     if (!config)
       return LandingPageDto.fromEntity(
         {
-          heroImage: null,
           heroTitle: null,
           heroSubtitle: null,
           sections: [],

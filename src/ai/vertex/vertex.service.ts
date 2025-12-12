@@ -31,10 +31,10 @@ export class VertexService {
     this.REGION = configService.getOrThrow<string>('GCP_REGION');
     this.PROJECT_ID = configService.getOrThrow<string>('GCP_PROJECT_ID');
     this.MODEL_ID = configService.getOrThrow<string>('GCP_VERTEX_MODEL_ID');
+    this.CLIENT_EMAIL = configService.getOrThrow<string>('GCP_CLIENT_EMAIL');
     this.PRIVATE_KEY = configService
       .getOrThrow<string>('GCP_PRIVATE_KEY')
       .replace(/\\n/g, '\n');
-    this.CLIENT_EMAIL = configService.getOrThrow<string>('GCP_CLIENT_EMAIL');
   }
 
   private async _getAccessToken(): Promise<string> {
@@ -77,7 +77,7 @@ export class VertexService {
       parameters: {
         sampleCount: 1,
         personGeneration: 'allow_all',
-        safetySetting: 'block_medium_and_above',
+        safetySetting: 'block_only_high',
       },
     };
 

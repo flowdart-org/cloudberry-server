@@ -1,7 +1,6 @@
 export class LandingPage {
   id: string;
 
-  heroImage: string | null;
   heroTitle: string | null;
   heroSubtitle: string | null;
 

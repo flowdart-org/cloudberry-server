@@ -1,6 +1,17 @@
-import { ApiProperty } from '@nestjs/swagger';
+import { IsEnum, IsString } from 'class-validator';
+import { ApiPropertyOptional } from '@nestjs/swagger';
 
 export class UpdateOrderDto {
-  @ApiProperty({ required: false, description: 'The status of the order' })
+  @ApiPropertyOptional({
+    example: 'processing',
+    description: 'The status of the order',
+  })
+  @IsString({
+    message: 'Status must be a string',
+  })
+  @IsEnum(['pending', 'processing', 'shipping', 'delivered', 'canceled'], {
+    message:
+      'Status must be one of: pending, processing, shipping, delivered, canceled',
+  })
   status?: 'pending' | 'processing' | 'shipping' | 'delivered' | 'canceled';
 }

@@ -22,7 +22,6 @@ export class PrismaLandingPageRepository implements ILandingPageRepository {
     if (!existing) {
       const created = await this._prisma.landingPage.create({
         data: {
-          heroImage: data.heroImage ?? null,
           heroTitle: data.heroTitle ?? null,
           heroSubtitle: data.heroSubtitle ?? null,
           topCategoryIds: data.topCategoryIds ?? [],

@@ -1,4 +1,5 @@
 import { Product as PrismaProduct, Prisma } from '@prisma/client';
+
 import { Product } from '@/product/entities/product.entity';
 
 export const ProductMapper = {
@@ -10,6 +11,7 @@ export const ProductMapper = {
       doc.categoryId,
       doc.price,
       doc.discountPercent,
+      doc.finalPrice,
       doc.tryOn,
       doc.status,
       doc.createdAt,
@@ -18,48 +20,35 @@ export const ProductMapper = {
   },
 
   toPersistenceCreate(
-    entity: Omit<
-      Product,
-      | 'id'
-      | 'variants'
-      | 'createdAt'
-      | 'discountPrice'
-      | 'discountPercentage'
-      | 'status'
-      | 'updatedAt'
-    > &
-      Pick<Product, 'discountPercent' | 'status'>,
+    entity: Omit<Product, 'id' | 'createdAt' | 'discountPrice' | 'updatedAt'>,
   ): Prisma.ProductUncheckedCreateInput {
     return {
       name: entity.name,
       description: entity.description,
       price: entity.price,
       discountPercent: entity.discountPercent,
+      finalPrice: entity.discountPercent
+        ? Math.round(entity.price * (1 - entity.discountPercent / 100))
+        : entity.price,
+      tryOn: entity.tryOn,
       categoryId: entity.categoryId,
       status: entity.status,
     };
   },
 
   toPersistenceUpdate(
-    entity: Partial<
-      Omit<
-        Product,
-        | 'id'
-        | 'createdAt'
-        | 'discountPrice'
-        | 'discountPercentage'
-        | 'variants'
-        | 'status'
-        | 'updatedAt'
-      > &
-        Pick<Product, 'discountPercent' | 'status'>
-    >,
+    entity: Partial<Omit<Product, 'id' | 'createdAt' | 'updatedAt'>>,
   ): Prisma.ProductUncheckedUpdateInput {
     return {
       name: entity.name,
       description: entity.description,
       price: entity.price,
       discountPercent: entity.discountPercent,
+      finalPrice: entity.price
+        ? entity.discountPercent
+          ? Math.round(entity.price * (1 - entity.discountPercent / 100))
+          : entity.price
+        : undefined,
       tryOn: entity.tryOn,
       categoryId: entity.categoryId,
       status: entity.status,

@@ -47,16 +47,15 @@ export class CategoryController {
   async findAll(
     @Query() query: CategoryPaginatedQueryDto,
   ): Promise<HttpPaginatedResponse<CategoryResponseDto[]>> {
-    const { items, total, page, limit } =
-      await this._categoryService.findAll(query);
+    const { items, total } = await this._categoryService.findAll(query);
 
     return {
       success: true,
       message: 'Categories retrieved successfully',
       data: items.map(CategoryResponseDto.fromDto),
       total,
-      page,
-      limit,
+      page: query.page,
+      limit: query.limit,
     };
   }
 

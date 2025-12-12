@@ -1,3 +1,5 @@
+import { Address } from '@/user/entities/address.entity';
+
 export type OrderStatus =
   | 'pending'
   | 'processing'
@@ -21,15 +23,13 @@ export type OrderItem = {
   metadata?: Record<string, unknown> | null;
 };
 
-export type OrderItems = OrderItem[];
-
 export class Order {
   // core fields
   public readonly id: string;
   public readonly orderNumber: string;
   public readonly userId: string;
   public readonly placedAt: Date;
-  public readonly updatedAt: Date | null;
+  public readonly updatedAt: Date;
   public readonly deliveredAt?: Date | null;
   public readonly cancelledAt?: Date | null;
 
@@ -41,7 +41,7 @@ export class Order {
   public readonly total: number;
 
   // items & metadata
-  public readonly items: OrderItems;
+  public readonly items: OrderItem[];
   public readonly metadata?: Record<string, unknown> | null;
 
   // payment & order status
@@ -51,21 +51,10 @@ export class Order {
   public readonly orderStatus: OrderStatus;
 
   // address
-  public readonly shippingAddressJson?: Record<string, unknown> | null;
-  public readonly addressLine1?: string | null;
-  public readonly addressLine2?: string | null;
-  public readonly city?: string | null;
-  public readonly state?: string | null;
-  public readonly country?: string | null;
-  public readonly postalCode?: string | null;
-  public readonly addressLabel?: string | null;
-  public readonly recipientName?: string | null;
-  public readonly recipientPhone?: string | null;
-
-  // delivery
-  public readonly courierName?: string | null;
-  public readonly trackingNumber?: string | null;
-  public readonly trackingUrl?: string | null;
+  public readonly shippingAddress: Pick<
+    Address,
+    'houseNo' | 'street' | 'city' | 'state' | 'country' | 'pincode'
+  >;
 
   // cancellation/refund
   public readonly cancelReason?: string | null;
@@ -78,9 +67,9 @@ export class Order {
     orderNumber: string;
     userId: string;
     placedAt?: Date;
-    updatedAt?: Date | null;
-    deliveredAt?: Date | null;
-    cancelledAt?: Date | null;
+    updatedAt: Date;
+    deliveredAt?: Date;
+    cancelledAt?: Date;
 
     subtotal: number;
     shippingCharge?: number;
@@ -88,27 +77,17 @@ export class Order {
     discount?: number;
     total: number;
 
-    items: OrderItems;
-    metadata?: Record<string, unknown> | null;
+    items: OrderItem[];
+    metadata?: Record<string, unknown>;
 
     paymentMethod?: string | null;
     paymentStatus?: PaymentStatus;
     orderStatus?: OrderStatus;
 
-    shippingAddressJson?: Record<string, unknown> | null;
-    addressLine1?: string | null;
-    addressLine2?: string | null;
-    city?: string | null;
-    state?: string | null;
-    country?: string | null;
-    postalCode?: string | null;
-    addressLabel?: string | null;
-    recipientName?: string | null;
-    recipientPhone?: string | null;
-
-    courierName?: string | null;
-    trackingNumber?: string | null;
-    trackingUrl?: string | null;
+    shippingAddress: Pick<
+      Address,
+      'houseNo' | 'street' | 'city' | 'state' | 'country' | 'pincode'
+    >;
 
     cancelReason?: string | null;
     refundAmount?: number | null;
@@ -119,7 +98,7 @@ export class Order {
     this.orderNumber = props.orderNumber;
     this.userId = props.userId;
     this.placedAt = props.placedAt ?? new Date();
-    this.updatedAt = props.updatedAt ?? null;
+    this.updatedAt = props.updatedAt;
     this.deliveredAt = props.deliveredAt ?? null;
     this.cancelledAt = props.cancelledAt ?? null;
 
@@ -130,26 +109,13 @@ export class Order {
     this.total = props.total;
 
     this.items = props.items;
-    this.metadata = props.metadata ?? null;
+    this.metadata = props.metadata ?? {};
 
     this.paymentMethod = props.paymentMethod ?? null;
     this.paymentStatus = props.paymentStatus ?? 'pending';
     this.orderStatus = props.orderStatus ?? 'pending';
 
-    this.shippingAddressJson = props.shippingAddressJson ?? null;
-    this.addressLine1 = props.addressLine1 ?? null;
-    this.addressLine2 = props.addressLine2 ?? null;
-    this.city = props.city ?? null;
-    this.state = props.state ?? null;
-    this.country = props.country ?? null;
-    this.postalCode = props.postalCode ?? null;
-    this.addressLabel = props.addressLabel ?? null;
-    this.recipientName = props.recipientName ?? null;
-    this.recipientPhone = props.recipientPhone ?? null;
-
-    this.courierName = props.courierName ?? null;
-    this.trackingNumber = props.trackingNumber ?? null;
-    this.trackingUrl = props.trackingUrl ?? null;
+    this.shippingAddress = props.shippingAddress;
 
     this.cancelReason = props.cancelReason ?? null;
     this.refundAmount = props.refundAmount ?? null;
@@ -159,42 +125,29 @@ export class Order {
 
   public with(patch: Partial<Order>): Order {
     return new Order({
-      id: patch.id ?? this.id,
-      orderNumber: patch.orderNumber ?? this.orderNumber,
-      userId: patch.userId ?? this.userId,
-      placedAt: patch.placedAt ?? this.placedAt,
-      updatedAt: patch.updatedAt ?? this.updatedAt,
-      deliveredAt: patch.deliveredAt ?? this.deliveredAt,
-      cancelledAt: patch.cancelledAt ?? this.cancelledAt,
+      id: this.id,
+      orderNumber: this.orderNumber,
+      userId: this.userId,
+      placedAt: this.placedAt,
 
-      subtotal: patch.subtotal ?? this.subtotal,
-      shippingCharge: patch.shippingCharge ?? this.shippingCharge,
-      tax: patch.tax ?? this.tax,
-      discount: patch.discount ?? this.discount,
-      total: patch.total ?? this.total,
+      updatedAt: patch.updatedAt ?? this.updatedAt ?? new Date(),
+      deliveredAt: patch.deliveredAt ?? this.deliveredAt ?? undefined,
+      cancelledAt: patch.cancelledAt ?? this.cancelledAt ?? undefined,
 
-      items: patch.items ?? this.items,
-      metadata: patch.metadata ?? this.metadata,
+      subtotal: this.subtotal,
+      shippingCharge: this.shippingCharge,
+      tax: this.tax,
+      discount: this.discount,
+      total: this.total,
+
+      items: this.items,
+      metadata: this.metadata ?? {},
 
       paymentMethod: patch.paymentMethod ?? this.paymentMethod,
       paymentStatus: patch.paymentStatus ?? this.paymentStatus,
       orderStatus: patch.orderStatus ?? this.orderStatus,
 
-      shippingAddressJson:
-        patch.shippingAddressJson ?? this.shippingAddressJson,
-      addressLine1: patch.addressLine1 ?? this.addressLine1,
-      addressLine2: patch.addressLine2 ?? this.addressLine2,
-      city: patch.city ?? this.city,
-      state: patch.state ?? this.state,
-      country: patch.country ?? this.country,
-      postalCode: patch.postalCode ?? this.postalCode,
-      addressLabel: patch.addressLabel ?? this.addressLabel,
-      recipientName: patch.recipientName ?? this.recipientName,
-      recipientPhone: patch.recipientPhone ?? this.recipientPhone,
-
-      courierName: patch.courierName ?? this.courierName,
-      trackingNumber: patch.trackingNumber ?? this.trackingNumber,
-      trackingUrl: patch.trackingUrl ?? this.trackingUrl,
+      shippingAddress: this.shippingAddress,
 
       cancelReason: patch.cancelReason ?? this.cancelReason,
       refundAmount: patch.refundAmount ?? this.refundAmount,

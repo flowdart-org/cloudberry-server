@@ -6,7 +6,7 @@ export interface ProductRepository {
   create(
     data: Omit<
       Product,
-      'id' | 'variants' | 'status' | 'createdAt' | 'updatedAt'
+      'id' | 'variants' | 'finalPrice' | 'createdAt' | 'updatedAt'
     >,
   ): Promise<Product>;
 
@@ -15,6 +15,8 @@ export interface ProductRepository {
   find(
     query: ProductPaginatedQueryDto | ProductFeedPaginatedQueryDto,
   ): Promise<Product[]>;
+
+  countAll(): Promise<number>;
 
   update(
     id: string,

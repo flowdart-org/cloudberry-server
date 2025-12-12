@@ -1,7 +1,5 @@
-import {
-  Prisma,
-  ProductVariant as PrismaProductVariant,
-} from '@prisma/client';
+import { Prisma, ProductVariant as PrismaProductVariant } from '@prisma/client';
+
 import { ProductVariant } from '@/product/variant/entities/product-variant.entity';
 
 export const VariantMapper = {
@@ -19,12 +17,15 @@ export const VariantMapper = {
 
   toPersistenceCreate(
     this: void,
-    entity: Omit<ProductVariant, 'id' | 'createdAt' | 'updatedAt'>,
+    entity: Omit<
+      ProductVariant,
+      'id' | 'createdAt' | 'isDeleted' | 'updatedAt'
+    >,
   ): Prisma.ProductVariantCreateInput {
     return {
       size: entity.size,
       stock: entity.stock,
-      isDeleted: entity.isDeleted ?? false,
+      isDeleted: false,
       product: { connect: { id: entity.productId } },
     };
   },

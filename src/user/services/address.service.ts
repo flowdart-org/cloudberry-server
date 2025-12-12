@@ -1,4 +1,9 @@
-import { Inject, Injectable } from '@nestjs/common';
+import {
+  BadRequestException,
+  Inject,
+  Injectable,
+  UnauthorizedException,
+} from '@nestjs/common';
 
 import { Address } from '@/user/entities/address.entity';
 import { UserService } from '@/user/services/user.service';
@@ -28,21 +33,32 @@ export class AddressService {
     return this._addressRepository.create(userId, dto, true);
   }
 
+  async findByUserId(userId: string): Promise<Address[]> {
+    return this._addressRepository.findByUserId(userId);
+  }
+
   async update(
     id: string,
     userId: string,
     dto: UpdateAddressDto,
   ): Promise<Address> {
     const user = await this._userService.findById(userId);
-    if (!user) throw new Error('User not found');
+    if (!user) throw new BadRequestException('User not found');
 
     const address = await this._addressRepository.findById(id);
-    if (!address) throw new Error('Address not found');
+
+    if (!address) throw new BadRequestException('Address not found');
 
     if (address.userId !== userId) {
-      throw new Error('Unauthorized to update this address');
+      throw new UnauthorizedException('Unauthorized to update this address');
     }
 
-    return this._addressRepository.update(id, dto);
+    const updatedAddress = await this._addressRepository.update(id, dto);
+
+    if (!updatedAddress) {
+      throw new BadRequestException('Failed to update address');
+    }
+
+    return updatedAddress;
   }
 }

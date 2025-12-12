@@ -11,7 +11,10 @@ import {
 import { Role } from '@/common/enums/role.enum';
 import { UserService } from '@/user/services/user.service';
 import { Roles } from '@/common/decorators/roles.decorator';
-import { HttpResponse } from '@/common/dto/http-response.dto';
+import {
+  HttpPaginatedResponse,
+  HttpResponse,
+} from '@/common/dto/http-response.dto';
 import { UserId } from '@/common/decorators/user-id.decorator';
 import { AddressService } from '@/user/services/address.service';
 import { UpdateUserDto } from '@/user/dto/request/update-user.dto';
@@ -48,13 +51,17 @@ export class UserController {
   @ApiResponseWithType({ isArray: true }, UserResponseDto)
   async find(
     @Query() query: UserPaginatedQueryDto,
-  ): Promise<HttpResponse<UserResponseDto[]>> {
+  ): Promise<HttpPaginatedResponse<UserResponseDto[]>> {
     const docs = await this._userService.find(query);
 
     return {
       success: true,
       message: 'Users fetched successfully',
       data: docs.map(UserResponseDto.fromEntity),
+      // TODO: implement total count
+      total: 0,
+      page: query.page,
+      limit: query.limit,
     };
   }
 

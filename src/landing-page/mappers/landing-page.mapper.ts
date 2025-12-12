@@ -6,7 +6,6 @@ export class LandingPageMapper {
   static toEntity(doc: PrismaLandingPage): LandingPage {
     return {
       id: doc.id,
-      heroImage: doc.heroImage,
       heroTitle: doc.heroTitle,
       heroSubtitle: doc.heroSubtitle,
       topCategoryIds: doc.topCategoryIds ?? [],

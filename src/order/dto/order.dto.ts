@@ -1,10 +1,11 @@
-import { UserDto } from '@/user/dto/user.dto';
 import {
   Order,
   OrderStatus,
   PaymentStatus,
 } from '@/order/entities/order.entity';
+import { UserDto } from '@/user/dto/user.dto';
 import { OrderItemDto } from '@/order/dto/order-item.dto';
+import { Address } from '@/user/entities/address.entity';
 
 export class OrderDto {
   id: string;
@@ -20,6 +21,11 @@ export class OrderDto {
   paymentMethod?: string | null;
   paymentStatus: PaymentStatus;
 
+  shippingAddress: Pick<
+    Address,
+    'houseNo' | 'street' | 'city' | 'state' | 'country' | 'pincode'
+  >;
+
   subtotal: number;
   shippingCharge: number;
   discount: number;
@@ -28,11 +34,15 @@ export class OrderDto {
   items: OrderItemDto[];
 
   placedAt: Date;
-  updatedAt: Date | null;
-  deliveredAt?: Date | null;
-  cancelledAt?: Date | null;
+  updatedAt: Date;
+  deliveredAt?: Date;
+  cancelledAt?: Date;
 
-  static fromEntity(entity: Order, customer: UserDto, items: OrderItemDto[]) {
+  static fromEntity(
+    entity: Order,
+    customer: UserDto,
+    items: OrderItemDto[],
+  ): OrderDto {
     return {
       id: entity.id,
       orderNumber: entity.orderNumber,
@@ -47,13 +57,14 @@ export class OrderDto {
       paymentStatus: entity.paymentStatus,
       subtotal: entity.subtotal,
       shippingCharge: entity.shippingCharge,
+      shippingAddress: entity.shippingAddress,
       discount: entity.discount,
       total: entity.total,
       items,
       placedAt: entity.placedAt,
       updatedAt: entity.updatedAt,
-      deliveredAt: entity.deliveredAt,
-      cancelledAt: entity.cancelledAt,
+      deliveredAt: entity.deliveredAt ?? undefined,
+      cancelledAt: entity.cancelledAt ?? undefined,
     };
   }
 }

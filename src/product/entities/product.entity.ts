@@ -6,6 +6,7 @@ export class Product {
     public readonly categoryId: string,
     public readonly price: number,
     public readonly discountPercent: number | null,
+    public readonly finalPrice: number,
     public readonly tryOn: boolean,
     public readonly status: 'active' | 'inactive',
     public readonly createdAt: Date,

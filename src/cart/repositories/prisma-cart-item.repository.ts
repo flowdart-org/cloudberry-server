@@ -53,10 +53,6 @@ export class PrismaCartItemRepository implements CartItemRepository {
     return this.prisma.cartItem.delete({ where: { id: itemId } });
   }
 
-  async clearCart(cartId: string): Promise<void> {
-    await this.prisma.cartItem.deleteMany({ where: { cartId } });
-  }
-
   async findItemById(itemId: string): Promise<CartItem | null> {
     return this.prisma.cartItem.findUnique({ where: { id: itemId } });
   }
@@ -69,5 +65,12 @@ export class PrismaCartItemRepository implements CartItemRepository {
     return this.prisma.cartItem.findFirst({
       where: { cartId, productId, variantId },
     });
+  }
+
+  /** Clear all items from the cart
+   * @param cartId - The ID of the cart to clear
+   * */
+  async clearCart(cartId: string): Promise<void> {
+    await this.prisma.cartItem.deleteMany({ where: { cartId } });
   }
 }

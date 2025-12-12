@@ -30,7 +30,7 @@ services:
     build:
       context: .
       dockerfile: Dockerfile.dev
-    command: sh -c "npm run prisma:migrate && npm run start:dev"
+    command: sh -c "npx prisma migrate dev && npm run start:dev"
     volumes:
       - ./:/app/
       - /app/node_modules
@@ -38,6 +38,7 @@ services:
       NODE_ENV: development
       PORT: 4000
       DATABASE_URL: postgres://postgres:postgres@db:5432/cloudberry
+      #      DATABASE_URL: postgres://cloudberryadmin:devkem-nepVod-renha6@cloudberry-database.postgres.database.azure.com/cloudberry
       REDIS_URL: redis://redis:6379
     env_file:
       - ./.env

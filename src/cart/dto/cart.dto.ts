@@ -16,6 +16,8 @@ export class CartDto {
         name: item.product.name,
         description: (item.product as ProductDto).description,
         price: item.product.price,
+        discountPrice: item.product.discountPrice,
+        discountPercent: item.product.discountPercent,
         thumbnail: item.product.thumbnail,
         category: item.product.category,
       },

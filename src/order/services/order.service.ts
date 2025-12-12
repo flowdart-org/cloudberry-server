@@ -1,19 +1,21 @@
-import { v4 as uuidv4 } from 'uuid';
 import {
   BadRequestException,
   Inject,
   Injectable,
   NotFoundException,
 } from '@nestjs/common';
+import { v4 as uuidv4 } from 'uuid';
 
 import { OrderDto } from '@/order/dto/order.dto';
 import { Order } from '@/order/entities/order.entity';
 import { OrderItemDto } from '@/order/dto/order-item.dto';
-import { ProductService } from '@/product/product.service';
 import { UserService } from '@/user/services/user.service';
 import { CreateOrderDto } from '@/order/dto/create-order.dto';
+import { AddressService } from '@/user/services/address.service';
 import { VariantService } from '@/product/variant/variant.service';
+import { ProductService } from '@/product/services/product.service';
 import { UpdateOrderDto } from '@/order/dto/request/update-order.dto';
+import { OrderNumberService } from '@/order/services/order-number.service';
 import { IOrderRepository } from '@/order/repositories/interfaces/order.repository';
 import { OrderPaginatedQueryDto } from '@/order/dto/request/order-paginated-query.dto';
 
@@ -23,14 +25,18 @@ export class OrderService {
     @Inject('OrderRepository')
     private readonly _orderRepository: IOrderRepository,
     private readonly _userService: UserService,
+    private readonly _addressService: AddressService,
     private readonly _productService: ProductService,
     private readonly _variantService: VariantService,
+    private readonly _orderNumberService: OrderNumberService,
   ) {}
 
-  public async create(dto: CreateOrderDto): Promise<OrderDto> {
-    const id = uuidv4();
-    const orderNumber = this.generateOrderNumber();
-
+  public async create(
+    dto: Pick<
+      CreateOrderDto,
+      'userId' | 'items' | 'subtotal' | 'total' | 'metadata' | 'discount'
+    >,
+  ): Promise<OrderDto> {
     for (const item of dto.items) {
       const product = await this._productService.findById(item.productId);
 
@@ -42,6 +48,7 @@ export class OrderService {
 
       if (item.variantId) {
         const variant = product.variants.find((v) => v.id === item.variantId);
+
         if (!variant)
           throw new BadRequestException(`Variant not found for product`);
 
@@ -55,32 +62,43 @@ export class OrderService {
       }
     }
 
+    const userAddresses = await this._addressService.findByUserId(dto.userId);
+
+    if (!userAddresses || userAddresses.length === 0) {
+      throw new BadRequestException(`Shipping address not found for user`);
+    }
+
+    const shippingAddress = {
+      houseNo: userAddresses[0].houseNo,
+      street: userAddresses[0].street,
+      city: userAddresses[0].city,
+      state: userAddresses[0].state,
+      pincode: userAddresses[0].pincode,
+      country: userAddresses[0].country,
+    };
+
     // -----------------------------------------
     // 🛒 2. Build order entity
     // -----------------------------------------
+
+    const id = uuidv4();
+    const orderNumber = await this._orderNumberService.generate();
+
     const entity = new Order({
       id,
       orderNumber,
       userId: dto.userId,
       subtotal: dto.subtotal,
-      shippingCharge: dto.shippingCharge ?? 0,
+      shippingCharge: 0,
       discount: dto.discount ?? 0,
       total: dto.total,
       items: dto.items,
-      metadata: dto.metadata ?? null,
-      paymentMethod: dto.paymentMethod ?? null,
-      paymentStatus: dto.paymentStatus ?? 'pending',
-      orderStatus: dto.orderStatus ?? 'pending',
-      shippingAddressJson: dto.shippingAddressJson ?? null,
-      addressLine1: dto.addressLine1 ?? null,
-      addressLine2: dto.addressLine2 ?? null,
-      city: dto.city ?? null,
-      state: dto.state ?? null,
-      country: dto.country ?? null,
-      postalCode: dto.postalCode ?? null,
-      addressLabel: dto.addressLabel ?? null,
-      recipientName: dto.recipientName ?? null,
-      recipientPhone: dto.recipientPhone ?? null,
+      updatedAt: new Date(),
+      metadata: dto.metadata ?? {},
+      paymentMethod: null,
+      paymentStatus: 'pending',
+      orderStatus: 'pending',
+      shippingAddress,
       isDeleted: false,
     });
 
@@ -90,7 +108,7 @@ export class OrderService {
     // 📉 3. Reduce stock after order creation
     // -----------------------------------------
     for (const item of dto.items) {
-      await this._productService.reduceStock(item);
+      await this._variantService.decreaseStock(item.variantId, item.quantity);
     }
 
     const user = await this._userService.findById(order.userId);
@@ -212,17 +230,7 @@ export class OrderService {
       orderStatus: payload.orderStatus ?? existing.orderStatus,
 
       // Address
-      shippingAddressJson:
-        payload.shippingAddressJson ?? existing.shippingAddressJson,
-      addressLine1: payload.addressLine1 ?? existing.addressLine1,
-      addressLine2: payload.addressLine2 ?? existing.addressLine2,
-      city: payload.city ?? existing.city,
-      state: payload.state ?? existing.state,
-      country: payload.country ?? existing.country,
-      postalCode: payload.postalCode ?? existing.postalCode,
-      addressLabel: payload.addressLabel ?? existing.addressLabel,
-      recipientName: payload.recipientName ?? existing.recipientName,
-      recipientPhone: payload.recipientPhone ?? existing.recipientPhone,
+      shippingAddress: payload.shippingAddress ?? existing.shippingAddress,
 
       // Metadata
       metadata: payload.metadata ?? existing.metadata,
@@ -269,22 +277,5 @@ export class OrderService {
     );
 
     return OrderDto.fromEntity(data, user, items);
-  }
-
-  // public async cancel(id: string, reason?: string): Promise<Order> {
-  //   const existing = await this.findById(id);
-  //   const cancelled = existing.with({
-  //     orderStatus: 'cancelled',
-  //     cancelledAt: new Date(),
-  //     cancelReason: reason ?? null,
-  //   });
-  //   return this._orderRepository.update(cancelled);
-  // }
-
-  private generateOrderNumber(): string {
-    // simple order number generator — change to your format if needed
-    const now = Date.now().toString(36).toUpperCase();
-    const rand = Math.random().toString(36).slice(2, 8).toUpperCase();
-    return `ORD-${now}-${rand}`;
   }
 }

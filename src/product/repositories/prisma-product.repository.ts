@@ -1,9 +1,9 @@
 import { Inject, Injectable } from '@nestjs/common';
+import { Prisma, Product as PrismaProduct } from '@prisma/client';
 
+import { Product } from '@/product/entities/product.entity';
 import { PrismaService } from '@/common/prisma/prisma.service';
 import { ProductMapper } from '@/product/mappers/product.mapper';
-import { Prisma, Product as PrismaProduct } from '@prisma/client';
-import { Product as ProductEntity } from '@/product/entities/product.entity';
 import { ProductRepository } from '@/product/repositories/interfaces/product.repository';
 import { ProductPaginatedQueryDto } from '@/product/dto/request/product-paginated-query.dto';
 import { ProductFeedPaginatedQueryDto } from '@/product/dto/request/product-feed-paginated-query.dto';
@@ -15,17 +15,13 @@ export class PrismaProductRepository implements ProductRepository {
   ) {}
 
   async create(
-    data: Omit<ProductEntity, 'id' | 'variants' | 'createdAt' | 'updatedAt'> &
+    data: Omit<Product, 'id' | 'createdAt' | 'updatedAt'> &
       Partial<Pick<PrismaProduct, 'status'>>,
-  ): Promise<ProductEntity> {
+  ): Promise<Product> {
     const persistenceData = ProductMapper.toPersistenceCreate(data);
 
-    if (!persistenceData.categoryId) throw new Error('Category ID is required');
-
-    console.log(persistenceData);
-
     const doc = await this._prisma.product.create({
-      data: { ...persistenceData },
+      data: persistenceData,
     });
 
     return ProductMapper.toEntity(doc);
@@ -33,7 +29,7 @@ export class PrismaProductRepository implements ProductRepository {
 
   async find(
     query: ProductPaginatedQueryDto | ProductFeedPaginatedQueryDto,
-  ): Promise<ProductEntity[]> {
+  ): Promise<Product[]> {
     const { page = 1, limit = 10, search } = query;
 
     const where: Prisma.ProductWhereInput = {};
@@ -48,9 +44,9 @@ export class PrismaProductRepository implements ProductRepository {
 
     if ('minPrice' in query || 'maxPrice' in query || 'categories' in query) {
       if (query.minPrice !== undefined || query.maxPrice !== undefined) {
-        where.price = {};
-        if (query.minPrice !== undefined) where.price.gte = query.minPrice;
-        if (query.maxPrice !== undefined) where.price.lte = query.maxPrice;
+        where.finalPrice = {};
+        if (query.minPrice !== undefined) where.finalPrice.gte = query.minPrice;
+        if (query.maxPrice !== undefined) where.finalPrice.lte = query.maxPrice;
       }
 
       if (query.categories?.length) {
@@ -76,17 +72,21 @@ export class PrismaProductRepository implements ProductRepository {
     return docs.map(ProductMapper.toEntity);
   }
 
-  async findById(id: string): Promise<ProductEntity | null> {
+  async findById(id: string): Promise<Product | null> {
     const doc = await this._prisma.product.findUnique({
       where: { id },
     });
     return doc ? ProductMapper.toEntity(doc) : null;
   }
 
+  countAll(): Promise<number> {
+    return this._prisma.product.count();
+  }
+
   async update(
     id: string,
-    data: Partial<Omit<ProductEntity, 'id' | 'createdAt' | 'updatedAt'>>,
-  ): Promise<ProductEntity> {
+    data: Partial<Omit<Product, 'id' | 'createdAt' | 'updatedAt'>>,
+  ): Promise<Product> {
     const doc = await this._prisma.product.update({
       where: { id },
       data: ProductMapper.toPersistenceUpdate(data),

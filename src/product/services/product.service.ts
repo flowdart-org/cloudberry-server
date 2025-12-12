@@ -74,13 +74,19 @@ export class ProductService {
     return docs.length ? this._toProductsDto(docs) : [];
   }
 
-  async findFeed(query: ProductFeedPaginatedQueryDto): Promise<ProductDto[]> {
+  async findFeed(
+    query: ProductFeedPaginatedQueryDto,
+  ): Promise<{ total: number; data: ProductDto[] }> {
     const docs = await this._productRepository.find({
       ...query,
       status: 'active',
     });
 
-    return docs.length ? this._toProductsDto(docs) : [];
+    const products = docs.length ? await this._toProductsDto(docs) : [];
+
+    const total = await this._productRepository.countAll();
+
+    return { total, data: products };
   }
 
   async findById(id: string): Promise<ProductDto> {
@@ -102,18 +108,5 @@ export class ProductService {
     if (!product) throw new BadRequestException('Product not found');
 
     return this._toProductDto(product);
-  }
-
-  async reduceStock(item: {
-    productId: string;
-    variantId: string;
-    quantity: number;
-  }) {
-    const product = await this._productRepository.findById(item.productId);
-    if (!product) return;
-
-    if (item.variantId) {
-      await this._variantsService.decreaseStock(item.variantId, item.quantity);
-    }
   }
 }

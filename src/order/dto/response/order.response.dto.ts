@@ -1,8 +1,16 @@
-import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
+import { ApiProperty, ApiPropertyOptional, PickType } from '@nestjs/swagger';
 
 import { OrderDto } from '@/order/dto/order.dto';
-import { OrderItemDto } from '@/order/dto/order-item.dto';
 import { OrderStatus, PaymentStatus } from '@/order/entities/order.entity';
+import { OrderItemResponseDto } from '@/order/dto/response/order-item.response.dto';
+import { UserResponseDto } from '@/user/dto/response/user-response.dto';
+
+class CustomerResponseDto extends PickType(UserResponseDto, [
+  'id',
+  'name',
+  'email',
+  'phone',
+]) {}
 
 export class OrderResponseDto {
   @ApiProperty({
@@ -18,31 +26,12 @@ export class OrderResponseDto {
   orderNumber: string;
 
   @ApiProperty({
-    type: () => ({
-      id: { type: 'string' },
-      name: { type: 'string', nullable: true },
-      email: { type: 'string', nullable: true },
-      phone: { type: 'string', nullable: true },
-    }),
+    type: CustomerResponseDto,
   })
-  customer: {
-    id: string;
-    name?: string;
-    email?: string;
-    phone?: string;
-  };
+  customer: CustomerResponseDto;
 
-  @ApiProperty({ type: Date, nullable: true })
-  placedAt: Date | null;
-
-  @ApiProperty({ type: Date, nullable: true })
-  updatedAt: Date | null;
-
-  @ApiProperty({ type: Date, nullable: true })
-  deliveredAt: Date | null;
-
-  @ApiProperty({ type: Date, nullable: true })
-  cancelledAt: Date | null;
+  @ApiPropertyOptional({ nullable: true })
+  shippingAddress: object;
 
   @ApiProperty()
   subtotal: number;
@@ -56,8 +45,8 @@ export class OrderResponseDto {
   @ApiProperty()
   total: number;
 
-  @ApiProperty({ type: [OrderItemDto] })
-  items: OrderItemDto[];
+  @ApiProperty({ type: [OrderItemResponseDto] })
+  items: OrderItemResponseDto[];
 
   @ApiPropertyOptional({ nullable: true })
   paymentMethod?: string | null;
@@ -71,6 +60,18 @@ export class OrderResponseDto {
   @ApiProperty()
   isDeleted: boolean;
 
+  @ApiProperty({ type: Date, nullable: true })
+  placedAt: Date | null;
+
+  @ApiProperty({ type: Date, nullable: true })
+  updatedAt: Date | null;
+
+  @ApiProperty({ type: Date, nullable: true })
+  deliveredAt: Date | null;
+
+  @ApiProperty({ type: Date, nullable: true })
+  cancelledAt: Date | null;
+
   static fromEntity(this: void, orderDto: OrderDto): OrderResponseDto {
     return {
       id: orderDto.id,
@@ -81,6 +82,7 @@ export class OrderResponseDto {
       deliveredAt: orderDto.deliveredAt ?? null,
       cancelledAt: orderDto.cancelledAt ?? null,
       subtotal: orderDto.subtotal,
+      shippingAddress: orderDto.shippingAddress,
       shippingCharge: orderDto.shippingCharge,
       discount: orderDto.discount,
       total: orderDto.total,

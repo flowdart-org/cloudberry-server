@@ -8,14 +8,14 @@ import {
   Query,
 } from '@nestjs/common';
 
-import { Role } from '@/common/enums/role.enum';
-import { ProductService } from '@/product/product.service';
-import { Roles } from '@/common/decorators/roles.decorator';
-import { Public } from '@/common/decorators/public.decorator';
 import {
   HttpPaginatedResponse,
   HttpResponse,
 } from '@/common/dto/http-response.dto';
+import { Role } from '@/common/enums/role.enum';
+import { Roles } from '@/common/decorators/roles.decorator';
+import { Public } from '@/common/decorators/public.decorator';
+import { ProductService } from '@/product/services/product.service';
 import { CreateProductDto } from '@/product/dto/request/create-product.dto';
 import { UpdateProductDto } from '@/product/dto/request/update-product.dto';
 import { ApiResponseWithType } from '@/common/decorators/api-response.decorator';
@@ -47,13 +47,16 @@ export class ProductController {
   @ApiResponseWithType({ isArray: true }, ProductResponseDto)
   async findFeed(
     @Query() query: ProductFeedPaginatedQueryDto,
-  ): Promise<HttpResponse<ProductResponseDto[]>> {
-    const data = await this.productService.findFeed(query);
+  ): Promise<HttpPaginatedResponse<ProductResponseDto[]>> {
+    const { data, total } = await this.productService.findFeed(query);
 
     return {
       success: true,
       message: 'Products fetched successfully',
       data: data.map(ProductResponseDto.fromDto),
+      total,
+      page: query.page,
+      limit: query.limit,
     };
   }
 

@@ -6,7 +6,10 @@ import { ProductVariant } from '@/product/variant/entities/product-variant.entit
 export class CartItemDto {
   id: string;
   quantity: number;
-  product: Pick<ProductDto, 'id' | 'name' | 'price' | 'thumbnail'> & {
+  product: Pick<
+    ProductDto,
+    'id' | 'name' | 'price' | 'discountPrice' | 'discountPercent' | 'thumbnail'
+  > & {
     category: Pick<ProductDto['category'], 'id' | 'name'>;
   };
   variant: Pick<ProductVariant, 'id' | 'size' | 'stock' | 'isDeleted'>;
@@ -24,6 +27,8 @@ export class CartItemDto {
         id: product.id,
         name: product.name,
         price: product.price,
+        discountPrice: product.discountPrice,
+        discountPercent: product.discountPercent,
         thumbnail: product.thumbnail,
         category: {
           id: product.category.id,

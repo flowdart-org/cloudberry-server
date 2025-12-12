@@ -90,6 +90,7 @@ model Product {
   description     String
   price           Float
   discountPercent Float?
+  finalPrice      Float
   categoryId      String
   tryOn           Boolean       @default(false)
   status          ProductStatus
@@ -164,11 +165,6 @@ model Order {
   userId      String
   user        User   @relation(fields: [userId], references: [id])
 
-  placedAt    DateTime  @default(now())
-  updatedAt   DateTime  @updatedAt
-  deliveredAt DateTime?
-  cancelledAt DateTime?
-
   subtotal       Float
   shippingCharge Float @default(0)
   tax            Float @default(0)
@@ -183,30 +179,21 @@ model Order {
   orderStatus   OrderStatus   @default(pending)
 
   shippingAddressJson Json?
-  addressLine1        String?
-  addressLine2        String?
-  city                String?
-  state               String?
-  country             String?
-  postalCode          String?
-  addressLabel        String?
-  recipientName       String?
-  recipientPhone      String?
-
-  courierName    String?
-  trackingNumber String?
-  trackingUrl    String?
 
   cancelReason String?
   refundAmount Float?
 
   isDeleted Boolean @default(false)
+
+  placedAt    DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+  deliveredAt DateTime?
+  cancelledAt DateTime?
 }
 
 model LandingPage {
   id String @id @default(uuid())
 
-  heroImage    String?
   heroTitle    String?
   heroSubtitle String?
 

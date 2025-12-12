@@ -18,6 +18,15 @@ export class PrismaAddressRepository implements IAddressRepository {
     return doc ? AddressMapper.toEntity(doc) : null;
   }
 
+  async findByUserId(userId: string): Promise<Address[]> {
+    const docs = await this._prisma.address.findMany({
+      where: { userId },
+      orderBy: { createdAt: 'desc' },
+    });
+
+    return docs.map(AddressMapper.toEntity);
+  }
+
   async create(
     userId: string,
     data: Partial<Address>,

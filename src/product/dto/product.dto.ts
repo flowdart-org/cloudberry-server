@@ -11,9 +11,9 @@ export class ProductDto {
 
   public readonly price: number;
 
-  public readonly discountPrice?: number;
+  public readonly discountPrice: number;
 
-  public readonly discountPercent: number | null;
+  public readonly discountPercent?: number;
 
   public readonly thumbnail?: string;
 
@@ -23,7 +23,7 @@ export class ProductDto {
 
   public readonly categoryId: string;
 
-  public readonly category: Category;
+  public readonly category: Omit<Category, 'status'>;
 
   public readonly tryOn: boolean;
 
@@ -44,10 +44,9 @@ export class ProductDto {
     this.name = entity.name;
     this.description = entity.description;
     this.price = entity.price;
-    this.discountPercent = entity.discountPercent || null;
+    this.discountPercent = entity.discountPercent || undefined;
 
-    this.discountPrice =
-      (entity.price / 100) * (100 - (entity.discountPercent || 0));
+    this.discountPrice = entity.finalPrice;
 
     this.images = images;
     this.variants = variants.map((variant) => ({

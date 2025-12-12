@@ -1,8 +1,13 @@
-import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
+import { ApiProperty, ApiPropertyOptional, PickType } from '@nestjs/swagger';
 
 import { ProductDto } from '@/product/dto/product.dto';
+import { VariantDto } from '@/product/variant/dto/variant.dto';
+import { CategoryResponseDto } from '@/product/category/dto/response/category-response.dto';
 
-type VariantShape = { id: string; size: string; stock: number };
+class CategoryResponsePickDto extends PickType(CategoryResponseDto, [
+  'id',
+  'name',
+]) {}
 
 export class ProductResponseDto {
   @ApiProperty({
@@ -33,7 +38,7 @@ export class ProductResponseDto {
     example: 19.99,
     description: 'Discounted price of the product',
   })
-  discountPrice?: number;
+  discountPrice: number;
 
   @ApiPropertyOptional({
     example: 33,
@@ -63,27 +68,16 @@ export class ProductResponseDto {
     ],
     description: 'Array of product variants with size and stock information',
   })
-  variants: VariantShape[];
+  variants: VariantDto[];
 
   @ApiProperty({
-    example: '123e4567-e89b-12d3-a456-426614174000',
-    description: 'Identifier for the category the product belongs to',
-  })
-  categoryId: string;
-
-  @ApiPropertyOptional({
     example: {
       id: '123e4567-e89b-12d3-a456-426614174000',
       name: 'Clothing',
-      description: 'Apparel and garments',
     },
     description: 'Category details of the product (optional)',
   })
-  category: {
-    id: string;
-    name: string;
-    description?: string | null;
-  };
+  category: CategoryResponsePickDto;
 
   @ApiProperty({
     example: true,
@@ -104,33 +98,6 @@ export class ProductResponseDto {
   createdAt: Date;
 
   static fromDto(this: void, data: ProductDto): ProductResponseDto {
-    const dto = new ProductResponseDto();
-
-    dto.id = data.id;
-    dto.name = data.name;
-    dto.description = data.description;
-    dto.price = data.price;
-    dto.discountPercent = data.discountPercent ?? undefined;
-
-    // discountPrice = price * (1 - discountPercent/100)
-    dto.discountPrice =
-      data.discountPercent != null
-        ? +(data.price * (1 - data.discountPercent / 100)).toFixed(2)
-        : undefined;
-
-    dto.images = data.images;
-    dto.thumbnail = data.thumbnail ?? dto.images[0];
-
-    dto.variants = data.variants;
-
-    dto.categoryId = data.category?.id ?? data.categoryId;
-
-    dto.category = data.category;
-
-    dto.tryOn = data.tryOn;
-    dto.status = data.status;
-    dto.createdAt = data.createdAt;
-
     return {
       id: data.id,
       name: data.name,
@@ -141,7 +108,6 @@ export class ProductResponseDto {
       thumbnail: data.thumbnail,
       images: data.images,
       variants: data.variants,
-      categoryId: data.categoryId,
       category: data.category,
       tryOn: data.tryOn,
       status: data.status,

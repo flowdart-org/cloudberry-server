@@ -6,6 +6,8 @@ import {
   IsEnum,
   ValidateNested,
   IsOptional,
+  Max,
+  Min,
 } from 'class-validator';
 import { Type } from 'class-transformer';
 import { ApiProperty } from '@nestjs/swagger';
@@ -35,6 +37,8 @@ export class CreateProductDto {
   price: number;
 
   @IsNumber({}, { message: 'Discount percent must be a number' })
+  @Min(0, { message: 'Discount percent cannot be less than 0' })
+  @Max(100, { message: 'Discount percent cannot be more than 100' })
   @ApiProperty({
     example: 20,
     description: 'Discount percentage of the product',

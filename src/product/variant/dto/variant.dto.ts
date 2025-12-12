@@ -10,7 +10,7 @@ export class VariantDto {
   })
   @IsOptional()
   @IsString()
-  id?: string;
+  id: string;
 
   @ApiProperty({
     example: 'M',
