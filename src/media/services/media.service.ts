@@ -2,13 +2,12 @@ import { Injectable } from '@nestjs/common';
 
 import { AzureBlobService } from '@/azure/azure-blob.service';
 
-interface UploadUrlResponse {
-  uploadUrl: string;
+export interface ReadUrlResponse {
   readUrl: string;
 }
 
-export interface ReadUrlResponse {
-  readUrl: string;
+interface UploadUrlResponse extends ReadUrlResponse {
+  uploadUrl: string;
 }
 
 @Injectable()
@@ -39,7 +38,7 @@ export class MediaService {
     };
   }
 
-  async getProductReadUrls(productId: string): Promise<UploadUrlResponse[]> {
+  async getProductReadUrls(productId: string): Promise<ReadUrlResponse[]> {
     const prefix = `product/${productId}/`;
     const blobs = await this._azureBlobService.listBlobs(prefix);
 
@@ -52,7 +51,6 @@ export class MediaService {
       })
       .map((b) => {
         return {
-          uploadUrl: this._azureBlobService.generateUploadUrl(b),
           readUrl: this._azureBlobService.generateReadUrl(b),
         };
       });

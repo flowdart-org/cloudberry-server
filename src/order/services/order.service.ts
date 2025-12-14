@@ -268,6 +268,10 @@ export class OrderService {
 
     const user = await this._userService.findById(data.userId);
 
+    if (status === 'delivered') {
+      await this._userService.IncreaseTryOnLimit(user.id, 3);
+    }
+
     const items = await Promise.all(
       data.items.map(async (i) => {
         const product = await this._productService.findById(i.productId);

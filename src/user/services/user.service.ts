@@ -102,6 +102,18 @@ export class UserService {
     return user.tryOnLimit;
   }
 
+  async IncreaseTryOnLimit(id: string, count: number): Promise<boolean> {
+    const user = await this._userRepository.findById(id);
+
+    if (!user) throw new BadRequestException('User not found');
+
+    return Boolean(
+      await this._userRepository.update(user.id, {
+        tryOnLimit: user.tryOnLimit + count,
+      }),
+    );
+  }
+
   async consumeTryOnLimit(id: string): Promise<boolean> {
     const user = await this._userRepository.findById(id);
 
