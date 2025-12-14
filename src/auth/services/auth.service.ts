@@ -1,4 +1,5 @@
 import { BadRequestException, Injectable } from '@nestjs/common';
+import bcrypt from 'bcrypt';
 
 import { SmsService } from '@/sms/sms.service';
 import { OtpService } from '@/otp/otp.service';
@@ -17,11 +18,11 @@ import { LoginRequestOTPDto } from '@/auth/dto/request/request-OTP.dto';
 export class AuthService {
   constructor(
     private readonly _smsService: SmsService,
-    private readonly _emailService: EmailService,
     private readonly _otpService: OtpService,
     private readonly _jwtService: JwtService,
     private readonly _userService: UserService,
     private readonly _adminService: AdminService,
+    private readonly _emailService: EmailService,
   ) {}
 
   async requestOtp(dto: LoginRequestOTPDto): Promise<void> {
@@ -97,7 +98,13 @@ export class AuthService {
   async adminLogin(dto: AdminLoginDto) {
     const admin = await this._adminService.findByEmail(dto.email);
 
-    if (!admin || admin.password !== dto.password) {
+    if (!admin) {
+      throw new BadRequestException('Invalid email or password');
+    }
+
+    const isPasswordValid = await bcrypt.compare(dto.password, admin.password);
+
+    if (!isPasswordValid) {
       throw new BadRequestException('Invalid email or password');
     }
 
