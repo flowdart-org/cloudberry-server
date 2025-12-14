@@ -256,14 +256,14 @@ export class OrderService {
 
   public async updateStatus(
     id: string,
-    payload: UpdateOrderDto,
+    status: UpdateOrderDto['status'],
   ): Promise<OrderDto> {
     const existing = await this._orderRepository.findById(id);
 
     if (!existing) throw new NotFoundException(`Order ${id} not found`);
 
     const data = await this._orderRepository.update(id, {
-      orderStatus: payload.status ?? existing.orderStatus,
+      orderStatus: status ?? existing.orderStatus,
     });
 
     const user = await this._userService.findById(data.userId);
@@ -311,18 +311,6 @@ export class OrderService {
     return this.update(orderId, {
       orderStatus: 'return_requested',
       metadata: { returnReason: reason },
-    });
-  }
-
-  async approveReturn(orderId: string) {
-    return this.update(orderId, {
-      orderStatus: 'return_approved',
-    });
-  }
-
-  async rejectReturn(orderId: string) {
-    return this.update(orderId, {
-      orderStatus: 'return_rejected',
     });
   }
 }

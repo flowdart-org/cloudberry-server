@@ -97,4 +97,8 @@ export class PrismaUserRepository implements IUserRepository {
     });
     return doc ? UserMapper.toEntity(doc) : null;
   }
+
+  async count(): Promise<number> {
+    return this._prisma.user.count();
+  }
 }

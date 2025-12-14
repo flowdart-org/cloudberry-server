@@ -9,9 +9,29 @@ export class UpdateOrderDto {
   @IsString({
     message: 'Status must be a string',
   })
-  @IsEnum(['pending', 'processing', 'shipping', 'delivered', 'canceled'], {
-    message:
-      'Status must be one of: pending, processing, shipping, delivered, canceled',
-  })
-  status?: 'pending' | 'processing' | 'shipping' | 'delivered' | 'canceled';
+  @IsEnum(
+    [
+      'pending',
+      'processing',
+      'shipping',
+      'delivered',
+      'canceled',
+      'return_approved',
+      'return_rejected',
+      'returned',
+    ],
+    {
+      message:
+        'Status must be one of: pending, processing, shipping, delivered, canceled',
+    },
+  )
+  status?:
+    | 'pending'
+    | 'processing'
+    | 'shipping'
+    | 'delivered'
+    | 'canceled'
+    | 'return_approved'
+    | 'return_rejected'
+    | 'returned';
 }

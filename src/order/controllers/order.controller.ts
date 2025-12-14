@@ -73,14 +73,14 @@ export class OrderController {
     };
   }
 
-  @Patch(':id')
+  @Patch(':id/status')
   @Roles(Role.ADMIN)
   @ApiResponseWithType({}, OrderResponseDto)
   async update(
     @Param('id') id: string,
     @Body() dto: UpdateOrderDto,
   ): Promise<HttpResponse<OrderResponseDto>> {
-    const updated = await this.orderService.updateStatus(id, dto);
+    const updated = await this.orderService.updateStatus(id, dto.status);
 
     return {
       message: 'Order updated successfully',
@@ -88,8 +88,6 @@ export class OrderController {
       data: OrderResponseDto.fromEntity(updated),
     };
   }
-
-  // TODO: Implement order cancellation and return processes
 
   @Patch(':id/cancel')
   @Roles(Role.USER)
@@ -129,36 +127,6 @@ export class OrderController {
     return {
       success: true,
       message: 'Return request submitted successfully',
-      data: OrderResponseDto.fromEntity(order),
-    };
-  }
-
-  @Patch(':id/return/approve')
-  @Roles(Role.ADMIN)
-  @ApiResponseWithType({}, OrderResponseDto)
-  async approveReturn(
-    @Param('id') orderId: string,
-  ): Promise<HttpResponse<OrderResponseDto>> {
-    const order = await this.orderService.approveReturn(orderId);
-
-    return {
-      success: true,
-      message: 'Return approved',
-      data: OrderResponseDto.fromEntity(order),
-    };
-  }
-
-  @Patch(':id/return/reject')
-  @Roles(Role.ADMIN)
-  @ApiResponseWithType({}, OrderResponseDto)
-  async rejectReturn(
-    @Param('id') orderId: string,
-  ): Promise<HttpResponse<OrderResponseDto>> {
-    const order = await this.orderService.rejectReturn(orderId);
-
-    return {
-      success: true,
-      message: 'Return rejected',
       data: OrderResponseDto.fromEntity(order),
     };
   }

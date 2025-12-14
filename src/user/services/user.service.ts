@@ -35,9 +35,17 @@ export class UserService {
     return new UserDto(user);
   }
 
-  async find(query: UserPaginatedQueryDto): Promise<UserDto[]> {
+  async find(
+    query: UserPaginatedQueryDto,
+  ): Promise<{ total: number; data: UserDto[] }> {
     const users = await this._userRepository.find(query);
-    return users.length ? users.map((u) => new UserDto(u)) : [];
+    const u = users.length ? users.map((u) => new UserDto(u)) : [];
+    const total = await this._userRepository.count();
+
+    return {
+      total,
+      data: u,
+    };
   }
 
   async findById(id: string): Promise<UserDto> {

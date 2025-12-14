@@ -15,42 +15,42 @@ export class VariantService {
     productId: string,
     variants: VariantDto[],
   ): Promise<VariantDto[]> {
-    const existingVariants =
-      await this._variantRepository.findManyByProductId(productId);
-
-    console.log('variant update 1', existingVariants, variants);
-
-    const existingMap = new Map<string, ProductVariant>(
-      existingVariants.map((v): [string, ProductVariant] => [v.id, v]),
+    const existingVariants = await this._variantRepository.findManyByProductId(
+      productId,
+      {
+        isDeleted: false,
+      },
     );
 
-    const incomingIds = new Set(variants.filter((v) => v.id).map((v) => v.id));
+    const existingMap = new Map(existingVariants.map((v) => [v.id, v]));
 
-    const results: VariantDto[] = [];
+    const incomingIds = new Set(
+      variants.map((v) => v.id).filter((id): id is string => Boolean(id)),
+    );
 
-    for (const variant of variants) {
-      if (variant.id && existingMap.has(variant.id)) {
-        const updated = await this._variantRepository.update(variant.id, {
-          ...variant,
-          isDeleted: false,
-        });
-        results.push(updated);
-      } else {
-        const created = await this._variantRepository.create({
-          ...variant,
-          productId,
-          isDeleted: false,
-        });
-        results.push(created);
+    const upsertOps = variants.map(async (variant) => {
+      const { id, ...data } = variant;
+
+      if (id && existingMap.has(id)) {
+        return this._variantRepository.update(id, data);
       }
-    }
 
-    console.log('variant update', results);
+      return this._variantRepository.create({
+        ...data,
+        productId,
+        isDeleted: false,
+      });
+    });
+
+    const results = await Promise.all(upsertOps);
 
     const toDelete = existingVariants.filter((v) => !incomingIds.has(v.id));
-    for (const variant of toDelete) {
-      await this._variantRepository.update(variant.id, { isDeleted: true });
-    }
+
+    await Promise.all(
+      toDelete.map((v) =>
+        this._variantRepository.update(v.id, { isDeleted: true }),
+      ),
+    );
 
     return results;
   }

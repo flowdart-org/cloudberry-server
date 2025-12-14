@@ -14,4 +14,5 @@ export interface IUserRepository {
     id: string,
     data: Partial<Omit<User, 'id' | 'updatedAt' | 'createdAt'>>,
   ): Promise<User | null>;
+  count(): Promise<number>;
 }

@@ -35,19 +35,18 @@ export class CartService {
     return this._cartRepository.createCart(userId);
   }
 
-  // TODO validate stock before adding to cart
   async addToCart(userId: string, dto: CreateCartDto): Promise<CartItemDto> {
     const { variantId, quantity } = dto;
 
     const variant = await this._variantService.findById(variantId);
-
     if (!variant) throw new NotFoundException('Product or Variant not found');
 
-    let cart = await this._cartRepository.findByUserId(userId);
-
-    if (!cart) {
-      cart = await this.createCart(userId);
+    if (variant.stock <= 0) {
+      throw new BadRequestException('Product is out of stock');
     }
+
+    let cart = await this._cartRepository.findByUserId(userId);
+    if (!cart) cart = await this.createCart(userId);
 
     const existingItem = await this._cartItemRepository.findExistingItem(
       cart.id,
@@ -55,9 +54,15 @@ export class CartService {
       variantId,
     );
 
+    if (quantity > variant.stock) {
+      throw new BadRequestException(
+        `Only ${variant.stock} items available in stock`,
+      );
+    }
+
     const cartItem = existingItem
       ? await this._cartItemRepository.updateQuantity(existingItem.id, {
-          quantity: quantity,
+          quantity,
         })
       : await this._cartItemRepository.addToCart(cart.id, {
           productId: variant.productId,
@@ -68,7 +73,7 @@ export class CartService {
     return CartItemDto.fromEntity(
       cartItem,
       await this._productService.findById(cartItem.productId),
-      await this._variantService.findById(cartItem.variantId),
+      variant,
     );
   }
 

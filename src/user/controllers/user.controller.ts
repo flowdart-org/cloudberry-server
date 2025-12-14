@@ -52,14 +52,13 @@ export class UserController {
   async find(
     @Query() query: UserPaginatedQueryDto,
   ): Promise<HttpPaginatedResponse<UserResponseDto[]>> {
-    const docs = await this._userService.find(query);
+    const { data, total } = await this._userService.find(query);
 
     return {
       success: true,
       message: 'Users fetched successfully',
-      data: docs.map(UserResponseDto.fromEntity),
-      // TODO: implement total count
-      total: 0,
+      data: data.map(UserResponseDto.fromEntity),
+      total,
       page: query.page,
       limit: query.limit,
     };
