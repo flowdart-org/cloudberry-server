@@ -17,7 +17,7 @@ RUN pnpm install --frozen-lockfile
 COPY . .
 
 # Generate Prisma Client
-RUN pnpm exec prisma generate
+RUN npx prisma generate
 
 # Create optimized Next.js production build
 RUN pnpm run build
@@ -27,6 +27,8 @@ RUN pnpm run build
 # 2. RUNNER STAGE
 # ----------------------------
 FROM node:22-alpine AS runner
+
+ENV DATABASE_URL=postgres://user:password@localhost:5432/mydb
 
 WORKDIR /app
 
