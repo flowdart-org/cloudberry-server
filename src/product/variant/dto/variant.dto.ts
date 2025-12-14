@@ -26,4 +26,12 @@ export class VariantDto {
   @Type(() => Number)
   @IsNumber()
   stock: number;
+
+  @ApiPropertyOptional({
+    example: false,
+    description: 'Indicates if the variant is deleted',
+    required: false,
+  })
+  @IsOptional()
+  isDeleted: boolean;
 }

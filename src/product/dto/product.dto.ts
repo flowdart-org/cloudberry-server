@@ -19,7 +19,12 @@ export class ProductDto {
 
   public readonly images: string[];
 
-  public readonly variants: { id: string; size: string; stock: number }[];
+  public readonly variants: {
+    id: string;
+    size: string;
+    stock: number;
+    isDeleted: boolean;
+  }[];
 
   public readonly categoryId: string;
 
@@ -53,6 +58,7 @@ export class ProductDto {
       id: variant.id,
       size: variant.size,
       stock: variant.stock,
+      isDeleted: variant.isDeleted,
     }));
     this.createdAt = entity.createdAt;
     this.updatedAt = entity.updatedAt;

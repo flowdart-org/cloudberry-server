@@ -4,12 +4,6 @@ import { OrderItemDto } from '@/order/dto/order-item.dto';
 import { ProductResponseDto } from '@/product/dto/response/product-response.dto';
 import { ProductVariantResponseDto } from '@/product/variant/dto/response/product-variant.response.dto';
 
-class ProductVariantPickDto extends PickType(ProductVariantResponseDto, [
-  'id',
-  'size',
-  'stock',
-]) {}
-
 class ProductPickDto extends PickType(ProductResponseDto, [
   'id',
   'name',
@@ -28,10 +22,10 @@ export class OrderItemResponseDto implements OrderItemDto {
   product: ProductPickDto;
 
   @ApiProperty({
-    type: ProductVariantPickDto,
+    type: ProductVariantResponseDto,
     description: 'Variant of the product',
   })
-  variant: ProductVariantPickDto;
+  variant: ProductVariantResponseDto;
 
   @ApiProperty({
     example: 3,

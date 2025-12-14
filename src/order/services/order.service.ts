@@ -278,4 +278,51 @@ export class OrderService {
 
     return OrderDto.fromEntity(data, user, items);
   }
+
+  public async cancelOrder(orderId: string, userId: string, reason?: string) {
+    const order = await this.findById(orderId);
+
+    if (order.customer.id !== userId) {
+      throw new BadRequestException('Unauthorized');
+    }
+
+    if (!['pending', 'processing'].includes(order.orderStatus)) {
+      throw new BadRequestException('Order cannot be cancelled');
+    }
+
+    return this.update(orderId, {
+      orderStatus: 'canceled',
+      cancelledAt: new Date(),
+      metadata: { cancelReason: reason },
+    });
+  }
+
+  async requestReturn(orderId: string, userId: string, reason?: string) {
+    const order = await this.findById(orderId);
+
+    if (order.customer.id !== userId) {
+      throw new BadRequestException('Unauthorized');
+    }
+
+    if (order.orderStatus !== 'delivered') {
+      throw new BadRequestException('Return allowed only after delivery');
+    }
+
+    return this.update(orderId, {
+      orderStatus: 'return_requested',
+      metadata: { returnReason: reason },
+    });
+  }
+
+  async approveReturn(orderId: string) {
+    return this.update(orderId, {
+      orderStatus: 'return_approved',
+    });
+  }
+
+  async rejectReturn(orderId: string) {
+    return this.update(orderId, {
+      orderStatus: 'return_rejected',
+    });
+  }
 }

@@ -20,4 +20,10 @@ export class ProductVariantResponseDto implements VariantDto {
     example: 100,
   })
   stock: number;
+
+  @ApiProperty({
+    description: 'Indicates if the variant is deleted',
+    example: false,
+  })
+  isDeleted: boolean;
 }
