@@ -28,8 +28,6 @@ RUN pnpm run build
 # ----------------------------
 FROM node:22-alpine AS runner
 
-ENV DATABASE_URL=postgres://user:password@localhost:5432/mydb
-
 WORKDIR /app
 
 # Copy only required files from builder
