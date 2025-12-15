@@ -5,6 +5,7 @@ import {
   generateBlobSASQueryParameters,
   SASProtocol,
   ContainerClient,
+  BlobDeleteResponse,
 } from '@azure/storage-blob';
 import { Injectable } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
@@ -102,5 +103,25 @@ export class AzureBlobService {
 
   async blobExists(blobName: string): Promise<boolean> {
     return this.containerClient.getBlobClient(blobName).exists();
+  }
+
+  async deleteBlob(blobName: string): Promise<void> {
+    const blobClient = this.containerClient.getBlobClient(blobName);
+
+    const exists = await blobClient.exists();
+    if (!exists) return;
+
+    await blobClient.delete();
+  }
+
+  async deleteByPrefix(prefix: string): Promise<void> {
+    const deletePromises: Promise<BlobDeleteResponse>[] = [];
+
+    for await (const blob of this.containerClient.listBlobsFlat({ prefix })) {
+      const blobClient = this.containerClient.getBlobClient(blob.name);
+      deletePromises.push(blobClient.delete());
+    }
+
+    await Promise.all(deletePromises);
   }
 }

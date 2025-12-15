@@ -14,6 +14,8 @@ interface UploadUrlResponse extends ReadUrlResponse {
 export class MediaService {
   constructor(private readonly _azureBlobService: AzureBlobService) {}
 
+  /* ---------- CATEGORY ---------- */
+
   getCategoryUploadUrl(categoryId: string): UploadUrlResponse {
     const blobName = `category/${categoryId}`;
 
@@ -28,6 +30,12 @@ export class MediaService {
       readUrl: this._azureBlobService.generateReadUrl(`category/${categoryId}`),
     };
   }
+
+  async removeCategoryImages(categoryId: string): Promise<void> {
+    await this._azureBlobService.deleteByPrefix(`category/${categoryId}`);
+  }
+
+  /* ---------- PRODUCT ---------- */
 
   getProductUploadUrl(productId: string, order: number): UploadUrlResponse {
     const blobName = `product/${productId}/${order}.jpg`;
@@ -73,6 +81,27 @@ export class MediaService {
     };
   }
 
+  async removeProductThumbnail(productId: string): Promise<void> {
+    await this._azureBlobService.deleteBlob(
+      `product/${productId}/thumbnail.jpg`,
+    );
+  }
+
+  async removeAllProductImages(productId: string): Promise<void> {
+    await this._azureBlobService.deleteByPrefix(`product/${productId}/`);
+  }
+
+  async removeAllProductImageByOrder(
+    productId: string,
+    order: number,
+  ): Promise<void> {
+    const blobName = `product/${productId}/${order}.jpg`;
+
+    await this._azureBlobService.deleteBlob(blobName);
+  }
+
+  /* ---------- USER TRY-ON ---------- */
+
   getUserTryOnUploadUrl(userId: string): UploadUrlResponse {
     const blobName = `user/${userId}/try-on.jpg`;
     return {
@@ -95,6 +124,12 @@ export class MediaService {
     };
   }
 
+  async removeUserTryOnImages(userId: string): Promise<void> {
+    await this._azureBlobService.deleteBlob(`user/${userId}/try-on.jpg`);
+  }
+
+  /* ---------- HERO IMAGE ---------- */
+
   getHeroImageUploadUrl(): UploadUrlResponse {
     const blobName = `landing-page/hero.jpg`;
 
@@ -110,5 +145,9 @@ export class MediaService {
     return {
       readUrl: this._azureBlobService.generateReadUrl(blobName),
     };
+  }
+
+  async removeHeroImage(): Promise<void> {
+    await this._azureBlobService.deleteBlob(`landing-page/hero.jpg`);
   }
 }

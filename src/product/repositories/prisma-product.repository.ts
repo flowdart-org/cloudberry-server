@@ -54,10 +54,10 @@ export class PrismaProductRepository implements ProductRepository {
       }
     }
 
-    if ('size' in query && query.size) {
+    if ('sizes' in query && query.sizes) {
       where.variants = {
         some: {
-          size: query.size,
+          size: { in: query.sizes },
         },
       };
     }

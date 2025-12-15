@@ -130,4 +130,19 @@ export class OrderController {
       data: OrderResponseDto.fromEntity(order),
     };
   }
+
+  @Patch(':id/refund')
+  @Roles(Role.ADMIN)
+  @ApiResponseWithType({}, OrderResponseDto)
+  async refundPayment(
+    @Param('id') orderId: string,
+  ): Promise<HttpResponse<OrderResponseDto>> {
+    const order = await this.orderService.refundPayment(orderId);
+
+    return {
+      success: true,
+      message: 'Payment refunded successfully',
+      data: OrderResponseDto.fromEntity(order),
+    };
+  }
 }

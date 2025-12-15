@@ -1,4 +1,4 @@
-import { Controller, Get, Param } from '@nestjs/common';
+import { Controller, Delete, Get, Param } from '@nestjs/common';
 
 import { Role } from '@/common/enums/role.enum';
 import { Roles } from '@/common/decorators/roles.decorator';
@@ -11,6 +11,8 @@ import { UploadMediaResponseDto } from '@/media/dto/response/upload-media.respon
 @Controller('media')
 export class MediaController {
   constructor(private readonly _mediaService: MediaService) {}
+
+  /* ---------- CATEGORY ---------- */
 
   @Get('/upload/category/:categoryId')
   @Roles(Role.ADMIN)
@@ -26,6 +28,21 @@ export class MediaController {
       success: true,
     };
   }
+
+  @Delete('/category/:categoryId')
+  @Roles(Role.ADMIN)
+  async removeCategoryImages(
+    @Param('categoryId') categoryId: string,
+  ): Promise<HttpResponse> {
+    await this._mediaService.removeCategoryImages(categoryId);
+
+    return {
+      success: true,
+      message: 'Category images removed successfully',
+    };
+  }
+
+  /* ---------- PRODUCT ---------- */
 
   @Get('/upload/product/:productId/thumbnail')
   @Roles(Role.ADMIN)
@@ -58,6 +75,48 @@ export class MediaController {
     };
   }
 
+  @Delete('/product/:productId/thumbnail')
+  @Roles(Role.ADMIN)
+  async removeProductThumbnail(
+    @Param('productId') productId: string,
+  ): Promise<HttpResponse> {
+    await this._mediaService.removeProductThumbnail(productId);
+
+    return {
+      success: true,
+      message: 'Product thumbnail removed successfully',
+    };
+  }
+
+  @Delete('/product/:productId/images')
+  @Roles(Role.ADMIN)
+  async removeAllProductImages(
+    @Param('productId') productId: string,
+  ): Promise<HttpResponse> {
+    await this._mediaService.removeAllProductImages(productId);
+
+    return {
+      success: true,
+      message: 'Product images removed successfully',
+    };
+  }
+
+  @Delete('/product/:productId/:order')
+  @Roles(Role.ADMIN)
+  async removeAllProductImageByOrder(
+    @Param('productId') productId: string,
+    @Param('order') order: number,
+  ): Promise<HttpResponse> {
+    await this._mediaService.removeAllProductImageByOrder(productId, order);
+
+    return {
+      success: true,
+      message: 'Product images removed successfully',
+    };
+  }
+
+  /* ---------- USER TRY-ON ---------- */
+
   @Get('/upload/user/try-on')
   @Roles(Role.USER)
   @ApiResponseWithType({}, UploadMediaResponseDto)
@@ -73,6 +132,19 @@ export class MediaController {
     };
   }
 
+  @Delete('/user/try-on')
+  @Roles(Role.USER)
+  async removeUserTryOnImages(@UserId() userId: string): Promise<HttpResponse> {
+    await this._mediaService.removeUserTryOnImages(userId);
+
+    return {
+      success: true,
+      message: 'User try-on images removed successfully',
+    };
+  }
+
+  /* ---------- HERO IMAGE ---------- */
+
   @Get('/upload/hero-image')
   @Roles(Role.ADMIN)
   @ApiResponseWithType({}, UploadMediaResponseDto)
@@ -83,6 +155,17 @@ export class MediaController {
       data: new UploadMediaResponseDto(data),
       message: 'Upload URL generated successfully',
       success: true,
+    };
+  }
+
+  @Delete('/hero-image')
+  @Roles(Role.ADMIN)
+  async removeHeroImage(): Promise<HttpResponse> {
+    await this._mediaService.removeHeroImage();
+
+    return {
+      success: true,
+      message: 'Hero image removed successfully',
     };
   }
 }

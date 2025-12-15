@@ -10,10 +10,19 @@ export class ProductFeedPaginatedQueryDto extends PaginatedQueryDto {
   @IsString()
   search?: string;
 
-  @ApiProperty({ required: false, example: 'XL' })
+  @ApiProperty({
+    required: false,
+    example: ['S', 'M', 'XL'],
+    description: 'Array of sizes',
+    type: [String],
+  })
   @IsOptional()
-  @IsString()
-  size?: string;
+  @Transform(({ value }: { value: string | string[] }) =>
+    Array.isArray(value) ? value : value ? [value] : [],
+  )
+  @IsArray()
+  @IsString({ each: true })
+  sizes?: string[];
 
   @ApiProperty({ required: false, example: 10 })
   @IsOptional()

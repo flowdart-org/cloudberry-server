@@ -283,7 +283,11 @@ export class OrderService {
     return OrderDto.fromEntity(data, user, items);
   }
 
-  public async cancelOrder(orderId: string, userId: string, reason?: string) {
+  public async cancelOrder(
+    orderId: string,
+    userId: string,
+    reason?: string,
+  ): Promise<OrderDto> {
     const order = await this.findById(orderId);
 
     if (order.customer.id !== userId) {
@@ -301,7 +305,11 @@ export class OrderService {
     });
   }
 
-  async requestReturn(orderId: string, userId: string, reason?: string) {
+  async requestReturn(
+    orderId: string,
+    userId: string,
+    reason?: string,
+  ): Promise<OrderDto> {
     const order = await this.findById(orderId);
 
     if (order.customer.id !== userId) {
@@ -315,6 +323,28 @@ export class OrderService {
     return this.update(orderId, {
       orderStatus: 'return_requested',
       metadata: { returnReason: reason },
+    });
+  }
+
+  async refundPayment(orderId: string): Promise<OrderDto> {
+    const order = await this.findById(orderId);
+
+    if (!order) {
+      throw new NotFoundException('Order not found');
+    }
+
+    if (order.orderStatus !== 'canceled' && order.orderStatus !== 'returned') {
+      throw new BadRequestException(
+        'Refund allowed only for canceled or returned orders',
+      );
+    }
+
+    if (order.paymentStatus === 'refunded') {
+      throw new BadRequestException('Order already refunded');
+    }
+
+    return this.update(orderId, {
+      paymentStatus: 'refunded',
     });
   }
 }
